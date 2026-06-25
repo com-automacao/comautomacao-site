@@ -16,22 +16,50 @@ const testimonials = [
   {
     quote:
       "Implantaram o sistema no nosso restaurante em um dia. Quando precisamos, o suporte responde na hora.",
-    name: "Marina S.",
-    designation: "Restaurante · Maringá",
+    name: "Depoimento 1.",
+    designation: "Local 1 · Cidade 1",
     src: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop&q=80",
   },
   {
     quote:
       "Trocamos a planilha pelo controle financeiro e, pela primeira vez, enxergamos o caixa de verdade.",
-    name: "Carlos R.",
-    designation: "Comércio · Sarandi",
+    name: "Depoimento 2.",
+    designation: "Local 2 · Cidade 2",
     src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&q=80",
   },
   {
     quote:
       "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Ana P.",
-    designation: "Varejo · Maringá",
+    name: "Depoimento 3.",
+    designation: "Local 3 · Cidade 3",
+    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
+  },
+  {
+    quote:
+      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
+    name: "Depoimento 4.",
+    designation: "Local 4 · Cidade 4",
+    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
+  },
+  {
+    quote:
+      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
+    name: "Depoimento 5.",
+    designation: "Local 5 · Cidade 5",
+    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
+  },
+  {
+    quote:
+      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
+    name: "Depoimento 6.",
+    designation: "Local 6 · Cidade 6",
+    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
+  },
+  {
+    quote:
+      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
+    name: "Depoimento 7.",
+    designation: "Local 7 · Cidade 7",
     src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
   },
 ];
@@ -286,7 +314,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== DEPOIMENTOS — animação: crescer com mola ===== */}
+      {/* ===== DEPOIMENTOS — DESATIVADO temporariamente. NÃO APAGAR: vamos
+           voltar a usar. Para reativar, troque `false` por `true` abaixo
+           (ou remova o wrapper `{false && ( ... )}`). ===== */}
+      {false && (
       <section id="depoimentos" className="s-light pad">
         <div className="wrap">
           <div className="eyebrow reveal r-scale">Depoimentos</div>
@@ -310,6 +341,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ===== DOBRA 6 · DIRETÓRIO DE PRODUTOS — animação: subir alto, em cascata ===== */}
       <section id="marcas" className="s-dark pad">
