@@ -152,7 +152,7 @@ export default function Home() {
         </div>
         {/* wrapper observado (área cheia, sem clip → IO confiável);
             a cortina clip-path fica no .stripes interno via transition */}
-        <div className="stripes-reveal reveal" data-d="1">
+        <div className="stripes-reveal reveal reveal-repeat" data-d="1">
           <ProductStripes
             items={products.map((p) => ({ product: p, accent: accentVar[p.slug] }))}
           />

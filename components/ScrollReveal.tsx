@@ -4,15 +4,14 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 /**
- * Revela os elementos `.reveal` (adiciona a classe `.in`) conforme entram na
- * viewport — uma vez só, e permanecem revelados (sem re-esconder). Isso evita
- * o "espaço vazio" que aparecia quando o conteúdo já estava visível mas ainda
- * sem `.in` (observer não disparava / re-escondia ao sair).
+ * Revela os elementos `.reveal` (classe `.in`) conforme entram na viewport.
  *
- * Duas camadas de garantia:
- *  1. IntersectionObserver revela ao entrar (anima na rolagem).
- *  2. Varredura em cada scroll/resize: qualquer `.reveal` dentro da viewport
- *     recebe `.in` na hora — rede de segurança à prova de falha do observer.
+ * Dois modos:
+ *  - PADRÃO (reveal-once): adiciona `.in` ao entrar e mantém — evita o
+ *    "espaço vazio" de conteúdo visível porém sem `.in`. Reforçado por uma
+ *    varredura em cada scroll/resize (rede de segurança contra o observer).
+ *  - REPEAT (`.reveal-repeat`): alterna `.in` ao entrar/sair da vista, então
+ *    a animação (ex.: cortina dos produtos) se repete a cada nova entrada.
  *
  * Sem IntersectionObserver (ou sem window), revela tudo de imediato.
  * Re-escaneia a cada navegação de rota.
@@ -21,17 +20,20 @@ export default function ScrollReveal() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
-    if (els.length === 0) return;
+    const all = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    if (all.length === 0) return;
 
     const reveal = (el: HTMLElement) => el.classList.add("in");
+    const repeatEls = all.filter((el) => el.classList.contains("reveal-repeat"));
+    const onceEls = all.filter((el) => !el.classList.contains("reveal-repeat"));
 
     if (typeof IntersectionObserver === "undefined") {
-      els.forEach(reveal);
+      all.forEach(reveal);
       return;
     }
 
-    const io = new IntersectionObserver(
+    // --- reveal-once: anima ao entrar e não re-esconde ---
+    const onceIO = new IntersectionObserver(
       (entries, obs) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
@@ -42,20 +44,30 @@ export default function ScrollReveal() {
       },
       { threshold: 0, rootMargin: "0px 0px -4% 0px" },
     );
-    els.forEach((el) => io.observe(el));
+    onceEls.forEach((el) => onceIO.observe(el));
 
-    // Rede de segurança: revela na hora tudo que está dentro da viewport,
-    // no load e a cada scroll/resize. Cobre o caso do observer não disparar.
+    // --- reveal-repeat: alterna .in para a animação repetir a cada entrada ---
+    const repeatIO = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          entry.target.classList.toggle("in", entry.isIntersecting);
+        }
+      },
+      { threshold: 0.15 },
+    );
+    repeatEls.forEach((el) => repeatIO.observe(el));
+
+    // Rede de segurança (só p/ reveal-once): revela o que já está na viewport.
     let ticking = false;
     const sweep = () => {
       ticking = false;
       const vh = window.innerHeight || document.documentElement.clientHeight;
-      for (const el of els) {
+      for (const el of onceEls) {
         if (el.classList.contains("in")) continue;
         const r = el.getBoundingClientRect();
         if (r.top < vh * 0.94 && r.bottom > 0) {
           reveal(el);
-          io.unobserve(el);
+          onceIO.unobserve(el);
         }
       }
     };
@@ -70,7 +82,8 @@ export default function ScrollReveal() {
     window.addEventListener("resize", onScroll);
 
     return () => {
-      io.disconnect();
+      onceIO.disconnect();
+      repeatIO.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
