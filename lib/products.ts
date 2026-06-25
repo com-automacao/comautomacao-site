@@ -60,6 +60,10 @@ export type Product = {
   gallery?: { src: string; caption: string; portrait?: boolean }[];
   /** dobra processo / como funciona */
   steps: { label: string; title: string; body: string }[];
+  /** CTA final — sujeito da chamada "Pronto para colocar ___ no ar?"
+   * (default: "o {name}") e subtítulo. Permite copy sob medida por produto. */
+  ctaSubject?: string;
+  ctaNote?: string;
 };
 
 export const products: Product[] = [
@@ -321,6 +325,9 @@ export const products: Product[] = [
       { label: "02", title: "Design & build", body: "Criamos o layout e desenvolvemos página a página." },
       { label: "03", title: "No ar", body: "Publicamos, otimizamos e acompanhamos os resultados." },
     ],
+    ctaSubject: "seu site",
+    ctaNote:
+      "Do briefing ao lançamento: design sob medida, performance e SEO. Fale com a gente e tire o projeto do papel.",
   },
 ];
 

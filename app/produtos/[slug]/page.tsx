@@ -246,7 +246,7 @@ export default async function ProductPage({
               lineHeight: 1,
             }}
           >
-            Pronto para colocar o {product.name}{" "}
+            Pronto para colocar {product.ctaSubject ?? `o ${product.name}`}{" "}
             <span style={{ color: "var(--accent)" }}>no ar</span>?
           </h2>
           <p
@@ -254,8 +254,8 @@ export default async function ProductPage({
             data-d="1"
             style={{ margin: "18px auto 0" }}
           >
-            Implantação, treinamento e suporte local inclusos. Fale com a gente
-            e comece hoje.
+            {product.ctaNote ??
+              "Implantação, treinamento e suporte local inclusos. Fale com a gente e comece hoje."}
           </p>
           <div
             className="hero-cta reveal r-scale"
