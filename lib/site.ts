@@ -1,11 +1,13 @@
 /**
  * Configurações de contato do site — fonte única.
  *
- * ⚠️ TROCAR: WHATSAPP_NUMBER está com um número placeholder. Substitua pelo
- * número real no formato internacional, só dígitos: 55 (Brasil) + DDD + número.
- * Ex.: "5544998765432".
+ * ⚠️ TROCAR: o número de WhatsApp pode ser definido pela variável de ambiente
+ * `NEXT_PUBLIC_WHATSAPP_NUMBER` (recomendado no deploy — ex.: na Vercel) OU
+ * editando o fallback abaixo. Formato internacional, só dígitos:
+ * 55 (Brasil) + DDD + número. Ex.: "5544998765432".
  */
-export const WHATSAPP_NUMBER = "5599999999999";
+export const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5599999999999";
 
 export const WHATSAPP_MESSAGE =
   "Olá! Vim pelo site e quero saber mais sobre os sistemas da Com Automação.";

@@ -212,36 +212,6 @@ export default async function ProductPage({
         </section>
       )}
 
-      {/* ===== DOBRA 4 · PROCESSO (lanes) — anim: wipe por clip-path ===== */}
-      <section className="s-dark pad" style={{ background: "#0A0A0A" }}>
-        <div className="wrap">
-          <div className="eyebrow reveal r-clip">Como começa</div>
-          <h2 className="section-title reveal r-clip" data-d="1">
-            Do zero ao no ar.
-          </h2>
-          <div className="lanes reveal r-clip" data-d="1">
-            {product.steps.map((s, i) => (
-              <div
-                key={s.label}
-                className={`lane ${["e-out", "e-spring", "e-fast"][i % 3]}`}
-              >
-                <h4>
-                  <span style={{ color: "var(--accent)", fontFamily: "var(--font-mono)", fontSize: 13, marginRight: 10 }}>
-                    {s.label}
-                  </span>
-                  {s.title}
-                </h4>
-                <div className="track">
-                  <div className="rail" />
-                  <div className="ball" style={{ background: "var(--accent)" }} />
-                </div>
-                <span className="mono-label">{s.body}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===== FAQ (acordeão nativo) ===== */}
       <section className="s-dark pad">
         <div className="wrap" style={{ maxWidth: 820 }}>
