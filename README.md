@@ -113,9 +113,16 @@ O site é 100% estático, então roda em hospedagem compartilhada sem Node.
 
 ---
 
+## SEO / compartilhamento
+
+- **Open Graph + Twitter Card** configurados em [`app/layout.tsx`](app/layout.tsx)
+  (site) e por produto em [`app/produtos/[slug]/page.tsx`](app/produtos/[slug]/page.tsx).
+- Imagem de preview: `app/opengraph-image.png` e `app/twitter-image.png` (1200×630).
+- A base das URLs vem de `NEXT_PUBLIC_SITE_URL` (default `https://comautomacao.com`) —
+  lida no build. Se mudar o domínio, ajuste e rebuilde.
+
 ## Pendências (corrigir depois)
 
-- [ ] `metadataBase` + Open Graph/Twitter (preview ao compartilhar link)
 - [ ] `favicon.ico` legado (hoje usamos `icon.png`, suficiente p/ navegadores modernos)
 - [ ] Hero da home usa vídeo remoto (Pexels) — avaliar self-host
 

@@ -21,13 +21,32 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://comautomacao.com";
+const SITE_NAME = "Com Automação";
+const SITE_DESCRIPTION =
+  "Representamos os melhores sistemas de gestão e cuidamos da implantação, do treinamento e do suporte local. Empresas organizadas decolam.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Com Automação | Sistemas de gestão para sua empresa",
     template: "%s — Com Automação",
   },
-  description:
-    "Representamos os melhores sistemas de gestão e cuidamos da implantação, do treinamento e do suporte local. Empresas organizadas decolam.",
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "Com Automação | Sistemas de gestão para sua empresa",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Com Automação | Sistemas de gestão para sua empresa",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

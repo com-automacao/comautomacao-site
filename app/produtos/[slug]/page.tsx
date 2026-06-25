@@ -21,9 +21,24 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return {};
+  const ogTitle = `${product.name} — Com Automação`;
+  const url = `/produtos/${slug}/`;
   return {
     title: product.name,
     description: product.lead,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: "Com Automação",
+      title: ogTitle,
+      description: product.lead,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: ogTitle,
+      description: product.lead,
+    },
   };
 }
 
