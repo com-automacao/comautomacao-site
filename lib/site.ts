@@ -7,7 +7,7 @@
  * 55 (Brasil) + DDD + número. Ex.: "5544998765432".
  */
 export const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5599999999999";
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5515997133311";
 
 export const WHATSAPP_MESSAGE =
   "Olá! Vim pelo site e quero saber mais sobre os sistemas da Com Automação.";
