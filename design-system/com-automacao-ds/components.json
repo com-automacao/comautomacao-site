@@ -1,0 +1,79 @@
+{
+  "$description": "Component specs for Com Automação. Source of truth is colors_and_type.css + ui_kits/marketing_site/*.jsx. Values reference design-tokens.json.",
+  "principles": [
+    "Monochrome only — never introduce a hue. The single 'accent' is absolute black (light) / white (dark).",
+    "Gradients allowed ONLY black↔transparent or white↔transparent, and only as protection masks over media.",
+    "Default easing is motion.easing.out. Default reveal = fade + 8–16px translateY.",
+    "Never use a left-border color accent on cards. Never use colored shadows.",
+    "Icons: Lucide, stroke 1.75, currentColor. No emoji (especially no 🚀 — rocket is the logo's monopoly)."
+  ],
+  "components": {
+    "Button": {
+      "file": "ui_kits/marketing_site/Primitives.jsx",
+      "radius": "radius.pill",
+      "fontWeight": "font.weight.medium",
+      "transition": "all 200ms motion.easing.out",
+      "press": "scale(0.98)",
+      "sizes": {
+        "sm": { "fontSize": "13px", "padding": "7px 16px" },
+        "md": { "fontSize": "15px", "padding": "11px 22px" },
+        "lg": { "fontSize": "17px", "padding": "14px 28px" }
+      },
+      "variants": {
+        "primary":       { "background": "color.neutral.black", "color": "color.neutral.white", "hover": "background → color.neutral.900" },
+        "secondary":     { "background": "transparent", "color": "color.neutral.black", "border": "1px solid color.neutral.300", "hover": "background → color.neutral.100" },
+        "ghost":         { "background": "transparent", "color": "color.neutral.black", "hover": "opacity 0.6" },
+        "ghost-inverse": { "background": "transparent", "color": "color.neutral.white", "hover": "opacity 0.6" },
+        "inverse":       { "background": "color.neutral.white", "color": "color.neutral.black" }
+      },
+      "icon": "Optional trailing arrow (lucide arrow-right, stroke 2, 14px) via icon prop."
+    },
+    "Card": {
+      "file": "preview/cards.html",
+      "radius": "radius.lg",
+      "background": "color.light.bg-elev",
+      "border": "1px solid color.light.border",
+      "shadow": "shadow.sm",
+      "padding": "spacing.6",
+      "hover": "translateY(-2px to -4px) + shadow.md; optional invert to black bg",
+      "title": "title-2 / semibold / letterSpacing tight",
+      "body": "subhead / color fg-2"
+    },
+    "Input": {
+      "file": "preview/forms.html",
+      "radius": "radius.md",
+      "border": "1px solid color.light.border",
+      "fontSize": "16px",
+      "padding": "13px 16px",
+      "focus": "border → color.neutral.black + box-shadow 0 0 0 3px rgba(0,0,0,0.08)",
+      "placeholder": "color.neutral.300",
+      "label": "footnote / color fg-2"
+    },
+    "Header": {
+      "file": "ui_kits/marketing_site/Header.jsx",
+      "behavior": "Sticky. Transparent at top; on scroll>10px gains rgba(255,255,255,0.72) + backdrop-filter saturate(180%) blur(20px) + 1px bottom border.",
+      "breakpoint": "740px — collapses nav to a hamburger sheet (slideDown 300ms).",
+      "logo": "assets/logo-horizontal-black.png at 20px height"
+    },
+    "Hero": {
+      "file": "ui_kits/marketing_site/Hero.jsx",
+      "background": "color.neutral.black",
+      "title": "display-m, weight 600 with a weight-200 emphasis word; letterSpacing tighter; text-wrap balance",
+      "entrance": "staggered fade+translateY, 90ms steps, motion.easing.out",
+      "watermark": "logo-mark-white.png at ~2.5% opacity, off to the side"
+    },
+    "Eyebrow": {
+      "file": "ui_kits/marketing_site/Primitives.jsx",
+      "spec": "caption / weight 500 / uppercase / letterSpacing wider (0.16em) / color fg-2"
+    },
+    "Reveal": {
+      "file": "ui_kits/marketing_site/Primitives.jsx",
+      "spec": "IntersectionObserver (threshold 0.15) → opacity 0→1 + translateY(16px→0), 700ms motion.easing.out, optional stagger delay."
+    }
+  },
+  "patterns": {
+    "section-rhythm": "Alternate bg between color.light.bg (white) and color.light.bg-sunken (#F2F2F2); use dark (black) sections for emphasis like CaseStudy. Vertical padding 100–120px.",
+    "media-overlay": "linear-gradient(180deg, transparent, rgba(0,0,0,0.65)) for text contrast over imagery. Imagery is B&W or desaturated.",
+    "stat-block": "display-size number (weight 600, letterSpacing tighter) over a caption label in fg-3."
+  }
+}

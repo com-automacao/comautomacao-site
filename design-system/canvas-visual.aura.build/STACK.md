@@ -1,0 +1,8 @@
+- **Tailwind CSS** — framework CSS utility-first usado para todo o layout e estilizacao (carregado via `assets/resource_3fa48481346f.js`).
+- **Plugin custom de Tailwind (Transform 3D)** — adiciona utilidades `rotate-x/y/z`, `perspective-*` e `transform-style-*` para o efeito 3D do hero.
+- **Iconify** — runtime de icones inline carregado via `assets/iconify_654a1ef798a3.js` (renderiza icones Solar e Simple Icons).
+- **Unicorn Studio** — runtime WebGL via CDN (`unicornstudio.umd.js@v1.4.29`) que renderiza o background animado do hero.
+- **IntersectionObserver API** — usado para disparar animacoes de entrada (`.animate-on-scroll`) quando elementos entram no viewport.
+- **Google Fonts** — carregamento da familia Inter (corpo) e Space Grotesk (watermark do rodape) via `fonts.googleapis.com`/`fonts.gstatic.com`.
+- **Supabase Storage** — host das imagens originais e fallback para imagens quebradas (script `image-fallback.js`).
+- **HTML/CSS/JS puro** — nenhum framework JS, sem build system; tudo entregue como arquivos estaticos.

@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- @dsCard group="Components" name="Cards" subtitle="18px radius · light + dark" viewport="700x220" --><html><head><meta charset="utf-8"><title>Cards</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 22px 24px; background: #F7F7F8; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #fff; border: 1px solid #D2D2D7; border-radius: 18px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 250ms cubic-bezier(.16,1,.3,1), box-shadow 250ms; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .eyebrow { font-size: 11px; font-weight: 500; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 12px; }
+  .title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 6px 0; color: #000; }
+  .body { font-size: 14px; color: #6E6E73; line-height: 1.5; margin: 0; }
+  .card.dark { background: #000; border-color: #1F1F1F; color: #fff; }
+  .card.dark .title { color: #fff; }
+  .card.dark .body { color: #A1A1A6; }
+  .card.dark .eyebrow { color: #86868B; }
+</style>
+</head><body>
+  <div class="grid">
+    <div class="card">
+      <div class="eyebrow">Serviço</div>
+      <h3 class="title">Desenvolvimento web</h3>
+      <p class="body">Sites e aplicações sob medida. Mobile-first, rápidos, fáceis de manter.</p>
+    </div>
+    <div class="card dark">
+      <div class="eyebrow">Produto</div>
+      <h3 class="title">Automações</h3>
+      <p class="body">Fluxos que tiram tarefas repetitivas da sua rotina e do seu time.</p>
+    </div>
+  </div>
+</body></html>

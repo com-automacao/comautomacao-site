@@ -1,0 +1,165 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Com Automação design tokens — W3C DTCG format. Monochrome only. Mirror of colors_and_type.css.",
+
+  "color": {
+    "$type": "color",
+    "neutral": {
+      "black":   { "$value": "#000000" },
+      "950":     { "$value": "#0A0A0A" },
+      "900":     { "$value": "#141414" },
+      "800":     { "$value": "#1F1F1F" },
+      "700":     { "$value": "#2E2E2E" },
+      "600":     { "$value": "#4A4A4A" },
+      "500":     { "$value": "#6E6E73" },
+      "400":     { "$value": "#86868B" },
+      "300":     { "$value": "#A1A1A6" },
+      "200":     { "$value": "#D2D2D7" },
+      "150":     { "$value": "#E5E5EA" },
+      "100":     { "$value": "#F2F2F2" },
+      "50":      { "$value": "#F7F7F8" },
+      "white":   { "$value": "#FFFFFF" }
+    },
+    "light": {
+      "$description": "Default theme.",
+      "bg":          { "$value": "{color.neutral.white}" },
+      "bg-elev":     { "$value": "{color.neutral.50}" },
+      "bg-sunken":   { "$value": "{color.neutral.100}" },
+      "fg-1":        { "$value": "{color.neutral.black}" },
+      "fg-2":        { "$value": "{color.neutral.500}" },
+      "fg-3":        { "$value": "{color.neutral.400}" },
+      "fg-inverse":  { "$value": "{color.neutral.white}" },
+      "border":      { "$value": "{color.neutral.200}" },
+      "border-strong":{ "$value": "{color.neutral.300}" },
+      "divider":     { "$value": "{color.neutral.150}" },
+      "accent":      { "$value": "{color.neutral.black}" },
+      "accent-fg":   { "$value": "{color.neutral.white}" }
+    },
+    "dark": {
+      "$description": "Inverted neutrals. The client's own banner is dark, so both themes are native to the brand.",
+      "bg":          { "$value": "{color.neutral.black}" },
+      "bg-elev":     { "$value": "{color.neutral.950}" },
+      "bg-sunken":   { "$value": "{color.neutral.900}" },
+      "fg-1":        { "$value": "{color.neutral.white}" },
+      "fg-2":        { "$value": "{color.neutral.300}" },
+      "fg-3":        { "$value": "{color.neutral.400}" },
+      "fg-inverse":  { "$value": "{color.neutral.black}" },
+      "border":      { "$value": "{color.neutral.800}" },
+      "border-strong":{ "$value": "{color.neutral.700}" },
+      "divider":     { "$value": "{color.neutral.800}" },
+      "accent":      { "$value": "{color.neutral.white}" },
+      "accent-fg":   { "$value": "{color.neutral.black}" }
+    }
+  },
+
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "display": { "$value": ["Inter", "ui-sans-serif", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Helvetica Neue", "Arial", "sans-serif"], "$description": "SUBSTITUTE for SF Pro Display. Swap if SF Pro is licensed." },
+      "sans":    { "$value": ["Inter", "ui-sans-serif", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Helvetica Neue", "Arial", "sans-serif"] },
+      "mono":    { "$value": ["ui-monospace", "SF Mono", "Menlo", "Consolas", "monospace"] }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "thin":     { "$value": 200, "$description": "Apple-style thin for large display." },
+      "regular":  { "$value": 400 },
+      "medium":   { "$value": 500 },
+      "semibold": { "$value": 600 },
+      "bold":     { "$value": 700 }
+    },
+    "size": {
+      "$type": "dimension",
+      "caption2":   { "$value": "11px" },
+      "caption":    { "$value": "12px" },
+      "footnote":   { "$value": "13px" },
+      "subhead":    { "$value": "15px" },
+      "callout":    { "$value": "16px" },
+      "body":       { "$value": "17px" },
+      "headline":   { "$value": "17px" },
+      "title-3":    { "$value": "20px" },
+      "title-2":    { "$value": "22px" },
+      "title-1":    { "$value": "28px" },
+      "large-title":{ "$value": "34px" },
+      "display-s":  { "$value": "clamp(40px, 6vw, 56px)" },
+      "display-m":  { "$value": "clamp(56px, 9vw, 88px)" },
+      "display-l":  { "$value": "clamp(72px, 12vw, 128px)" }
+    },
+    "lineHeight": {
+      "tight":  { "$value": 1.05 },
+      "snug":   { "$value": 1.2 },
+      "normal": { "$value": 1.45 },
+      "loose":  { "$value": 1.6 }
+    },
+    "letterSpacing": {
+      "tighter": { "$value": "-0.03em", "$description": "Big displays." },
+      "tight":   { "$value": "-0.015em", "$description": "Headlines." },
+      "normal":  { "$value": "0" },
+      "wide":    { "$value": "0.08em", "$description": "Brand caps (AUTOMAÇÃO)." },
+      "wider":   { "$value": "0.16em", "$description": "Eyebrows / section labels." }
+    }
+  },
+
+  "spacing": {
+    "$type": "dimension",
+    "0":  { "$value": "0" },
+    "1":  { "$value": "4px" },
+    "2":  { "$value": "8px" },
+    "3":  { "$value": "12px" },
+    "4":  { "$value": "16px" },
+    "5":  { "$value": "20px" },
+    "6":  { "$value": "24px" },
+    "8":  { "$value": "32px" },
+    "10": { "$value": "40px" },
+    "12": { "$value": "48px" },
+    "16": { "$value": "64px" },
+    "20": { "$value": "80px" },
+    "24": { "$value": "96px" },
+    "32": { "$value": "128px" }
+  },
+
+  "radius": {
+    "$type": "dimension",
+    "xs":   { "$value": "4px" },
+    "sm":   { "$value": "8px" },
+    "md":   { "$value": "12px" },
+    "lg":   { "$value": "18px", "$description": "Canonical card radius (Apple-style)." },
+    "xl":   { "$value": "24px" },
+    "2xl":  { "$value": "32px" },
+    "pill": { "$value": "999px" }
+  },
+
+  "shadow": {
+    "$type": "shadow",
+    "xs": { "$value": { "offsetX": "0", "offsetY": "1px",  "blur": "2px",   "spread": "0", "color": "rgba(0,0,0,0.04)" } },
+    "sm": { "$value": { "offsetX": "0", "offsetY": "2px",  "blur": "8px",   "spread": "0", "color": "rgba(0,0,0,0.05)" }, "$description": "Default card elevation." },
+    "md": { "$value": { "offsetX": "0", "offsetY": "8px",  "blur": "24px",  "spread": "0", "color": "rgba(0,0,0,0.06)" } },
+    "lg": { "$value": { "offsetX": "0", "offsetY": "24px", "blur": "60px",  "spread": "0", "color": "rgba(0,0,0,0.10)" } },
+    "xl": { "$value": { "offsetX": "0", "offsetY": "40px", "blur": "100px", "spread": "0", "color": "rgba(0,0,0,0.14)" } }
+  },
+
+  "motion": {
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": { "$value": [0.4, 0.0, 0.2, 1] },
+      "out":      { "$value": [0.16, 1, 0.3, 1], "$description": "DEFAULT. iOS-like decelerate." },
+      "in":       { "$value": [0.7, 0, 0.84, 0] },
+      "spring":   { "$value": [0.34, 1.56, 0.64, 1], "$description": "Gentle overshoot for playful reveals." }
+    },
+    "duration": {
+      "$type": "duration",
+      "fast":   { "$value": "150ms", "$description": "Micro-interactions." },
+      "base":   { "$value": "250ms", "$description": "Hovers, toggles." },
+      "slow":   { "$value": "450ms", "$description": "Page reveals." },
+      "slower": { "$value": "700ms", "$description": "Parallax / hero scroll." }
+    }
+  },
+
+  "layout": {
+    "$type": "dimension",
+    "content-narrow": { "$value": "640px" },
+    "content":        { "$value": "980px" },
+    "content-wide":   { "$value": "1200px" },
+    "page-max":       { "$value": "1440px" },
+    "gutter":         { "$value": "clamp(16px, 4vw, 32px)" }
+  }
+}
