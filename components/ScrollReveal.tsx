@@ -4,52 +4,75 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 /**
- * Revela os elementos `.reveal` (alterna a classe `.in`) conforme entram/saem
- * da viewport. Como NÃO faz `unobserve`, a animação se repete toda vez que a
- * section volta a aparecer.
+ * Revela os elementos `.reveal` (adiciona a classe `.in`) conforme entram na
+ * viewport — uma vez só, e permanecem revelados (sem re-esconder). Isso evita
+ * o "espaço vazio" que aparecia quando o conteúdo já estava visível mas ainda
+ * sem `.in` (observer não disparava / re-escondia ao sair).
  *
- * Rede de segurança: uma varredura no load (rAF) revela o que já está visível,
- * caso o callback inicial do observer atrase. Sem suporte a IntersectionObserver
- * (ou ambiente sem window), revela tudo de imediato.
+ * Duas camadas de garantia:
+ *  1. IntersectionObserver revela ao entrar (anima na rolagem).
+ *  2. Varredura em cada scroll/resize: qualquer `.reveal` dentro da viewport
+ *     recebe `.in` na hora — rede de segurança à prova de falha do observer.
  *
+ * Sem IntersectionObserver (ou sem window), revela tudo de imediato.
  * Re-escaneia a cada navegação de rota.
  */
 export default function ScrollReveal() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const all = () =>
-      Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    if (els.length === 0) return;
 
-    if (all().length === 0) return;
+    const reveal = (el: HTMLElement) => el.classList.add("in");
 
     if (typeof IntersectionObserver === "undefined") {
-      all().forEach((el) => el.classList.add("in"));
+      els.forEach(reveal);
       return;
     }
 
     const io = new IntersectionObserver(
-      (entries) => {
+      (entries, obs) => {
         for (const entry of entries) {
-          entry.target.classList.toggle("in", entry.isIntersecting);
+          if (entry.isIntersecting) {
+            reveal(entry.target as HTMLElement);
+            obs.unobserve(entry.target);
+          }
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -10% 0px" },
+      { threshold: 0, rootMargin: "0px 0px -4% 0px" },
     );
-    all().forEach((el) => io.observe(el));
+    els.forEach((el) => io.observe(el));
 
-    // Revela imediatamente o que já está visível no carregamento.
-    const raf = requestAnimationFrame(() => {
+    // Rede de segurança: revela na hora tudo que está dentro da viewport,
+    // no load e a cada scroll/resize. Cobre o caso do observer não disparar.
+    let ticking = false;
+    const sweep = () => {
+      ticking = false;
       const vh = window.innerHeight || document.documentElement.clientHeight;
-      for (const el of all()) {
+      for (const el of els) {
+        if (el.classList.contains("in")) continue;
         const r = el.getBoundingClientRect();
-        if (r.top < vh * 0.9 && r.bottom > 0) el.classList.add("in");
+        if (r.top < vh * 0.94 && r.bottom > 0) {
+          reveal(el);
+          io.unobserve(el);
+        }
       }
-    });
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(sweep);
+      }
+    };
+    sweep();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
 
     return () => {
-      cancelAnimationFrame(raf);
       io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, [pathname]);
 
