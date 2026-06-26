@@ -716,6 +716,17 @@ h3 {
   /* respiro extra para o destaque .hl não colidir com a linha de cima */
   line-height: 1.16;
 }
+/* título de produto pode ser uma palavra longa (ex.: "Desenvolvimento"):
+   nunca deixa vazar no mobile — encolhe o corpo e quebra a palavra se faltar espaço */
+.hero .display--product {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+@media (max-width: 560px) {
+  .hero .display--product {
+    font-size: clamp(32px, 10vw, 56px);
+  }
+}
 
 /* ---- palavra que faz morph (gooey-text-morphing) ---- */
 .hero-morph {

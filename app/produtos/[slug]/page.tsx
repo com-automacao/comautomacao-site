@@ -88,7 +88,7 @@ export default async function ProductPage({
               />
             </h1>
           ) : (
-            <h1 className="display reveal in" data-d="1">
+            <h1 className="display display--product reveal in" data-d="1">
               {product.name}
             </h1>
           )}
