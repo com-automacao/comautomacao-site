@@ -53,6 +53,8 @@ export type Product = {
   audience: string[];
   /** wordmark/logo do produto (svg/png) — usado no hero quando existir */
   wordmark?: string;
+  /** símbolo/ícone da marca — marca d'água de fundo no card da vitrine */
+  mark?: string;
   /** mockup/print do produto — usado no bloco branco da 2ª section */
   mockup?: string;
   /** galeria de prints reais do sistema — a section "Por dentro" só
@@ -78,6 +80,7 @@ export const products: Product[] = [
     short: "Gestão completa para restaurantes e food service.",
     audience: ["Restaurantes", "Bares e lanchonetes", "Food service e delivery", "Cafeterias"],
     wordmark: "/products/gourmetsa/wordmark.svg",
+    mark: "/products/gourmetsa/logo-g.png",
     mockup: "/products/gourmetsa/mockup.webp",
     gallery: [
       { src: "/products/gourmetsa/gallery-1.webp", caption: "Mapa de mesas e comandas" },

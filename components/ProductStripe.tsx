@@ -61,6 +61,10 @@ export default function ProductStripe({
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
     >
+      {product.mark && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img className="stripe-bg-mark" src={product.mark} alt="" aria-hidden />
+      )}
       <div className="info">
         <b>{product.name}</b>
         <span className="cat">{product.category}</span>

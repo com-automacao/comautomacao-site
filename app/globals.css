@@ -1047,6 +1047,19 @@ h3 {
 .stripe-arrow {
   display: none;
 }
+/* marca d'água de fundo do card (ex.: emblema "G" do GourmetSA) */
+.stripe-bg-mark {
+  position: absolute;
+  z-index: 0;
+  top: 7%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(74%, 172px);
+  height: auto;
+  opacity: 0.16;
+  pointer-events: none;
+  user-select: none;
+}
 .stripe .info {
   position: relative;
   z-index: 2;
