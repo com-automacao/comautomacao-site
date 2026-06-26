@@ -4,10 +4,7 @@ import { useState } from "react";
 import ProductStripe from "@/components/ProductStripe";
 import type { Product } from "@/lib/products";
 
-/**
- * Lista de faixas de produto com estado compartilhado: só um card aberto por
- * vez (abrir um recolhe o outro). O fluxo de toque vive no ProductStripe.
- */
+
 export default function ProductStripes({
   items,
 }: {

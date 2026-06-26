@@ -44,7 +44,7 @@ export function CloseIcon(props: SvgProps) {
 }
 
 export function BrandMark(props: SvgProps) {
-  // foguete/folha estilizado do DS
+
   return (
     <svg {...base} strokeWidth={1.6} {...props}>
       <path d="M5 19c0-4 1.5-7 4-9.5C11.5 7 14 6 16 6c0 2-1 4.5-3.5 7S9 19 9 19l-4 0z" />

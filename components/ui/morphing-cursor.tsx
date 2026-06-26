@@ -90,7 +90,7 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
       onMouseLeave={handleMouseLeave}
       className={cn("relative inline-flex items-center justify-center cursor-none select-none", className)}
     >
-      {/* Base text layer - original text */}
+
       <span className="text-5xl font-bold tracking-tighter text-foreground tracking-wide">{text}</span>
 
       <div

@@ -5,12 +5,7 @@ import { useEffect, useRef } from "react";
 const POSTER =
   "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2400&q=80";
 
-/**
- * Fundo de vídeo do hero da home — autoplay, loop, mudo, sem controles.
- * Fica EM CORES (única exceção colorida do shell). Garante o play e marca
- * `.playing` no pai quando o vídeo realmente toca (cross-fade do poster).
- * Cliente vai plugar a footage real da estratosfera/Terra.
- */
+
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
 

@@ -1,17 +1,9 @@
-/**
- * Fonte da verdade dos 5 produtos da Com Automação.
- * Cada produto carrega sua cor-assinatura + copy que alimenta a rota
- * dinâmica /produtos/[slug]. Adicionar/editar produto = editar este arquivo.
- *
- * Cores extraídas dos logos enviados pelo cliente (2026-06-19). São
- * ESTIMATIVAS de imagens em baixa resolução — refinar quando vierem os
- * logos em alta. Ver memória `site-design-direction`.
- */
+
 
 export type Feature = {
   title: string;
   body: string;
-  /** chave de ícone (ver components/Icons.tsx → featureIcon) */
+
   icon: IconKey;
 };
 
@@ -32,38 +24,36 @@ export type IconKey =
 export type Product = {
   slug: string;
   name: string;
-  /** cor-assinatura (hex) */
+
   accent: string;
-  /** segmento curto, ex.: "Gastronomia" */
+
   category: string;
-  /** 5 palavras-chave do produto (efeito scramble na vitrine) */
+
   keywords: string[];
-  /** chamada do hero */
+
   tagline: string;
-  /** subtítulo do hero */
+
   lead: string;
-  /** frase curta para listagens */
+
   short: string;
-  /** dobra 2 — síntese problema → solução */
+
   problem: { title: string; body: string; bullets: string[] };
   solution: { title: string; body: string; bullets: string[] };
-  /** dobra de features (3–6) */
+
   features: Feature[];
-  /** "para quem é" — perfis/segmentos ideais */
+
   audience: string[];
-  /** wordmark/logo do produto (svg/png) — usado no hero quando existir */
+
   wordmark?: string;
-  /** símbolo/ícone da marca — marca d'água de fundo no card da vitrine */
+
   mark?: string;
-  /** mockup/print do produto — usado no bloco branco da 2ª section */
+
   mockup?: string;
-  /** galeria de prints reais do sistema — a section "Por dentro" só
-   * aparece quando o produto tiver imagens aqui */
+
   gallery?: { src: string; caption: string; portrait?: boolean }[];
-  /** dobra processo / como funciona */
+
   steps: { label: string; title: string; body: string }[];
-  /** CTA final — sujeito da chamada "Pronto para colocar ___ no ar?"
-   * (default: "o {name}") e subtítulo. Permite copy sob medida por produto. */
+
   ctaSubject?: string;
   ctaNote?: string;
 };
@@ -334,7 +324,7 @@ export const products: Product[] = [
   },
 ];
 
-/** FAQ compartilhada (modelo da Com Automação — vale para todos os produtos). */
+
 export const PRODUCT_FAQ: { q: string; a: string }[] = [
   {
     q: "Quanto tempo leva a implantação?",

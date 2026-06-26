@@ -3,19 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-/**
- * Revela os elementos `.reveal` (classe `.in`) conforme entram na viewport.
- *
- * Dois modos:
- *  - PADRÃO (reveal-once): adiciona `.in` ao entrar e mantém — evita o
- *    "espaço vazio" de conteúdo visível porém sem `.in`. Reforçado por uma
- *    varredura em cada scroll/resize (rede de segurança contra o observer).
- *  - REPEAT (`.reveal-repeat`): alterna `.in` ao entrar/sair da vista, então
- *    a animação (ex.: cortina dos produtos) se repete a cada nova entrada.
- *
- * Sem IntersectionObserver (ou sem window), revela tudo de imediato.
- * Re-escaneia a cada navegação de rota.
- */
+
 export default function ScrollReveal() {
   const pathname = usePathname();
 
@@ -32,7 +20,7 @@ export default function ScrollReveal() {
       return;
     }
 
-    // --- reveal-once: anima ao entrar e não re-esconde ---
+
     const onceIO = new IntersectionObserver(
       (entries, obs) => {
         for (const entry of entries) {
@@ -46,7 +34,7 @@ export default function ScrollReveal() {
     );
     onceEls.forEach((el) => onceIO.observe(el));
 
-    // --- reveal-repeat: alterna .in para a animação repetir a cada entrada ---
+
     const repeatIO = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -57,7 +45,7 @@ export default function ScrollReveal() {
     );
     repeatEls.forEach((el) => repeatIO.observe(el));
 
-    // Rede de segurança (só p/ reveal-once): revela o que já está na viewport.
+
     let ticking = false;
     const sweep = () => {
       ticking = false;

@@ -87,7 +87,7 @@ export function GooeyText({
     animate();
 
     return () => {
-      // Cleanup function if needed
+
     };
   }, [texts, morphTime, cooldownTime]);
 

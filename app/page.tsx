@@ -76,12 +76,12 @@ const accentVar: Record<string, string> = {
 export default function Home() {
   return (
     <>
-      {/* ===== DOBRA 1 · HERO — animação: fade + rise + blur (padrão) ===== */}
+      {/* ===== DOBRA 1 · HERO ===== */}
       <header className="hero" id="top">
         <HeroVideo />
         <HeroMarkAlign />
         <div className="hero-veil" />
-        {/* posição/tamanho calculados por HeroMarkAlign (cover math) */}
+
         <div className="hero-mark-layer" aria-hidden>
           <Image
             className="hero-mark"
@@ -103,7 +103,7 @@ export default function Home() {
             cooldownTime={1.6}
           />
           <p className="lead reveal in" data-d="2">
-            A Com Automação representa os melhores sistemas de gestão do mercado 
+            A Com Automação representa os melhores sistemas de gestão do mercado
             e cuida da implantação, do treinamento e do suporte local. Você
             adota o que já funciona e foca em crescer.
           </p>
@@ -123,7 +123,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ===== DOBRA 2 · O QUE FAZEMOS (bloco único) — animação: slide da esquerda ===== */}
+      {/* ===== DOBRA 2 · O QUE FAZEMOS (bloco único) ===== */}
       <section id="frentes" className="s-dark pad">
         <div className="wrap">
           <div className="eyebrow reveal r-left">O que a gente faz</div>
@@ -162,7 +162,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== DOBRA 3 · PRODUTOS — animação: wipe por clip-path ===== */}
+      {/* ===== DOBRA 3 · PRODUTOS ===== */}
       <section id="produtos" className="s-dark pad">
         <div className="wrap cor-head">
           <div>
@@ -178,8 +178,7 @@ export default function Home() {
             cada frente do seu negócio. Passe o mouse e clique para conhecer.
           </p>
         </div>
-        {/* wrapper observado (área cheia, sem clip → IO confiável);
-            a cortina clip-path fica no .stripes interno via transition */}
+
         <div className="stripes-reveal reveal reveal-repeat" data-d="1">
           <ProductStripes
             items={products.map((p) => ({ product: p, accent: accentVar[p.slug] }))}
@@ -187,7 +186,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== DOBRA 4 · POR QUE ORGANIZAR — animação: crescer com mola ===== */}
+      {/* ===== DOBRA 4 · POR QUE ORGANIZAR ===== */}
       <section id="manifesto" className="s-light pad">
         <div className="wrap">
           <div className="eyebrow reveal r-scale">Por que organizar</div>
@@ -238,7 +237,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== DOBRA 5 · DIFERENCIAIS — animação: dobra 3D (flip) ===== */}
+      {/* ===== DOBRA 5 · DIFERENCIAIS ===== */}
       <section id="diferenciais" className="s-dark pad">
         <div className="wrap">
           <div className="eyebrow reveal r-flip">Por que a Com Automação</div>
@@ -314,9 +313,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== DEPOIMENTOS — DESATIVADO temporariamente. NÃO APAGAR: vamos
-           voltar a usar. Para reativar, troque `false` por `true` abaixo
-           (ou remova o wrapper `{false && ( ... )}`). ===== */}
+      {/* ===== DEPOIMENTOS ===== */}
       {false && (
       <section id="depoimentos" className="s-light pad">
         <div className="wrap">
@@ -343,7 +340,7 @@ export default function Home() {
       </section>
       )}
 
-      {/* ===== DOBRA 6 · DIRETÓRIO DE PRODUTOS — animação: subir alto, em cascata ===== */}
+      {/* ===== DOBRA 6 · DIRETÓRIO DE PRODUTOS ===== */}
       <section id="marcas" className="s-dark pad">
         <div className="wrap">
           <div className="eyebrow reveal r-rise">Diretório</div>
@@ -381,7 +378,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== CONHEÇA TAMBÉM — banner de outro projeto — animação: slide da direita ===== */}
+      {/* ===== CONHEÇA TAMBÉM ===== */}
       <section id="conheca-tambem" className="s-dark pad" style={{ paddingTop: 0 }}>
         <div className="wrap">
           <a

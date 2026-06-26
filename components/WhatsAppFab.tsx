@@ -1,7 +1,7 @@
 import { WhatsApp } from "@/components/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
 
-/** Botão flutuante de WhatsApp — visível só no mobile (canto inferior direito). */
+
 export default function WhatsAppFab() {
   return (
     <a

@@ -156,7 +156,7 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ===== DOBRA 3 · FEATURES (grid de acento) — anim: dobra 3D (flip) ===== */}
+      {/* ===== DOBRA 3 · FEATURES (grid de acento) ===== */}
       <section id="features" className="s-dark pad">
         <div className="wrap">
           <div className="eyebrow reveal r-flip">Recursos</div>
@@ -248,7 +248,7 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ===== DOBRA 5 · CTA (acento) — anim: crescer com mola ===== */}
+      {/* ===== DOBRA 5 · CTA (acento) ===== */}
       <section className="s-dark pad">
         <div className="wrap" style={{ textAlign: "center" }}>
           <h2

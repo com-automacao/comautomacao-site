@@ -3,10 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-/**
- * Header transparente apenas sobre o Hero. Ao rolar para além do hero (ou em
- * páginas sem hero), o nav fica sólido (fundo + blur) via classe `.nav-solid`.
- */
+
 export default function NavScroll() {
   const pathname = usePathname();
 
@@ -15,7 +12,7 @@ export default function NavScroll() {
     if (!nav) return;
     const hero = document.querySelector<HTMLElement>(".hero");
 
-    // sem hero (ex.: páginas internas sem header de vídeo) → sempre sólido
+
     if (!hero) {
       nav.classList.add("nav-solid");
       return;

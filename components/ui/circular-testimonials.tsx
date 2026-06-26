@@ -52,7 +52,7 @@ export const CircularTestimonials = ({
   colors = {},
   fontSizes = {},
 }: CircularTestimonialsProps) => {
-  // Color & font config
+
   const colorName = colors.name ?? "#000";
   const colorDesignation = colors.designation ?? "#6b7280";
   const colorTestimony = colors.testimony ?? "#4b5563";
@@ -63,7 +63,7 @@ export const CircularTestimonials = ({
   const fontSizeDesignation = fontSizes.designation ?? "0.925rem";
   const fontSizeQuote = fontSizes.quote ?? "1.125rem";
 
-  // State
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoverPrev, setHoverPrev] = useState(false);
   const [hoverNext, setHoverNext] = useState(false);
@@ -78,7 +78,7 @@ export const CircularTestimonials = ({
     [activeIndex, testimonials]
   );
 
-  // Responsive gap calculation
+
   useEffect(() => {
     function handleResize() {
       if (imageContainerRef.current) {
@@ -90,7 +90,7 @@ export const CircularTestimonials = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Navigation handlers
+
   const handleNext = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % testimonialsLength);
     if (autoplayIntervalRef.current) clearInterval(autoplayIntervalRef.current);
@@ -100,7 +100,7 @@ export const CircularTestimonials = ({
     if (autoplayIntervalRef.current) clearInterval(autoplayIntervalRef.current);
   }, [testimonialsLength]);
 
-  // Autoplay
+
   useEffect(() => {
     if (autoplay) {
       autoplayIntervalRef.current = setInterval(() => {
@@ -112,7 +112,7 @@ export const CircularTestimonials = ({
     };
   }, [autoplay, testimonialsLength]);
 
-  // Keyboard navigation
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") handlePrev();
@@ -122,7 +122,7 @@ export const CircularTestimonials = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [handlePrev, handleNext]);
 
-  // Compute transforms for each image (always show 3: left, center, right)
+
   function getImageStyle(index: number): React.CSSProperties {
     const gap = calculateGap(containerWidth);
     const maxStickUp = gap * 0.8;
@@ -156,7 +156,7 @@ export const CircularTestimonials = ({
         transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
       };
     }
-    // Hide all other images
+
     return {
       zIndex: 1,
       opacity: 0,
@@ -165,7 +165,7 @@ export const CircularTestimonials = ({
     };
   }
 
-  // Framer Motion variants for quote
+
   const quoteVariants = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -175,7 +175,7 @@ export const CircularTestimonials = ({
   return (
     <div className="testimonial-container">
       <div className="testimonial-grid">
-        {/* Images */}
+
         <div className="image-container" ref={imageContainerRef}>
           {testimonials.map((testimonial, index) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -189,7 +189,7 @@ export const CircularTestimonials = ({
             />
           ))}
         </div>
-        {/* Content */}
+
         <div className="testimonial-content">
           <AnimatePresence mode="wait">
             <motion.div

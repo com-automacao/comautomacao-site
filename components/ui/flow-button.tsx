@@ -1,13 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/**
- * Botão com efeito "flow" no hover (círculo que preenche a partir do canto,
- * invertendo a cor) — porte do componente flow-hover-button (vaib215),
- * adaptado ao design system: pill, monocromático + variante de acento, e
- * polimórfico (vira <a> quando recebe href, senão <button>).
- *
- * Usado em TODOS os botões do site, exceto os do header.
- */
+
 type Variant = "primary" | "ghost" | "accent";
 
 type FlowButtonProps = {

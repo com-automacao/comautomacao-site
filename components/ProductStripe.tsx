@@ -5,12 +5,7 @@ import Link from "next/link";
 import { TextScramble } from "@/components/ui/text-scramble";
 import type { Product } from "@/lib/products";
 
-/**
- * Faixa de produto da section "Produtos".
- * - Desktop: expande no hover e revela 5 palavras-chave (text-scramble) + CTA.
- * - Mobile (≤820px): 1º toque ABRE (e recolhe os outros via estado do pai);
- *   2º toque ACESSA. A seta (▼/▲) recolhe/expande sem navegar.
- */
+
 export default function ProductStripe({
   product,
   accent,
@@ -29,7 +24,7 @@ export default function ProductStripe({
     window.matchMedia("(max-width: 820px)").matches;
 
   const handleClick = (e: React.MouseEvent) => {
-    // mobile: 1º toque abre (recolhe os outros); 2º toque navega
+
     if (isMobile() && !open) {
       e.preventDefault();
       onToggle();
@@ -37,7 +32,7 @@ export default function ProductStripe({
   };
 
   const handleArrow = (e: React.MouseEvent) => {
-    // a seta recolhe/expande sem navegar
+
     e.preventDefault();
     e.stopPropagation();
     onToggle();

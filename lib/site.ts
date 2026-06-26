@@ -1,11 +1,4 @@
-/**
- * Configurações de contato do site — fonte única.
- *
- * ⚠️ TROCAR: o número de WhatsApp pode ser definido pela variável de ambiente
- * `NEXT_PUBLIC_WHATSAPP_NUMBER` (recomendado no deploy — ex.: na Vercel) OU
- * editando o fallback abaixo. Formato internacional, só dígitos:
- * 55 (Brasil) + DDD + número. Ex.: "5544998765432".
- */
+
 export const WHATSAPP_NUMBER =
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5515997133311";
 
@@ -18,7 +11,7 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICo
 
 export const EMAIL = "comautomacao@gmail.com";
 
-/** "Conheça também" — banner que divulga outro projeto (estilo da marca Equipe 360). */
+
 export const OTHER_PROJECT = {
   name: "EQUIPE 360",
   tagline: "Desenvolvimento comportamental para empresas",
