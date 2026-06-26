@@ -11,7 +11,7 @@ import { Arrow } from "@/components/Icons";
 import { products } from "@/lib/products";
 import { OTHER_PROJECT } from "@/lib/site";
 
-// ⚠️ Depoimentos e fotos ILUSTRATIVOS — substituir por reais (a foto é o campo `src`).
+
 const testimonials = [
   {
     quote:
