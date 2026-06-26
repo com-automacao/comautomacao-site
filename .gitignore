@@ -7,8 +7,9 @@
 /.next/
 /out/
 
-# artefato de deploy (export estático zipado)
+# artefato de deploy (export estático zipado + pasta extraída)
 /comautomacao-site-export.zip
+/comautomacao-site-export/
 
 # production
 /build
