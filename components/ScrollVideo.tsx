@@ -8,27 +8,33 @@ type Props = {
   prefix?: string;
   pad?: number;
   ext?: string;
-  /** altura da faixa de scroll, em vh (quanto maior, mais devagar o scrub) */
-  scrollVh?: number;
+  className?: string;
 };
 
+/**
+ * Canvas que faz "scrub" de uma sequência de frames conforme o scroll.
+ * O progresso é medido na região ancestral marcada com [data-scrollvid-region]
+ * (ex.: o header alto do hero com sticky interno). O canvas preenche o pai.
+ */
 export default function ScrollVideo({
   dir,
   frameCount,
   prefix = "frame-",
   pad = 4,
   ext = "webp",
-  scrollVh = 300,
+  className,
 }: Props) {
-  const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
     const canvas = canvasRef.current;
-    if (!wrap || !canvas) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const region =
+      (canvas.closest("[data-scrollvid-region]") as HTMLElement | null) ??
+      canvas.parentElement;
+    if (!region) return;
 
     const url = (i: number) =>
       `${dir}/${prefix}${String(i + 1).padStart(pad, "0")}.${ext}`;
@@ -76,8 +82,8 @@ export default function ScrollVideo({
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
-        const rect = wrap.getBoundingClientRect();
-        const total = rect.height - window.innerHeight;
+        const rect = region.getBoundingClientRect();
+        const total = region.offsetHeight - window.innerHeight;
         const progress =
           total <= 0 ? 0 : Math.min(1, Math.max(0, -rect.top / total));
         draw(Math.round(progress * (frameCount - 1)));
@@ -95,14 +101,10 @@ export default function ScrollVideo({
   }, [dir, frameCount, prefix, pad, ext]);
 
   return (
-    <div
-      ref={wrapRef}
-      className="scrollvid"
-      style={{ height: `${scrollVh}vh` }}
-    >
-      <div className="scrollvid-sticky">
-        <canvas ref={canvasRef} className="scrollvid-canvas" aria-hidden />
-      </div>
-    </div>
+    <canvas
+      ref={canvasRef}
+      className={className ?? "scrollvid-canvas"}
+      aria-hidden
+    />
   );
 }

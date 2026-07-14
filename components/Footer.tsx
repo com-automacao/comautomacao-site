@@ -46,7 +46,7 @@ export default function Footer() {
         <span>© 2026 Com Automação</span>
         <span className="foot-credit">
           Criado com muito amor,{" "}
-          <Link href="/produtos/desenvolvimento-web">
+          <Link href="/produtos/pedra-e-pixel">
             Pedra &amp; Pixel
             <Image
               className="foot-credit-mark"

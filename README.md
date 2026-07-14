@@ -92,13 +92,16 @@ Tudo vem de [`lib/products.ts`](lib/products.ts). Cada produto tem cor-assinatur
 as rotas `/produtos/[slug]` são geradas automaticamente (`generateStaticParams`).
 
 Produtos atuais: GourmetSA, Finances Web, PDV Plus, FaloApp, CRM Com e
-**Pedra & Pixel** (desenvolvimento web — slug `desenvolvimento-web`).
+**Pedra & Pixel** (desenvolvimento web — slug `pedra-e-pixel`; as pastas de
+assets em `public/products/` seguem com os nomes antigos `pdv-mais` e
+`desenvolvimento-web`).
 
 ### Vídeo sincronizado ao scroll (Pedra & Pixel)
-A section "Em movimento" da página do Pedra & Pixel usa o componente
-[`ScrollVideo`](components/ScrollVideo.tsx): um `<canvas>` que faz *scrub* de uma
-sequência de frames conforme o scroll (técnica que roda em export estático, sem
-depender de seek de `<video>`). Os frames ficam em
+O hero da página do Pedra & Pixel usa o componente
+[`ScrollVideo`](components/ScrollVideo.tsx): um `<canvas>` de fundo que faz *scrub*
+de uma sequência de frames conforme o scroll, com o hero "fixo" (sticky) enquanto o
+vídeo roda — o progresso é medido na região com `data-scrollvid-region`. Técnica que
+roda em export estático, sem depender de seek de `<video>`. Os frames ficam em
 `public/products/desenvolvimento-web/scroll/` e são gerados **com ffmpeg** a partir
 do vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
 

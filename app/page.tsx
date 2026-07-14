@@ -67,10 +67,10 @@ const testimonials = [
 const accentVar: Record<string, string> = {
   gourmetsa: "var(--color-gourmet)",
   "finances-web": "var(--color-finances)",
-  "pdv-mais": "var(--color-pdv)",
+  "pdv-plus": "var(--color-pdv)",
   faloapp: "var(--color-falo)",
   "crm-com": "var(--color-crm)",
-  "desenvolvimento-web": "var(--color-web)",
+  "pedra-e-pixel": "var(--color-web)",
 };
 
 export default function Home() {

@@ -171,7 +171,7 @@ export const products: Product[] = [
     ],
   },
   {
-    slug: "pdv-mais",
+    slug: "pdv-plus",
     name: "PDV Plus",
     accent: "#2F5FB3",
     category: "Varejo e Gastronomia",
@@ -334,7 +334,7 @@ export const products: Product[] = [
     ],
   },
   {
-    slug: "desenvolvimento-web",
+    slug: "pedra-e-pixel",
     name: "Pedra & Pixel",
     accent: "#1B6FD6",
     category: "Web",

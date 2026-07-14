@@ -57,67 +57,95 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const others = products.filter((p) => p.slug !== product.slug);
+  const isPP = product.slug === "pedra-e-pixel";
+
+  const heroBg = (
+    <div
+      className="hero-bg"
+      style={{
+        background: `radial-gradient(ellipse 90% 70% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #050505), #050505 70%)`,
+      }}
+    />
+  );
+
+  const heroInner = (
+    <>
+      <Image
+        className="hero-mark hero-mark--product"
+        src="/logos/logo-mark-white.png"
+        alt=""
+        aria-hidden
+        priority
+        width={764}
+        height={740}
+      />
+      <div className="hero-in">
+        {product.wordmark ? (
+          <h1 className="reveal in" data-d="1" style={{ margin: "22px auto 0" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="hero-wordmark"
+              data-slug={product.slug}
+              src={product.wordmark}
+              alt={product.name}
+            />
+          </h1>
+        ) : (
+          <h1 className="display display--product reveal in" data-d="1">
+            {product.name}
+          </h1>
+        )}
+        <p className="lead reveal in" data-d="2">
+          {product.lead}
+        </p>
+        <div className="hero-cta reveal in" data-d="3">
+          <FlowButton variant="accent" href={WHATSAPP_URL}>
+            Fale conosco
+            <Arrow />
+          </FlowButton>
+          <FlowButton variant="ghost" href="#features">
+            Ver recursos
+          </FlowButton>
+        </div>
+      </div>
+      <div className="scroll-cue">
+        <span className="mono-label">Role</span>
+        <span className="bar" />
+      </div>
+    </>
+  );
 
   return (
     <div style={{ ["--accent" as string]: product.accent }}>
       {/* ===== DOBRA 1 · HERO (acento) ===== */}
-      <header className="hero" id="top" style={{ minHeight: "100dvh" }}>
-        <div
-          className="hero-bg"
-          style={{
-            background: `radial-gradient(ellipse 90% 70% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #050505), #050505 70%)`,
-          }}
-        />
-        <div className="grid-bg" />
-        <div className="hero-veil accent" />
-        {product.slug === "desenvolvimento-web" ? (
-          <HeroDataGrid accent={product.accent} />
-        ) : (
-          <HeroPaths accent={product.accent} />
-        )}
-        <Image
-          className="hero-mark hero-mark--product"
-          src="/logos/logo-mark-white.png"
-          alt=""
-          aria-hidden
-          priority
-          width={764}
-          height={740}
-        />
-        <div className="hero-in">
-          {product.wordmark ? (
-            <h1 className="reveal in" data-d="1" style={{ margin: "22px auto 0" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="hero-wordmark"
-                data-slug={product.slug}
-                src={product.wordmark}
-                alt={product.name}
-              />
-            </h1>
-          ) : (
-            <h1 className="display display--product reveal in" data-d="1">
-              {product.name}
-            </h1>
-          )}
-          <p className="lead reveal in" data-d="2">
-            {product.lead}
-          </p>
-          <div className="hero-cta reveal in" data-d="3">
-            <FlowButton variant="accent" href={WHATSAPP_URL}>
-              Fale conosco
-              <Arrow />
-            </FlowButton>
-            <FlowButton variant="ghost" href="#features">
-              Ver recursos
-            </FlowButton>
+      {isPP ? (
+        <header
+          className="hero-scrollwrap"
+          id="top"
+          data-scrollvid-region=""
+          style={{ height: "300vh" }}
+        >
+          <div className="hero hero--sticky">
+            {heroBg}
+            <ScrollVideo
+              dir="/products/desenvolvimento-web/scroll"
+              frameCount={90}
+              className="hero-scrollvid-canvas"
+            />
+            <div className="grid-bg" />
+            <div className="hero-veil accent" />
+            {heroInner}
           </div>
-        </div>
-        <div className="scroll-cue">
-          <span className="mono-label">Role</span>
-          <span className="bar" />
-        </div>
-      </header>
+        </header>
+      ) : (
+        <header className="hero" id="top" style={{ minHeight: "100dvh" }}>
+          {heroBg}
+          <div className="grid-bg" />
+          <div className="hero-veil accent" />
+          <HeroPaths accent={product.accent} />
+          {heroInner}
+        </header>
+      )}
 
       {/* ===== DOBRA 2 · SOLUÇÃO (bloco único branco + mockup) ===== */}
       <section
@@ -182,9 +210,19 @@ export default async function ProductPage({
         </div>
       </section>
 
-      {/* ===== PARA QUEM É ===== */}
-      <section className="s-dark pad" style={{ paddingTop: 0 }}>
-        <div className="wrap">
+      {/* ===== PARA QUEM É (grid animado ao fundo no Pedra & Pixel) ===== */}
+      <section
+        className="s-dark pad"
+        style={{
+          paddingTop: 0,
+          ...(isPP ? { position: "relative", overflow: "hidden" } : {}),
+        }}
+      >
+        {isPP && <HeroDataGrid accent={product.accent} />}
+        <div
+          className="wrap"
+          style={isPP ? { position: "relative", zIndex: 2 } : undefined}
+        >
           <div className="eyebrow reveal r-left">Para quem é</div>
           <h2 className="section-title reveal r-left" data-d="1">
             Feito para a sua operação.
@@ -203,26 +241,6 @@ export default async function ProductPage({
           </div>
         </div>
       </section>
-
-      {/* ===== EM MOVIMENTO (vídeo sincronizado ao scroll) ===== */}
-      {product.slug === "desenvolvimento-web" && (
-        <section
-          id="em-movimento"
-          className="s-dark pad"
-          style={{ paddingTop: 0 }}
-        >
-          <div className="wrap">
-            <div className="eyebrow reveal r-rise">Em movimento</div>
-            <h2 className="section-title reveal r-rise" data-d="1">
-              Sólido como pedra, preciso no pixel.
-            </h2>
-          </div>
-          <ScrollVideo
-            dir="/products/desenvolvimento-web/scroll"
-            frameCount={90}
-          />
-        </section>
-      )}
 
       {/* ===== GALERIA / PRINTS (prints reais do sistema) ===== */}
       {product.gallery && product.gallery.length > 0 && (

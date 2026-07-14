@@ -25,7 +25,7 @@ function FloatingPaths({ position }: { position: number }) {
             pathOffset: [0, 1, 0],
           }}
           transition={{
-            duration: 20 + (path.id % 10),
+            duration: 9 + (path.id % 6),
             repeat: Number.POSITIVE_INFINITY,
             ease: "linear",
           }}
