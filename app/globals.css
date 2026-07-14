@@ -681,8 +681,6 @@ h3 {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  --mx: 50%;
-  --my: 38%;
   -webkit-mask-image: radial-gradient(
     ellipse 95% 88% at 50% 42%,
     #000 55%,
@@ -706,8 +704,13 @@ h3 {
   border-radius: 3px;
   background: var(--accent);
   opacity: 0.05;
-  animation: gridPulse 6.5s ease-in-out infinite;
+  animation: gridPulse 6s ease-in-out infinite;
   will-change: opacity;
+}
+.grid-hero-cell--dark {
+  background: var(--accent);
+  opacity: 0.04;
+  animation: none;
 }
 @keyframes gridPulse {
   0%,
@@ -715,23 +718,16 @@ h3 {
     opacity: 0.05;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.55;
   }
-}
-.grid-hero-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    240px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--accent) 55%, transparent),
-    transparent 68%
-  );
-  mix-blend-mode: screen;
 }
 @media (prefers-reduced-motion: reduce) {
   .grid-hero-cell {
     animation: none;
     opacity: 0.14;
+  }
+  .grid-hero-cell--dark {
+    opacity: 0.04;
   }
 }
 /* ---------- hero background paths ---------- */
