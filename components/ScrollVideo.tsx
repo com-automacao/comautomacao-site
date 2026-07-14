@@ -87,6 +87,7 @@ export default function ScrollVideo({
         const progress =
           total <= 0 ? 0 : Math.min(1, Math.max(0, -rect.top / total));
         draw(Math.round(progress * (frameCount - 1)));
+        region.classList.toggle("hero-revealed", progress >= 0.85);
       });
     };
 

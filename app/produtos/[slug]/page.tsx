@@ -109,7 +109,7 @@ export default async function ProductPage({
         </div>
       </div>
       <div className="scroll-cue">
-        <span className="mono-label">Role</span>
+        <span className="mono-label">{isPP ? "Role para revelar" : "Role"}</span>
         <span className="bar" />
       </div>
     </>
