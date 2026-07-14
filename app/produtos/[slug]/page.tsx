@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Arrow, FeatureIcon } from "@/components/Icons";
 import ProductGallery from "@/components/ProductGallery";
 import AcquirersCarousel from "@/components/AcquirersCarousel";
-import HeroBeam from "@/components/HeroBeam";
+import HeroPaths from "@/components/HeroPaths";
 import { DottedSurface } from "@/components/ui/dotted-surface";
 import { FlowButton } from "@/components/ui/flow-button";
 import { getProduct, products, PRODUCT_FAQ } from "@/lib/products";
@@ -67,13 +67,12 @@ export default async function ProductPage({
             background: `radial-gradient(ellipse 90% 70% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #050505), #050505 70%)`,
           }}
         />
-        {product.slug !== "desenvolvimento-web" && (
-          <HeroBeam accent={product.accent} />
-        )}
         <div className="grid-bg" />
         <div className="hero-veil accent" />
-        {product.slug === "desenvolvimento-web" && (
+        {product.slug === "desenvolvimento-web" ? (
           <DottedSurface className="hero-dots" />
+        ) : (
+          <HeroPaths accent={product.accent} />
         )}
         <Image
           className="hero-mark hero-mark--product"
