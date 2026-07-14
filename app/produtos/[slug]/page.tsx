@@ -83,12 +83,7 @@ export default async function ProductPage({
           width={764}
           height={740}
         />
-        <div
-          className={
-            "hero-in" +
-            (product.slug === "desenvolvimento-web" ? " hero-in--blur" : "")
-          }
-        >
+        <div className="hero-in">
           {product.wordmark ? (
             <h1 className="reveal in" data-d="1" style={{ margin: "22px auto 0" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}

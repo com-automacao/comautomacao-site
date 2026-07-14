@@ -336,7 +336,7 @@ export const products: Product[] = [
   {
     slug: "desenvolvimento-web",
     name: "Pedra & Pixel",
-    accent: "#2080F0",
+    accent: "#1B6FD6",
     category: "Web",
     keywords: ["Sites", "Landing pages", "Sob medida", "Responsivo", "SEO"],
     tagline: "Sólido como pedra, preciso no pixel.",
