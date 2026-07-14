@@ -27,7 +27,7 @@ export default function Footer() {
           <div className="reveal" data-d="2">
             <p style={{ color: "var(--color-fg-2)", fontWeight: 300, lineHeight: 1.6, maxWidth: "34ch" }}>
               Representamos os melhores sistemas de gestão e cuidamos da
-              implantação e do suporte. Conte o seu desafio — a gente indica o
+              implantação e do suporte. Conte o seu desafio, a gente indica o
               caminho.
             </p>
             <div className="foot-contacts">
@@ -44,6 +44,20 @@ export default function Footer() {
       <div className="watermark">DECOLE</div>
       <div className="foot-bottom">
         <span>© 2026 Com Automação</span>
+        <span className="foot-credit">
+          Criado com muito amor,{" "}
+          <Link href="/produtos/desenvolvimento-web">
+            Pedra &amp; Pixel
+            <Image
+              className="foot-credit-mark"
+              src="/products/desenvolvimento-web/mark.png"
+              alt=""
+              aria-hidden
+              width={20}
+              height={18}
+            />
+          </Link>
+        </span>
         <span>Empresas organizadas decolam</span>
       </div>
     </footer>

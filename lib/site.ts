@@ -16,7 +16,7 @@ export const OTHER_PROJECT = {
   name: "EQUIPE 360",
   tagline: "Desenvolvimento comportamental para empresas",
   description:
-    "Desenvolvimento comportamental contínuo para empresas — palestras vivenciais e dinâmicas práticas com João Paulino.",
+    "Desenvolvimento comportamental contínuo para empresas: palestras vivenciais e dinâmicas práticas com João Paulino.",
   cta: "Visitar o site",
   url: "https://joaopaulino.com.br/",
 };

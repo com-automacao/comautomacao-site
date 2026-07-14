@@ -3,6 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Arrow, FeatureIcon } from "@/components/Icons";
+import ProductGallery from "@/components/ProductGallery";
+import AcquirersCarousel from "@/components/AcquirersCarousel";
+import HeroBeam from "@/components/HeroBeam";
+import { DottedSurface } from "@/components/ui/dotted-surface";
 import { FlowButton } from "@/components/ui/flow-button";
 import { getProduct, products, PRODUCT_FAQ } from "@/lib/products";
 import { WHATSAPP_URL } from "@/lib/site";
@@ -63,26 +67,35 @@ export default async function ProductPage({
             background: `radial-gradient(ellipse 90% 70% at 50% 0%, color-mix(in srgb, var(--accent) 30%, #050505), #050505 70%)`,
           }}
         />
+        {product.slug !== "desenvolvimento-web" && (
+          <HeroBeam accent={product.accent} />
+        )}
         <div className="grid-bg" />
         <div className="hero-veil accent" />
+        {product.slug === "desenvolvimento-web" && (
+          <DottedSurface className="hero-dots" />
+        )}
         <Image
           className="hero-mark hero-mark--product"
           src="/logos/logo-mark-white.png"
           alt=""
           aria-hidden
+          priority
           width={764}
           height={740}
         />
-        <div className="hero-in">
-          <div className="eyebrow reveal in">
-            <span className="dot" style={{ background: "var(--accent)" }} />
-            {product.category}
-          </div>
+        <div
+          className={
+            "hero-in" +
+            (product.slug === "desenvolvimento-web" ? " hero-in--blur" : "")
+          }
+        >
           {product.wordmark ? (
             <h1 className="reveal in" data-d="1" style={{ margin: "22px auto 0" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className="hero-wordmark"
+                data-slug={product.slug}
                 src={product.wordmark}
                 alt={product.name}
               />
@@ -103,13 +116,6 @@ export default async function ProductPage({
             <FlowButton variant="ghost" href="#features">
               Ver recursos
             </FlowButton>
-          </div>
-          <div className="hero-pills reveal in" data-d="4">
-            {product.keywords.map((k) => (
-              <span className="pill" key={k}>
-                {k}
-              </span>
-            ))}
           </div>
         </div>
         <div className="scroll-cue">
@@ -211,19 +217,25 @@ export default async function ProductPage({
             <h2 className="section-title reveal r-rise" data-d="1">
               O {product.name} por dentro.
             </h2>
-            <div className="gallery reveal r-rise" data-d="1">
-              {product.gallery.map((g) => (
-                <figure
-                  key={g.src}
-                  className={`gallery-tile${g.portrait ? " is-portrait" : ""}`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={g.src} alt={g.caption} loading="lazy" />
-                  <figcaption className="mono-label">{g.caption}</figcaption>
-                </figure>
-              ))}
-            </div>
+            <ProductGallery items={product.gallery} />
           </div>
+        </section>
+      )}
+
+      {/* ===== ADQUIRENTES (carrossel de maquininhas) ===== */}
+      {product.acquirers && product.acquirers.length > 0 && (
+        <section id="adquirentes" className="s-dark pad" style={{ paddingTop: 0 }}>
+          <div className="wrap">
+            <div className="eyebrow reveal r-rise">Adquirentes</div>
+            <h2 className="section-title reveal r-rise" data-d="1">
+              Funciona na maquininha que você já tem.
+            </h2>
+            <p className="lead reveal r-rise" data-d="2">
+              Rode o {product.name} na sua maquininha smart, no celular ou no
+              computador, sem trocar de adquirente.
+            </p>
+          </div>
+          <AcquirersCarousel images={product.acquirers} />
         </section>
       )}
 
@@ -235,7 +247,7 @@ export default async function ProductPage({
             Perguntas que ajudam a decidir.
           </h2>
           <div className="faq reveal r-left" data-d="2">
-            {PRODUCT_FAQ.map((f) => (
+            {(product.faq ?? PRODUCT_FAQ).map((f) => (
               <details key={f.q} className="faq-item">
                 <summary>
                   <span>{f.q}</span>

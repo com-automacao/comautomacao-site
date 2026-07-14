@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-
 export default function ScrollReveal() {
   const pathname = usePathname();
 
@@ -12,14 +11,19 @@ export default function ScrollReveal() {
     if (all.length === 0) return;
 
     const reveal = (el: HTMLElement) => el.classList.add("in");
-    const repeatEls = all.filter((el) => el.classList.contains("reveal-repeat"));
-    const onceEls = all.filter((el) => !el.classList.contains("reveal-repeat"));
+
+    const isProduct = pathname?.startsWith("/produtos/") ?? false;
+    const repeatEls = all.filter(
+      (el) => isProduct || el.classList.contains("reveal-repeat"),
+    );
+    const onceEls = all.filter(
+      (el) => !isProduct && !el.classList.contains("reveal-repeat"),
+    );
 
     if (typeof IntersectionObserver === "undefined") {
       all.forEach(reveal);
       return;
     }
-
 
     const onceIO = new IntersectionObserver(
       (entries, obs) => {
@@ -34,7 +38,6 @@ export default function ScrollReveal() {
     );
     onceEls.forEach((el) => onceIO.observe(el));
 
-
     const repeatIO = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -44,7 +47,6 @@ export default function ScrollReveal() {
       { threshold: 0.15 },
     );
     repeatEls.forEach((el) => repeatIO.observe(el));
-
 
     let ticking = false;
     const sweep = () => {

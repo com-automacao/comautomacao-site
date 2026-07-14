@@ -50,9 +50,13 @@ export type Product = {
 
   mockup?: string;
 
-  gallery?: { src: string; caption: string; portrait?: boolean }[];
+  gallery?: { src: string; caption: string; portrait?: boolean; light?: boolean }[];
+
+  acquirers?: string[];
 
   steps: { label: string; title: string; body: string }[];
+
+  faq?: { q: string; a: string }[];
 
   ctaSubject?: string;
   ctaNote?: string;
@@ -66,16 +70,16 @@ export const products: Product[] = [
     category: "Gastronomia",
     keywords: ["Comanda", "Cozinha", "Estoque", "Delivery", "Caixa"],
     tagline: "O restaurante inteiro, em ritmo de serviço.",
-    lead: "Gestão completa para restaurantes e food service — do salão à cozinha, do pedido ao fechamento de caixa.",
+    lead: "Gestão completa para restaurantes e food service, do salão à cozinha, do pedido ao fechamento de caixa.",
     short: "Gestão completa para restaurantes e food service.",
     audience: ["Restaurantes", "Bares e lanchonetes", "Food service e delivery", "Cafeterias"],
     wordmark: "/products/gourmetsa/wordmark.svg",
-    mark: "/products/gourmetsa/logo-g.png",
+    mark: "/products/gourmetsa/wordmark.svg",
     mockup: "/products/gourmetsa/mockup.webp",
     gallery: [
       { src: "/products/gourmetsa/gallery-1.webp", caption: "Mapa de mesas e comandas" },
-      { src: "/products/gourmetsa/gallery-2.webp", caption: "Controle de mesas em tempo real" },
-      { src: "/products/gourmetsa/gallery-3.webp", caption: "App do garçom no salão", portrait: true },
+      { src: "/products/gourmetsa/gallery-2.webp", caption: "Cadastro de produtos e preços" },
+      { src: "/products/gourmetsa/gallery-3.webp", caption: "Auto-atendimento no salão" },
     ],
     problem: {
       title: "Comanda no papel trava o salão.",
@@ -108,89 +112,125 @@ export const products: Product[] = [
       { label: "02", title: "Treinamento", body: "Equipe de salão e cozinha operando em um turno." },
       { label: "03", title: "Operação", body: "Suporte local enquanto a casa roda no ritmo." },
     ],
+    faq: [
+      { q: "O pedido do garçom vai direto pra cozinha?", a: "Sim. A comanda cai na tela ou impressora da cozinha (KDS), com fila e tempo de preparo, sem papel perdido." },
+      { q: "Controla mesas, comandas e delivery juntos?", a: "Sim. Salão, balcão e delivery no mesmo painel, com junção de comandas, divisão de conta e baixa de estoque automática." },
+      { q: "Quanto tempo leva pra implantar no meu restaurante?", a: "Cadastramos cardápio, fichas técnicas e mesas com você. Na maioria dos casos a casa já opera em um turno de treinamento." },
+      { q: "Tem suporte no horário de pico?", a: "Sim. Suporte local e contínuo, inclusive nos horários movimentados, por WhatsApp, telefone ou presencial." },
+    ],
   },
   {
     slug: "finances-web",
     name: "Finances Web",
     accent: "#46ABD2",
-    category: "Finanças",
-    keywords: ["Fluxo de caixa", "Conciliação", "Contas", "DRE", "Nuvem"],
-    tagline: "O caixa da empresa, claro e na nuvem.",
-    lead: "Controle financeiro e fluxo de caixa acessível de qualquer lugar — contas a pagar, a receber e conciliação sem planilha.",
-    short: "Controle financeiro e fluxo de caixa na nuvem.",
-    audience: ["Pequenas e médias empresas", "Comércio", "Prestadores de serviço", "Escritórios"],
+    category: "Gestão",
+    keywords: ["Financeiro", "Fiscal", "Vendas", "Estoque", "Nuvem"],
+    tagline: "Toda a gestão da empresa em um sistema só.",
+    lead: "ERP completo na nuvem: financeiro, fiscal, vendas e estoque integrados, do cadastro do produto à emissão da nota, sem trocar de sistema.",
+    short: "ERP web completo: financeiro, fiscal, vendas e estoque.",
+    audience: ["Pequenas e médias empresas", "Comércio e varejo", "Distribuidoras", "Prestadores de serviço"],
+    wordmark: "/products/finances-web/logo.png",
+    mark: "/products/finances-web/logo.png",
+    mockup: "/products/finances-web/mockup.webp",
     problem: {
-      title: "A planilha não conta a verdade.",
-      body: "Saldo que só aparece no fim do mês, conciliação manual e decisão tomada no escuro. O dinheiro entra e sai sem visão de fluxo.",
+      title: "Vários sistemas que não se falam.",
+      body: "Financeiro numa ferramenta, vendas em outra, fiscal numa terceira. O dado se perde no meio, o setor retrabalha e ninguém enxerga a empresa inteira.",
       bullets: [
-        "Fluxo de caixa atrasado e manual",
-        "Conciliação bancária no olho",
-        "Sem visão de projeção",
+        "Retrabalho entre os setores",
+        "Dados espalhados e desencontrados",
+        "Sem visão da empresa em tempo real",
       ],
     },
     solution: {
-      title: "Fluxo de caixa em tempo real.",
-      body: "Contas, bancos e categorias num painel só, com projeção de saldo e conciliação automática. Decisão com número na mão.",
+      title: "Um núcleo só, do cadastro à nota.",
+      body: "Financeiro, fiscal, vendas e estoque no mesmo sistema, conectados e em tempo real. O que entra numa área já reflete nas outras, sem intermediário.",
       bullets: [
-        "Contas a pagar e a receber",
-        "Conciliação bancária automática",
-        "Projeção de fluxo de caixa",
+        "Módulos integrados de verdade",
+        "Informação em tempo real",
+        "100% na nuvem, multi-empresa",
       ],
     },
     features: [
-      { icon: "chart", title: "Fluxo de caixa", body: "Projeção diária de saldo com entradas e saídas previstas e realizadas." },
-      { icon: "card", title: "Contas a pagar/receber", body: "Agendamento, recorrência e baixa automática por extrato." },
-      { icon: "link", title: "Conciliação bancária", body: "Importe o extrato e concilie em lote — sem digitar lançamento por lançamento." },
-      { icon: "cloud", title: "100% na nuvem", body: "Acesse de qualquer lugar, com backup e múltiplos usuários." },
-      { icon: "shield", title: "Centros de custo", body: "Categorize por projeto, filial ou departamento e veja onde o dinheiro vai." },
-      { icon: "chart", title: "Relatórios & DRE", body: "DRE gerencial e relatórios exportáveis para o contador." },
+      { icon: "chart", title: "Financeiro em tempo real", body: "Contas a pagar e a receber, fluxo de caixa e DRE sempre atualizados." },
+      { icon: "card", title: "Fiscal integrado", body: "NF-e, NFS-e e SPED emitidos direto do sistema, sem digitar duas vezes." },
+      { icon: "cart", title: "Vendas e comercial", body: "Pedidos, orçamentos, comissões e pipeline no mesmo lugar." },
+      { icon: "shield", title: "Estoque e produtos", body: "Cadastro, inventário e rastreabilidade com baixa automática na venda." },
+      { icon: "cloud", title: "Multi-empresa na nuvem", body: "Várias empresas e filiais, acessíveis de qualquer lugar com backup." },
+      { icon: "link", title: "Integrações abertas", body: "API REST para conectar o Finances ao resto da sua operação." },
     ],
     steps: [
-      { label: "01", title: "Conexão", body: "Cadastramos contas, bancos e plano de contas inicial." },
-      { label: "02", title: "Importação", body: "Trazemos saldos e títulos em aberto da operação atual." },
-      { label: "03", title: "Rotina", body: "Você acompanha o caixa diariamente, em qualquer tela." },
+      { label: "01", title: "Implantação", body: "Configuramos empresa, plano de contas e parâmetros fiscais com você." },
+      { label: "02", title: "Migração", body: "Trazemos cadastros, produtos e saldos do sistema atual." },
+      { label: "03", title: "Operação", body: "Equipe treinada operando financeiro, vendas e estoque no mesmo dia." },
+    ],
+    faq: [
+      { q: "É um ERP completo ou só financeiro?", a: "Completo. Financeiro, fiscal, vendas e estoque no mesmo sistema, integrados e em tempo real, do cadastro do produto à emissão da nota." },
+      { q: "Emite NF-e e NFS-e?", a: "Sim. NF-e, NFS-e e SPED saem direto do sistema, sem digitar duas vezes." },
+      { q: "Consigo migrar os dados do meu sistema atual?", a: "Sim. Trazemos cadastros, produtos e saldos da sua operação atual na implantação." },
+      { q: "Atende mais de uma empresa ou filial?", a: "Sim. É multi-empresa e multi-filial, na nuvem, acessível de qualquer lugar com backup." },
     ],
   },
   {
     slug: "pdv-mais",
     name: "PDV Plus",
     accent: "#2F5FB3",
-    category: "Varejo",
-    keywords: ["Venda rápida", "Fiscal", "Estoque", "Caixa", "Offline"],
-    tagline: "O balcão que não deixa a fila parar.",
-    lead: "Ponto de venda rápido para o caixa e o balcão — venda, emite o cupom fiscal e baixa estoque em um toque.",
-    short: "Ponto de venda rápido para o balcão e o caixa.",
-    audience: ["Lojas de varejo", "Mercados e mercearias", "Farmácias", "Lojas de conveniência"],
+    category: "Varejo e Gastronomia",
+    keywords: ["NFC-e", "Venda rápida", "Multiplataforma", "Offline", "Delivery"],
+    tagline: "Do restaurante ao varejo, venda rápido e emita NFC-e.",
+    lead: "Um PDV que serve tanto restaurantes e bares quanto o varejo em geral: venda no balcão, na maquininha ou no celular, emita o cupom fiscal e continue vendendo mesmo sem internet.",
+    short: "PDV multiplataforma com NFC-e para restaurantes e varejo em geral.",
+    audience: ["Varejo, MEI e Simples Nacional", "Mercados e conveniência", "Bares e restaurantes", "Delivery e food service"],
+    wordmark: "/products/pdv-mais/wordmark.png",
+    mark: "/products/pdv-mais/logo.png",
+    mockup: "/products/pdv-mais/mockup.webp",
+    acquirers: [
+      "/products/pdv-mais/acquirers/1.png",
+      "/products/pdv-mais/acquirers/2.png",
+      "/products/pdv-mais/acquirers/3.png",
+      "/products/pdv-mais/acquirers/4.png",
+      "/products/pdv-mais/acquirers/5.png",
+      "/products/pdv-mais/acquirers/6.png",
+      "/products/pdv-mais/acquirers/7.png",
+      "/products/pdv-mais/acquirers/8.png",
+      "/products/pdv-mais/acquirers/9.png",
+      "/products/pdv-mais/acquirers/10.png",
+    ],
     problem: {
-      title: "Fila grande é venda perdida.",
-      body: "Caixa lento, busca de produto travada e fiscal complicado fazem o cliente desistir no balcão. Cada segundo na fila custa.",
+      title: "Sistema travado é venda perdida.",
+      body: "Caixa lento, NFC-e complicada e internet instável fazem o cliente desistir no balcão. E sem relatório claro, você vende no escuro.",
       bullets: [
-        "Atendimento lento no caixa",
-        "Emissão fiscal complicada",
-        "Estoque desencontrado da venda",
+        "Emissão de NFC-e complicada",
+        "Tudo para quando a internet cai",
+        "Sem visão de vendas por período",
       ],
     },
     solution: {
-      title: "Venda em segundos, fiscal no automático.",
-      body: "PDV enxuto, busca instantânea, leitor de código e emissão fiscal integrada. O caixa anda e o estoque acompanha.",
+      title: "Venda em segundos, NFC-e no automático.",
+      body: "PDV enxuto com busca inteligente, leitor de código e NFC-e integrada, no computador, na maquininha smart ou no celular. Sincroniza na nuvem e continua vendendo offline.",
       bullets: [
-        "Venda rápida com leitor e atalhos",
-        "Cupom fiscal (NFC-e/SAT) integrado",
-        "Baixa de estoque em tempo real",
+        "NFC-e rápida, até em contingência",
+        "Roda em Windows, Android, iOS e maquininhas",
+        "Sincroniza tudo na nuvem",
       ],
     },
     features: [
-      { icon: "bolt", title: "Venda relâmpago", body: "Busca instantânea, atalhos de teclado e leitor de código de barras." },
-      { icon: "card", title: "Fiscal integrado", body: "Emissão de NFC-e/SAT e formas de pagamento sem etapa extra." },
-      { icon: "cart", title: "Estoque em tempo real", body: "Cada venda baixa o estoque na hora — sem ruptura surpresa." },
-      { icon: "users", title: "Multioperador", body: "Vários caixas, controle de sangria e relatório por operador." },
-      { icon: "chart", title: "Fechamento de caixa", body: "Conferência rápida de turno com sangria e suprimento." },
-      { icon: "clock", title: "Funciona offline", body: "Continua vendendo na queda de internet e sincroniza depois." },
+      { icon: "bolt", title: "Venda rápida", body: "Busca inteligente, leitor de código de barras e divisão por categorias. O caixa não para." },
+      { icon: "card", title: "NFC-e integrada", body: "Emita o cupom fiscal direto do PDV, com diversas formas de pagamento, até em contingência." },
+      { icon: "clock", title: "Funciona offline", body: "Internet caiu? Continua vendendo e sincroniza tudo quando a conexão volta." },
+      { icon: "cloud", title: "Multiplataforma na nuvem", body: "Windows, tablet, maquininha smart, mini PDV, Android e iOS, sempre sincronizados." },
+      { icon: "cart", title: "Mesas, comandas e delivery", body: "Atendimento de balcão e mesas, com integração iFood e catálogo online." },
+      { icon: "chart", title: "Relatórios e estoque", body: "Acompanhe vendas por dispositivo e período, com alerta de estoque mínimo." },
     ],
     steps: [
-      { label: "01", title: "Configuração fiscal", body: "Ajustamos impostos, certificado e formas de pagamento." },
-      { label: "02", title: "Cadastro", body: "Subimos produtos e códigos de barras da loja." },
-      { label: "03", title: "Abertura", body: "Caixa treinado e vendendo no mesmo dia." },
+      { label: "01", title: "Configuração fiscal", body: "Ajustamos certificado, impostos e formas de pagamento da NFC-e." },
+      { label: "02", title: "Catálogo", body: "Importamos produtos do banco online e cadastramos seu estoque." },
+      { label: "03", title: "Operação", body: "Caixa treinado vendendo no mesmo dia, em qualquer dispositivo." },
+    ],
+    faq: [
+      { q: "Funciona na minha maquininha?", a: "Sim. Roda em Windows, Android, iOS, maquininhas smart e mini PDV, sempre sincronizado na nuvem." },
+      { q: "Continua vendendo se a internet cair?", a: "Sim. O PDV segue vendendo offline e sincroniza tudo, inclusive a NFC-e em contingência, quando a conexão volta." },
+      { q: "Serve pra loja e pra restaurante?", a: "Serve os dois. Venda rápida de balcão para o varejo, e mesas, comandas e delivery para bares e restaurantes." },
+      { q: "Emite cupom fiscal?", a: "Sim. NFC-e integrada, com diversas formas de pagamento, sem etapa extra." },
     ],
   },
   {
@@ -200,9 +240,11 @@ export const products: Product[] = [
     category: "Comunicação",
     keywords: ["Inbox", "WhatsApp", "Filas", "SLA", "Histórico"],
     tagline: "Todo o atendimento da empresa numa conversa só.",
-    lead: "Comunicação e atendimento integrados ao seu time — múltiplos canais, um histórico, respostas que não se perdem.",
+    lead: "Comunicação e atendimento integrados ao seu time: múltiplos canais, um histórico, respostas que não se perdem.",
     short: "Comunicação e atendimento integrados ao seu time.",
     audience: ["Times de atendimento", "E-commerce", "Clínicas e consultórios", "Suporte ao cliente"],
+    wordmark: "/products/faloapp/wordmark.png",
+    mark: "/products/faloapp/logo-outline.png",
     problem: {
       title: "Mensagem espalhada some.",
       body: "WhatsApp num celular, e-mail noutro, ninguém sabe quem respondeu. O cliente repete a história e o time perde o contexto.",
@@ -234,6 +276,12 @@ export const products: Product[] = [
       { label: "02", title: "Times & regras", body: "Definimos filas, atribuição e respostas prontas." },
       { label: "03", title: "No ar", body: "O time atende de um lugar só, com histórico de tudo." },
     ],
+    faq: [
+      { q: "Junta WhatsApp e outros canais num lugar só?", a: "Sim. Todos os canais numa caixa de entrada única, com o histórico do cliente sempre à mão." },
+      { q: "Vários atendentes usam ao mesmo tempo?", a: "Sim. Filas, distribuição por atendente e controle de SLA para nada ficar sem resposta." },
+      { q: "Fica registrado o histórico das conversas?", a: "Sim. Todo o histórico do cliente fica salvo, independente de quem atendeu." },
+      { q: "Precisa instalar alguma coisa?", a: "Não. É na nuvem, acessível pelo navegador, e a gente configura os canais com você." },
+    ],
   },
   {
     slug: "crm-com",
@@ -242,9 +290,11 @@ export const products: Product[] = [
     category: "Relacionamento",
     keywords: ["Funil", "Leads", "Follow-up", "Vendas", "Visão 360°"],
     tagline: "Do primeiro contato ao contrato fechado.",
-    lead: "Relacionamento, funil e vendas em um só lugar — cada oportunidade visível, cada follow-up no tempo certo.",
+    lead: "Relacionamento, funil e vendas em um só lugar: cada oportunidade visível, cada follow-up no tempo certo.",
     short: "Relacionamento, funil e vendas em um só lugar.",
     audience: ["Times comerciais", "Imobiliárias", "Prestadores B2B", "Agências"],
+    wordmark: "/products/crm-com/wordmark.png",
+    mark: "/products/crm-com/logo-outline.png",
     problem: {
       title: "Oportunidade esquecida é receita perdida.",
       body: "Lead anotado num caderno, follow-up que ninguém faz e previsão de venda no chute. O funil vaza sem ninguém ver.",
@@ -276,19 +326,27 @@ export const products: Product[] = [
       { label: "02", title: "Importação de base", body: "Trazemos contatos e oportunidades em aberto." },
       { label: "03", title: "Vendas no radar", body: "O time vende com o funil sempre à vista." },
     ],
+    faq: [
+      { q: "Como funciona o funil de vendas?", a: "Você vê cada oportunidade por estágio, com critérios de avanço, e nada de follow-up esquecido." },
+      { q: "Dá pra importar minha base de contatos?", a: "Sim. Trazemos contatos e oportunidades em aberto na implantação, sem começar do zero." },
+      { q: "Mostra relatórios de venda e previsão?", a: "Sim. Previsão por estágio, taxa de conversão e desempenho do time, com número na mão." },
+      { q: "Integra com o atendimento e outros sistemas?", a: "Sim. Conecta com os canais e sistemas que você já usa, para o relacionamento e a venda conversarem." },
+    ],
   },
   {
     slug: "desenvolvimento-web",
-    name: "Desenvolvimento Web",
-    accent: "#7C5CFF",
+    name: "Pedra & Pixel",
+    accent: "#2080F0",
     category: "Web",
     keywords: ["Sites", "Landing pages", "Sob medida", "Responsivo", "SEO"],
-    tagline: "Um site à altura da sua empresa.",
-    lead: "Criamos sites, landing pages e portais sob medida — feitos aqui, do zero, com a cara da sua marca. Rápidos, impecáveis no celular e pensados para transformar visita em cliente.",
-    short: "Sites e landing pages sob medida, feitos para converter.",
+    tagline: "Sólido como pedra, preciso no pixel.",
+    lead: "Sites, landing pages e portais sob medida, feitos aqui, do zero: a solidez de uma boa engenharia com o capricho no último pixel. Rápidos, impecáveis no celular e pensados para transformar visita em cliente.",
+    short: "Sites sob medida: engenharia sólida, design no pixel.",
     audience: ["Empresas sem site", "Negócios locais", "Profissionais liberais", "Quem quer renovar o site atual"],
+    wordmark: "/products/desenvolvimento-web/wordmark.png",
+    mark: "/products/desenvolvimento-web/mark.png",
     problem: {
-      title: "Não ter site — ou ter um ruim — custa cliente.",
+      title: "Não ter site, ou ter um ruim, custa cliente.",
       body: "Quem procura a sua empresa no Google e não acha (ou acha uma página lenta, quebrada no celular e sem caminho pro contato) vai direto pro concorrente.",
       bullets: [
         "Difícil de achar no Google",
@@ -298,7 +356,7 @@ export const products: Product[] = [
     },
     solution: {
       title: "Um site rápido, bonito e que gera contato.",
-      body: "A gente desenvolve do zero, com a identidade da sua marca: design exclusivo, carregamento veloz, responsivo de verdade e otimizado para o Google — com WhatsApp e formulário para virar conversa.",
+      body: "A gente desenvolve do zero, com a identidade da sua marca: design exclusivo, carregamento veloz, responsivo de verdade e otimizado para o Google, com WhatsApp e formulário para virar conversa.",
       bullets: [
         "Design exclusivo da sua marca",
         "Rápido e 100% responsivo",
@@ -307,7 +365,7 @@ export const products: Product[] = [
     },
     features: [
       { icon: "sparkles", title: "Design exclusivo", body: "Layout único, com a identidade da sua empresa. Nada de tema pronto e genérico." },
-      { icon: "bolt", title: "Velocidade", body: "Carrega rápido no 4G e no desktop — página lenta perde visita, a sua não." },
+      { icon: "bolt", title: "Velocidade", body: "Carrega rápido no 4G e no desktop. Página lenta perde visita, a sua não." },
       { icon: "users", title: "Responsivo de verdade", body: "Experiência impecável no celular, no tablet e no computador." },
       { icon: "chart", title: "SEO & conversão", body: "Estruturado para aparecer no Google e transformar visita em contato." },
       { icon: "chat", title: "WhatsApp & formulários", body: "Botões e formulários que levam o visitante direto para uma conversa com você." },
@@ -317,6 +375,12 @@ export const products: Product[] = [
       { label: "01", title: "Briefing", body: "Entendemos a marca, o público e os objetivos do site." },
       { label: "02", title: "Design & build", body: "Criamos o layout e desenvolvemos página a página." },
       { label: "03", title: "No ar", body: "Publicamos, otimizamos e acompanhamos os resultados." },
+    ],
+    faq: [
+      { q: "Vocês criam do zero ou usam tema pronto?", a: "Do zero, com design exclusivo da sua marca. Nada de tema genérico igual ao do concorrente." },
+      { q: "O site funciona bem no celular?", a: "Sim. Responsivo de verdade, rápido no 4G e impecável no celular, no tablet e no desktop." },
+      { q: "O site aparece no Google?", a: "Sim. Estruturamos tudo para SEO, para você ser encontrado e transformar visita em contato." },
+      { q: "Quanto tempo leva, e tem manutenção depois?", a: "Do briefing ao ar em poucas semanas, conforme o escopo. Depois a gente acompanha, ajusta e faz o site evoluir com o negócio." },
     ],
     ctaSubject: "seu site",
     ctaNote:
@@ -328,7 +392,7 @@ export const products: Product[] = [
 export const PRODUCT_FAQ: { q: string; a: string }[] = [
   {
     q: "Quanto tempo leva a implantação?",
-    a: "Rápida. A gente configura o sistema, cadastra o essencial e treina a equipe — na maioria dos casos a operação já roda no mesmo dia ou em poucos dias.",
+    a: "Rápida. A gente configura o sistema, cadastra o essencial e treina a equipe. Na maioria dos casos a operação já roda no mesmo dia ou em poucos dias.",
   },
   {
     q: "Tem suporte depois de implantado?",
@@ -340,7 +404,7 @@ export const PRODUCT_FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Como funciona a contratação?",
-    a: "Fale com a gente pelo WhatsApp. A gente entende a sua operação, mostra o sistema e indica o melhor caminho — sem compromisso.",
+    a: "Fale com a gente pelo WhatsApp. A gente entende a sua operação, mostra o sistema e indica o melhor caminho, sem compromisso.",
   },
 ];
 

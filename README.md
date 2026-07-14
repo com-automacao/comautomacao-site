@@ -2,11 +2,11 @@
 
 Site institucional multipágina da **Com Automação**, empresa que **representa e
 revende os melhores sistemas de gestão** (com implantação, treinamento e suporte
-local) e oferece **Desenvolvimento Web** como serviço próprio.
+local) e oferece desenvolvimento web próprio sob a marca **Pedra & Pixel**.
 
 > ⚠️ A Com Automação **não desenvolve os sistemas de gestão** — ela os representa/
-> revende. A única oferta desenvolvida internamente é o **Desenvolvimento Web**
-> (sites e landing pages). Manter esse posicionamento em todo o copy.
+> revende. A única oferta desenvolvida internamente é o desenvolvimento web, sob a
+> marca **Pedra & Pixel** (sites e landing pages). Manter esse posicionamento no copy.
 
 Repositório: <https://github.com/com-automacao/comautomacao-site> · branch `main`
 
@@ -21,6 +21,7 @@ Repositório: <https://github.com/com-automacao/comautomacao-site> · branch `ma
 | Estilo | Tailwind v4 (CSS-first, `@theme`) + `app/globals.css` |
 | Fontes | `next/font` — Inter + Space Grotesk |
 | Animações | IntersectionObserver (reveals), framer-motion, CSS |
+| Efeitos 3D | three.js — hero dos produtos (photon beam) e do Pedra & Pixel (dotted surface) |
 | Hospedagem | **Export estático** na HostGator (cPanel/Apache) |
 
 ---
@@ -58,7 +59,9 @@ components/
   HeroVideo.tsx, HeroMarkAlign.tsx        # vídeo do hero + alinhamento do foguete na home
   ProductStripe.tsx, ProductStripes.tsx   # vitrine de produtos (faixas acordeão)
   Icons.tsx                               # ícones (incl. ícones de feature)
-  ui/                                     # componentes de efeito (flow-button, scramble, etc.)
+  HeroBeam.tsx, AcquirersCarousel.tsx     # fundo photon-beam do hero + carrossel de maquininhas (PDV)
+  ProductGallery.tsx                      # galeria "por dentro" com lightbox
+  ui/                                     # efeitos: flow-button, scramble, photon-beam, dotted-surface, etc.
 
 lib/
   products.ts             # FONTE DA VERDADE dos produtos + FAQ (todo o conteúdo)
@@ -67,7 +70,8 @@ lib/
 
 public/
   logos/                  # logos da Com Automação (marca + horizontal, b/w)
-  products/gourmetsa/     # assets do GourmetSA (mockup, wordmark, prints da galeria, logo G)
+  products/<slug>/        # assets por produto: wordmark/mark (logo), mockup, prints da galeria
+                          #   (gourmetsa, pdv-mais, finances-web, faloapp, crm-com, desenvolvimento-web)
   equipe360/              # logo do projeto Equipe 360 (banner)
   .htaccess               # config Apache do export (404, gzip, cache)
 
@@ -80,13 +84,14 @@ next.config.mjs           # output:'export' + trailingSlash + images.unoptimized
 
 ### Produtos
 Tudo vem de [`lib/products.ts`](lib/products.ts). Cada produto tem cor-assinatura
-(`accent`), `lead`, `solution`, `features`, `audience`, FAQ compartilhada
-(`PRODUCT_FAQ`) e, opcionalmente, `wordmark`, `mockup` e `gallery` (prints reais —
-só o GourmetSA tem hoje). Adicionar/editar produto = editar esse arquivo; as rotas
-`/produtos/[slug]` são geradas automaticamente (`generateStaticParams`).
+(`accent`), `lead`, `solution`, `features`, `audience`, `faq` **próprio por produto**
+(com `PRODUCT_FAQ` só como fallback) e, opcionalmente, `wordmark`/`mark` (logo),
+`mockup`, `gallery` (com flag `light` p/ mockups de fundo branco) e `acquirers`
+(carrossel de maquininhas do PDV). Adicionar/editar produto = editar esse arquivo;
+as rotas `/produtos/[slug]` são geradas automaticamente (`generateStaticParams`).
 
-Produtos atuais: GourmetSA, Finances Web, PDV Plus, FaloApp, CRM Com,
-Desenvolvimento Web.
+Produtos atuais: GourmetSA, Finances Web, PDV Plus, FaloApp, CRM Com e
+**Pedra & Pixel** (desenvolvimento web — slug `desenvolvimento-web`).
 
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável

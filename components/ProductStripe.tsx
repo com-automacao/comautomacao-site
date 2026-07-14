@@ -44,6 +44,7 @@ export default function ProductStripe({
     <Link
       href={`/produtos/${product.slug}`}
       className={`stripe${open ? " is-open" : ""}`}
+      data-slug={product.slug}
       style={{ background: accent }}
       onMouseEnter={() => {
         if (
@@ -57,8 +58,16 @@ export default function ProductStripe({
       onClick={handleClick}
     >
       {product.mark && (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img className="stripe-bg-mark" src={product.mark} alt="" aria-hidden />
+        <span
+          className="stripe-bg-mark"
+          aria-hidden
+          style={
+            {
+              "--mark-src": `url("${product.mark}")`,
+              "--card-accent": accent,
+            } as React.CSSProperties
+          }
+        />
       )}
       <div className="info">
         <b>{product.name}</b>

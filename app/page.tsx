@@ -139,7 +139,7 @@ export default function Home() {
               A gente não vende promessa: representa softwares de gestão
               consolidados, escolhidos a dedo para o varejo, o food service, o
               financeiro, o atendimento e as vendas. Você adota o que já provou
-              que funciona — e ainda conta com implantação, treinamento e suporte
+              que funciona e ainda conta com implantação, treinamento e suporte
               local. Sem risco de projeto.
             </p>
             <ul className="check-list reveal r-left" data-d="3">
@@ -174,7 +174,7 @@ export default function Home() {
             </h2>
           </div>
           <p className="lead reveal r-right" data-d="2" style={{ margin: 0 }}>
-            Gestão, caixa, finanças, atendimento e vendas — um sistema certo para
+            Gestão, caixa, finanças, atendimento e vendas, um sistema certo para
             cada frente do seu negócio. Passe o mouse e clique para conhecer.
           </p>
         </div>
@@ -205,7 +205,7 @@ export default function Home() {
               <p style={{ color: "var(--color-fg-2)", fontWeight: 300, lineHeight: 1.65, maxWidth: "42ch", marginBottom: 28 }}>
                 Empresa travada perde dinheiro em silêncio: pedido errado, caixa
                 que não bate, cliente sem resposta. Com o sistema certo no lugar
-                certo, o improviso vira processo — e o que sobra é tempo para
+                certo, o improviso vira processo, e o que sobra é tempo para
                 crescer.
               </p>
               <div className="type-row">
@@ -349,7 +349,7 @@ export default function Home() {
           </h2>
           <p className="lead reveal r-rise" data-d="2">
             Cada sistema resolve uma frente do negócio. Comece pela dor mais
-            urgente — e expanda quando fizer sentido.
+            urgente e expanda quando fizer sentido.
           </p>
           <div className="rows">
             {products.map((p, i) => (
