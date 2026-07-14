@@ -60,7 +60,7 @@ export default async function ProductPage({
   return (
     <div style={{ ["--accent" as string]: product.accent }}>
       {/* ===== DOBRA 1 · HERO (acento) ===== */}
-      <header className="hero" id="top" style={{ minHeight: "82vh" }}>
+      <header className="hero" id="top" style={{ minHeight: "100dvh" }}>
         <div
           className="hero-bg"
           style={{
