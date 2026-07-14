@@ -6,7 +6,7 @@ import { Arrow, FeatureIcon } from "@/components/Icons";
 import ProductGallery from "@/components/ProductGallery";
 import AcquirersCarousel from "@/components/AcquirersCarousel";
 import HeroPaths from "@/components/HeroPaths";
-import { DottedSurface } from "@/components/ui/dotted-surface";
+import HeroDataGrid from "@/components/HeroDataGrid";
 import { FlowButton } from "@/components/ui/flow-button";
 import { getProduct, products, PRODUCT_FAQ } from "@/lib/products";
 import { WHATSAPP_URL } from "@/lib/site";
@@ -70,7 +70,7 @@ export default async function ProductPage({
         <div className="grid-bg" />
         <div className="hero-veil accent" />
         {product.slug === "desenvolvimento-web" ? (
-          <DottedSurface className="hero-dots" />
+          <HeroDataGrid accent={product.accent} />
         ) : (
           <HeroPaths accent={product.accent} />
         )}

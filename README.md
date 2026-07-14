@@ -21,7 +21,7 @@ Repositório: <https://github.com/com-automacao/comautomacao-site> · branch `ma
 | Estilo | Tailwind v4 (CSS-first, `@theme`) + `app/globals.css` |
 | Fontes | `next/font` — Inter + Space Grotesk |
 | Animações | IntersectionObserver (reveals), framer-motion, CSS |
-| Efeitos de hero | framer-motion — background paths (produtos) · three.js — dotted surface (Pedra & Pixel) |
+| Efeitos de hero | framer-motion — background paths (produtos) · grid animado CSS (Pedra & Pixel) |
 | Hospedagem | **Export estático** na HostGator (cPanel/Apache) |
 
 ---
@@ -61,7 +61,7 @@ components/
   Icons.tsx                               # ícones (incl. ícones de feature)
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
-  ui/                                     # efeitos: flow-button, scramble, background-paths, dotted-surface, etc.
+  ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, etc.
 
 lib/
   products.ts             # FONTE DA VERDADE dos produtos + FAQ (todo o conteúdo)
