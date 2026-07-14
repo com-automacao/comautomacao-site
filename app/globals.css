@@ -117,7 +117,7 @@ body {
   line-height: 1.5;
   color: #fff;
   background: #050505;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-feature-settings: "cv11", "ss01";
 }
 ::selection {
@@ -703,8 +703,8 @@ h3 {
 .grid-hero-cell {
   border-radius: 3px;
   background: var(--accent);
-  opacity: 0.05;
-  animation: gridPulse 6s ease-in-out infinite;
+  opacity: 0.06;
+  animation: gridPulse 5s ease-in-out infinite;
   will-change: opacity;
 }
 .grid-hero-cell--dark {
@@ -714,11 +714,12 @@ h3 {
 }
 @keyframes gridPulse {
   0%,
+  74%,
   100% {
-    opacity: 0.05;
+    opacity: 0.06;
   }
-  50% {
-    opacity: 0.55;
+  88% {
+    opacity: 0.65;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -103,10 +103,10 @@ depender de seek de `<video>`). Os frames ficam em
 do vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
 
 ```bash
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-logo-video.mp4 90 1152
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-logo-video.mp4 90 1920
 ```
 
-(`90` = nº de frames, `1152` = largura em px). Ao final, o script imprime o total
+(`90` = nº de frames, `1920` = largura em px). Ao final, o script imprime o total
 de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número. Requer
 `ffmpeg`/`ffprobe` no PATH.
 

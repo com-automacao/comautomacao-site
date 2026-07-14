@@ -20,7 +20,7 @@ if (!input) {
 }
 
 const FRAMES = Number(countArg) || 90;
-const WIDTH = Number(widthArg) || 1152;
+const WIDTH = Number(widthArg) || 1920;
 const OUT = resolve("public/products/desenvolvimento-web/scroll");
 
 const duration = Number(
@@ -64,7 +64,7 @@ execFileSync(
     "-c:v",
     "libwebp",
     "-q:v",
-    "72",
+    "82",
     "-compression_level",
     "6",
     join(OUT, "frame-%04d.webp"),
