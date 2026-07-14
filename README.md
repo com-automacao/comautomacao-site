@@ -61,6 +61,7 @@ components/
   Icons.tsx                               # ícones (incl. ícones de feature)
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
+  ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, etc.
 
 lib/
@@ -92,6 +93,22 @@ as rotas `/produtos/[slug]` são geradas automaticamente (`generateStaticParams`
 
 Produtos atuais: GourmetSA, Finances Web, PDV Plus, FaloApp, CRM Com e
 **Pedra & Pixel** (desenvolvimento web — slug `desenvolvimento-web`).
+
+### Vídeo sincronizado ao scroll (Pedra & Pixel)
+A section "Em movimento" da página do Pedra & Pixel usa o componente
+[`ScrollVideo`](components/ScrollVideo.tsx): um `<canvas>` que faz *scrub* de uma
+sequência de frames conforme o scroll (técnica que roda em export estático, sem
+depender de seek de `<video>`). Os frames ficam em
+`public/products/desenvolvimento-web/scroll/` e são gerados **com ffmpeg** a partir
+do vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
+
+```bash
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-logo-video.mp4 90 1152
+```
+
+(`90` = nº de frames, `1152` = largura em px). Ao final, o script imprime o total
+de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número. Requer
+`ffmpeg`/`ffprobe` no PATH.
 
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável

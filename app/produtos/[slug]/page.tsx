@@ -7,6 +7,7 @@ import ProductGallery from "@/components/ProductGallery";
 import AcquirersCarousel from "@/components/AcquirersCarousel";
 import HeroPaths from "@/components/HeroPaths";
 import HeroDataGrid from "@/components/HeroDataGrid";
+import ScrollVideo from "@/components/ScrollVideo";
 import { FlowButton } from "@/components/ui/flow-button";
 import { getProduct, products, PRODUCT_FAQ } from "@/lib/products";
 import { WHATSAPP_URL } from "@/lib/site";
@@ -202,6 +203,26 @@ export default async function ProductPage({
           </div>
         </div>
       </section>
+
+      {/* ===== EM MOVIMENTO (vídeo sincronizado ao scroll) ===== */}
+      {product.slug === "desenvolvimento-web" && (
+        <section
+          id="em-movimento"
+          className="s-dark pad"
+          style={{ paddingTop: 0 }}
+        >
+          <div className="wrap">
+            <div className="eyebrow reveal r-rise">Em movimento</div>
+            <h2 className="section-title reveal r-rise" data-d="1">
+              Sólido como pedra, preciso no pixel.
+            </h2>
+          </div>
+          <ScrollVideo
+            dir="/products/desenvolvimento-web/scroll"
+            frameCount={90}
+          />
+        </section>
+      )}
 
       {/* ===== GALERIA / PRINTS (prints reais do sistema) ===== */}
       {product.gallery && product.gallery.length > 0 && (
