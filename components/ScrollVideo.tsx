@@ -3,7 +3,10 @@
 import { useEffect, useRef } from "react";
 
 type Props = {
+  /** conjunto de frames padrão (mobile / Full HD) */
   dir: string;
+  /** conjunto opcional para telas grandes (ex.: 4K); usado se largura >= 1024px */
+  dir4k?: string;
   frameCount: number;
   prefix?: string;
   pad?: number;
@@ -18,6 +21,7 @@ type Props = {
  */
 export default function ScrollVideo({
   dir,
+  dir4k,
   frameCount,
   prefix = "frame-",
   pad = 4,
@@ -36,8 +40,10 @@ export default function ScrollVideo({
       canvas.parentElement;
     if (!region) return;
 
+    // telas grandes recebem o 4K; mobile/tablet ficam no Full HD (mais leve)
+    const src = dir4k && window.innerWidth >= 1024 ? dir4k : dir;
     const url = (i: number) =>
-      `${dir}/${prefix}${String(i + 1).padStart(pad, "0")}.${ext}`;
+      `${src}/${prefix}${String(i + 1).padStart(pad, "0")}.${ext}`;
 
     const images: HTMLImageElement[] = [];
     let current = -1;
@@ -99,7 +105,7 @@ export default function ScrollVideo({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", resize);
     };
-  }, [dir, frameCount, prefix, pad, ext]);
+  }, [dir, dir4k, frameCount, prefix, pad, ext]);
 
   return (
     <canvas

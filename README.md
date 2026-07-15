@@ -101,17 +101,21 @@ O hero da página do Pedra & Pixel usa o componente
 [`ScrollVideo`](components/ScrollVideo.tsx): um `<canvas>` de fundo que faz *scrub*
 de uma sequência de frames conforme o scroll, com o hero "fixo" (sticky) enquanto o
 vídeo roda — o progresso é medido na região com `data-scrollvid-region`. Técnica que
-roda em export estático, sem depender de seek de `<video>`. Os frames ficam em
-`public/products/desenvolvimento-web/scroll/` e são gerados **com ffmpeg** a partir
-do vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
+roda em export estático, sem depender de seek de `<video>`. **Responsivo**: telas
+grandes (largura ≥ 1024px) carregam a versão 4K; mobile/tablet ficam no Full HD
+(mais leve) — o `ScrollVideo` escolhe um único conjunto no carregamento (props `dir`
+= Full HD e `dir4k` = 4K). Os frames são gerados **com ffmpeg** a partir do
+vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
 
 ```bash
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 3840
+# 4K (telas grandes) → scroll-4k/  ·  Full HD (mobile) → scroll-fhd/
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 3840 scroll-4k
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 1920 scroll-fhd
 ```
 
-(`90` = nº de frames, `3840` = largura em px / 4K nativo da fonte). Ao final, o script imprime o total
-de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número. Requer
-`ffmpeg`/`ffprobe` no PATH.
+(`90` = nº de frames; o 4º arg é a pasta de saída). Ao final, o script imprime o
+total de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número.
+Requer `ffmpeg`/`ffprobe` no PATH.
 
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável

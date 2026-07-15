@@ -2,26 +2,28 @@
 // (componente ScrollVideo). Usa ffmpeg/ffprobe.
 //
 // Uso:
-//   node scripts/extract-scroll-frames.mjs <video> [frames=90] [largura=1152]
+//   node scripts/extract-scroll-frames.mjs <video> [frames=90] [largura=1920] [pasta=scroll]
 //
-// Saída: public/products/desenvolvimento-web/scroll/frame-0001.webp ...
+// Saída: public/products/desenvolvimento-web/<pasta>/frame-0001.webp ...
 // Depois de rodar, ajuste o frameCount da <ScrollVideo /> para o total impresso.
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, readdirSync, statSync } from "node:fs";
 import { resolve, join } from "node:path";
 
-const [input, countArg, widthArg] = process.argv.slice(2);
+const [input, countArg, widthArg, outArg] = process.argv.slice(2);
 if (!input) {
   console.error(
-    "Uso: node scripts/extract-scroll-frames.mjs <video> [frames=90] [largura=1152]",
+    "Uso: node scripts/extract-scroll-frames.mjs <video> [frames=90] [largura=1920] [pasta=scroll]",
   );
   process.exit(1);
 }
 
 const FRAMES = Number(countArg) || 90;
 const WIDTH = Number(widthArg) || 1920;
-const OUT = resolve("public/products/desenvolvimento-web/scroll");
+const OUT = resolve(
+  `public/products/desenvolvimento-web/${outArg || "scroll"}`,
+);
 
 const duration = Number(
   execFileSync("ffprobe", [
