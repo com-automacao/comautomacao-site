@@ -106,10 +106,10 @@ roda em export estático, sem depender de seek de `<video>`. Os frames ficam em
 do vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
 
 ```bash
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-logo-videohd.mp4 90 1280
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 1920
 ```
 
-(`90` = nº de frames, `1280` = largura em px — a fonte é 720p nativo). Ao final, o script imprime o total
+(`90` = nº de frames, `1920` = largura em px — a fonte é 4K nativo). Ao final, o script imprime o total
 de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número. Requer
 `ffmpeg`/`ffprobe` no PATH.
 
