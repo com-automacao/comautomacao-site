@@ -12,13 +12,10 @@ type Props = {
   pad?: number;
   ext?: string;
   className?: string;
+  /** fator de suavização (0-1); menor = mais suave/preguiçoso */
+  ease?: number;
 };
 
-/**
- * Canvas que faz "scrub" de uma sequência de frames conforme o scroll.
- * O progresso é medido na região ancestral marcada com [data-scrollvid-region]
- * (ex.: o header alto do hero com sticky interno). O canvas preenche o pai.
- */
 export default function ScrollVideo({
   dir,
   dir4k,
@@ -27,6 +24,7 @@ export default function ScrollVideo({
   pad = 4,
   ext = "webp",
   className,
+  ease = 0.18,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -46,15 +44,18 @@ export default function ScrollVideo({
       `${src}/${prefix}${String(i + 1).padStart(pad, "0")}.${ext}`;
 
     const images: HTMLImageElement[] = [];
-    let current = -1;
+    let drawn = -1;
+    let target = 0; // frame-alvo (do scroll)
+    let currentF = 0; // frame exibido (interpolado)
+    let rafId = 0;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const draw = (idx: number, force = false) => {
+    const paint = (idx: number, force = false) => {
       const i = Math.max(0, Math.min(frameCount - 1, idx));
-      if (i === current && !force) return;
+      if (i === drawn && !force) return;
       const img = images[i];
       if (!img || !img.complete || img.naturalWidth === 0) return;
-      current = i;
+      drawn = i;
       const cw = canvas.width;
       const ch = canvas.height;
       const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
@@ -64,11 +65,37 @@ export default function ScrollVideo({
       ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
     };
 
+    // loop de suavização: desliza currentF até target e para quando estabiliza
+    const tick = () => {
+      const diff = target - currentF;
+      if (Math.abs(diff) < 0.02) {
+        currentF = target;
+        paint(Math.round(currentF));
+        rafId = 0;
+        return;
+      }
+      currentF += diff * ease;
+      paint(Math.round(currentF));
+      rafId = requestAnimationFrame(tick);
+    };
+    const kick = () => {
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    };
+
+    const updateTarget = () => {
+      const rect = region.getBoundingClientRect();
+      const total = region.offsetHeight - window.innerHeight;
+      const progress =
+        total <= 0 ? 0 : Math.min(1, Math.max(0, -rect.top / total));
+      target = progress * (frameCount - 1);
+      region.classList.toggle("hero-revealed", progress >= 0.85);
+    };
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      draw(current < 0 ? 0 : current, true);
+      paint(drawn < 0 ? 0 : drawn, true);
     };
 
     for (let i = 0; i < frameCount; i++) {
@@ -76,36 +103,33 @@ export default function ScrollVideo({
       img.decoding = "async";
       img.src = url(i);
       img.onload = () => {
-        if (i === 0 && current < 0) draw(0, true);
-        else if (i === current) draw(i, true);
+        if (i === Math.round(currentF)) paint(i, true);
       };
       images[i] = img;
     }
 
-    let ticking = false;
     const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        const rect = region.getBoundingClientRect();
-        const total = region.offsetHeight - window.innerHeight;
-        const progress =
-          total <= 0 ? 0 : Math.min(1, Math.max(0, -rect.top / total));
-        draw(Math.round(progress * (frameCount - 1)));
-        region.classList.toggle("hero-revealed", progress >= 0.85);
-      });
+      updateTarget();
+      kick();
+    };
+    const onResize = () => {
+      resize();
+      updateTarget();
+      kick();
     };
 
     resize();
-    onScroll();
+    updateTarget();
+    currentF = target;
+    paint(Math.round(currentF), true);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", onResize);
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", onResize);
     };
-  }, [dir, dir4k, frameCount, prefix, pad, ext]);
+  }, [dir, dir4k, frameCount, prefix, pad, ext, ease]);
 
   return (
     <canvas
