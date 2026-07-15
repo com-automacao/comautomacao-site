@@ -777,28 +777,7 @@ h3 {
   height: 100%;
   pointer-events: none;
 }
-/* logo, texto e botões só aparecem no fim da animação de scroll */
-.hero-scrollwrap .hero-mark--product {
-  opacity: 0;
-  transition: opacity 0.9s var(--ease-out);
-}
-.hero-scrollwrap .hero-in {
-  opacity: 0;
-  transform: translateY(28px);
-  pointer-events: none;
-  transition:
-    opacity 0.7s var(--ease-out),
-    transform 0.7s var(--ease-out);
-}
-.hero-scrollwrap.hero-revealed .hero-mark--product {
-  opacity: 1;
-}
-.hero-scrollwrap.hero-revealed .hero-in {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-/* dica de scroll guia o usuário durante o vídeo e some ao revelar */
+/* dica de scroll guia o usuário durante o vídeo e some ao fim da animação */
 .hero-scrollwrap .scroll-cue {
   transition: opacity 0.5s var(--ease-out);
   animation: cueBob 1.8s ease-in-out infinite;

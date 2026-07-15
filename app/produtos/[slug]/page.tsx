@@ -70,46 +70,54 @@ export default async function ProductPage({
 
   const heroInner = (
     <>
-      <Image
-        className="hero-mark hero-mark--product"
-        src="/logos/logo-mark-white.png"
-        alt=""
-        aria-hidden
-        priority
-        width={764}
-        height={740}
-      />
-      <div className="hero-in">
-        {product.wordmark ? (
-          <h1 className="reveal in" data-d="1" style={{ margin: "22px auto 0" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="hero-wordmark"
-              data-slug={product.slug}
-              src={product.wordmark}
-              alt={product.name}
-            />
-          </h1>
-        ) : (
-          <h1 className="display display--product reveal in" data-d="1">
-            {product.name}
-          </h1>
-        )}
-        <p className="lead reveal in" data-d="2">
-          {product.lead}
-        </p>
-        <div className="hero-cta reveal in" data-d="3">
-          <FlowButton variant="accent" href={WHATSAPP_URL}>
-            Fale conosco
-            <Arrow />
-          </FlowButton>
-          <FlowButton variant="ghost" href="#features">
-            Ver recursos
-          </FlowButton>
-        </div>
-      </div>
+      {!isPP && (
+        <>
+          <Image
+            className="hero-mark hero-mark--product"
+            src="/logos/logo-mark-white.png"
+            alt=""
+            aria-hidden
+            priority
+            width={764}
+            height={740}
+          />
+          <div className="hero-in">
+            {product.wordmark ? (
+              <h1
+                className="reveal in"
+                data-d="1"
+                style={{ margin: "22px auto 0" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="hero-wordmark"
+                  data-slug={product.slug}
+                  src={product.wordmark}
+                  alt={product.name}
+                />
+              </h1>
+            ) : (
+              <h1 className="display display--product reveal in" data-d="1">
+                {product.name}
+              </h1>
+            )}
+            <p className="lead reveal in" data-d="2">
+              {product.lead}
+            </p>
+            <div className="hero-cta reveal in" data-d="3">
+              <FlowButton variant="accent" href={WHATSAPP_URL}>
+                Fale conosco
+                <Arrow />
+              </FlowButton>
+              <FlowButton variant="ghost" href="#features">
+                Ver recursos
+              </FlowButton>
+            </div>
+          </div>
+        </>
+      )}
       <div className="scroll-cue">
-        <span className="mono-label">{isPP ? "Role para revelar" : "Role"}</span>
+        <span className="mono-label">Role</span>
         <span className="bar" />
       </div>
     </>
