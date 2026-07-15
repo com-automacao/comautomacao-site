@@ -48,6 +48,9 @@ export default function ScrollVideo({
     let target = 0; // frame-alvo (do scroll)
     let currentF = 0; // frame exibido (interpolado)
     let rafId = 0;
+    // paisagem preenche a tela (cover); retrato/mobile mostra o vídeo inteiro
+    // e centralizado (contain), pra logo não sair da tela
+    let cover = true;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const paint = (idx: number, force = false) => {
@@ -58,7 +61,9 @@ export default function ScrollVideo({
       drawn = i;
       const cw = canvas.width;
       const ch = canvas.height;
-      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const scale = cover
+        ? Math.max(cw / img.naturalWidth, ch / img.naturalHeight)
+        : Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
       const dw = img.naturalWidth * scale;
       const dh = img.naturalHeight * scale;
       ctx.clearRect(0, 0, cw, ch);
@@ -95,6 +100,7 @@ export default function ScrollVideo({
       const rect = canvas.getBoundingClientRect();
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
+      cover = rect.width >= rect.height;
       paint(drawn < 0 ? 0 : drawn, true);
     };
 
