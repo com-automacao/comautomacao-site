@@ -140,8 +140,6 @@ export default async function ProductPage({
               frameCount={90}
               className="hero-scrollvid-canvas"
             />
-            <div className="grid-bg" />
-            <div className="hero-veil accent" />
             {heroInner}
           </div>
         </header>
