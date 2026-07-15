@@ -3,10 +3,10 @@
 import { useEffect, useRef } from "react";
 
 type Props = {
-  /** conjunto de frames padrão (mobile / Full HD) */
+  /** conjunto de frames padrão (mobile) */
   dir: string;
-  /** conjunto opcional para telas grandes (ex.: 4K); usado se largura >= 1024px */
-  dir4k?: string;
+  /** conjunto opcional para telas grandes; usado se largura >= 1024px */
+  dirLarge?: string;
   frameCount: number;
   prefix?: string;
   pad?: number;
@@ -18,7 +18,7 @@ type Props = {
 
 export default function ScrollVideo({
   dir,
-  dir4k,
+  dirLarge,
   frameCount,
   prefix = "frame-",
   pad = 4,
@@ -38,8 +38,8 @@ export default function ScrollVideo({
       canvas.parentElement;
     if (!region) return;
 
-    // telas grandes recebem o 4K; mobile/tablet ficam no Full HD (mais leve)
-    const src = dir4k && window.innerWidth >= 1024 ? dir4k : dir;
+    // telas grandes recebem o conjunto maior; mobile/tablet ficam no leve
+    const src = dirLarge && window.innerWidth >= 1024 ? dirLarge : dir;
     const url = (i: number) =>
       `${src}/${prefix}${String(i + 1).padStart(pad, "0")}.${ext}`;
 
@@ -105,6 +105,8 @@ export default function ScrollVideo({
       img.onload = () => {
         if (i === Math.round(currentF)) paint(i, true);
       };
+      // pré-decodifica pra o scrub não travar ao trocar de frame
+      img.decode?.().catch(() => {});
       images[i] = img;
     }
 
@@ -129,7 +131,7 @@ export default function ScrollVideo({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-  }, [dir, dir4k, frameCount, prefix, pad, ext, ease]);
+  }, [dir, dirLarge, frameCount, prefix, pad, ext, ease]);
 
   return (
     <canvas

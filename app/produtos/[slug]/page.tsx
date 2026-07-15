@@ -136,8 +136,8 @@ export default async function ProductPage({
           <div className="hero hero--sticky">
             {heroBg}
             <ScrollVideo
-              dir="/products/desenvolvimento-web/scroll-fhd"
-              dir4k="/products/desenvolvimento-web/scroll-4k"
+              dir="/products/desenvolvimento-web/scroll-sm"
+              dirLarge="/products/desenvolvimento-web/scroll-lg"
               frameCount={90}
               className="hero-scrollvid-canvas"
             />

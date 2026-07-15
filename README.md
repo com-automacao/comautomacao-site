@@ -101,16 +101,18 @@ O hero da página do Pedra & Pixel usa o componente
 [`ScrollVideo`](components/ScrollVideo.tsx): um `<canvas>` de fundo que faz *scrub*
 de uma sequência de frames conforme o scroll, com o hero "fixo" (sticky) enquanto o
 vídeo roda — o progresso é medido na região com `data-scrollvid-region`. Técnica que
-roda em export estático, sem depender de seek de `<video>`. **Responsivo**: telas
-grandes (largura ≥ 1024px) carregam a versão 4K; mobile/tablet ficam no Full HD
-(mais leve) — o `ScrollVideo` escolhe um único conjunto no carregamento (props `dir`
-= Full HD e `dir4k` = 4K). Os frames são gerados **com ffmpeg** a partir do
-vídeo-fonte em `media/` (fora de `public/`, para não ir ao deploy):
+roda em export estático, sem depender de seek de `<video>`. O quadro exibido é
+suavizado por interpolação (lerp) e os frames são pré-decodificados, pra um scrub
+bem fluido. **Responsivo**: telas grandes (largura ≥ 1024px) carregam a versão QHD;
+mobile/tablet ficam na leve — o `ScrollVideo` baixa um único conjunto no
+carregamento (props `dir` = leve e `dirLarge` = grande). Os frames são gerados
+**com ffmpeg** a partir do vídeo-fonte em `media/` (fora de `public/`, para não ir
+ao deploy):
 
 ```bash
-# 4K (telas grandes) → scroll-4k/  ·  Full HD (mobile) → scroll-fhd/
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 3840 scroll-4k
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 1920 scroll-fhd
+# grande/QHD (telas grandes) → scroll-lg/  ·  leve (mobile) → scroll-sm/
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 2560 scroll-lg
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 1600 scroll-sm
 ```
 
 (`90` = nº de frames; o 4º arg é a pasta de saída). Ao final, o script imprime o
