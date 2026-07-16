@@ -105,17 +105,17 @@ roda em export estático, sem depender de seek de `<video>`. O quadro exibido é
 suavizado por interpolação (lerp) e os frames são pré-decodificados, pra um scrub
 bem fluido. **Responsivo**: telas grandes (largura ≥ 1024px) carregam a versão QHD;
 mobile/tablet ficam na leve — o `ScrollVideo` baixa um único conjunto no
-carregamento (props `dir` = mobile e `dirLarge` = grande). Em paisagem o vídeo
-preenche a tela (cover); em retrato (mobile) usa contain, por isso o conjunto mobile
-é um **recorte 4:5 centrado na logo** — enche bem mais a tela vertical e não corta a
-marca. Os frames são gerados **com ffmpeg** a partir do vídeo-fonte em `media/`
-(fora de `public/`, para não ir ao deploy):
+carregamento (props `dir` = mobile e `dirLarge` = grande). O vídeo sempre preenche a
+tela (cover) — cada tier tem um vídeo no aspecto certo: **desktop 16:9**
+(`pedra-pixel-video.mp4`) e **mobile 9:16 vertical** (`pedra-pixel-video-mobile.mp4`),
+com a logo centralizada. Os frames são gerados **com ffmpeg** a partir dos
+vídeos-fonte em `media/` (fora de `public/`, para não ir ao deploy):
 
 ```bash
-# grande/QHD 16:9 (telas grandes) → scroll-lg/
+# desktop 16:9 (telas grandes) → scroll-lg/
 node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 2560 scroll-lg
-# mobile: recorte 4:5 centrado na logo → scroll-sm/
-node scripts/extract-scroll-frames.mjs media/pedra-pixel-video.mp4 90 1080 scroll-sm 1728:2160:1056:0
+# mobile 9:16 vertical → scroll-sm/
+node scripts/extract-scroll-frames.mjs media/pedra-pixel-video-mobile.mp4 90 1080 scroll-sm
 ```
 
 (`90` = nº de frames; o 4º arg é a pasta de saída). Ao final, o script imprime o
