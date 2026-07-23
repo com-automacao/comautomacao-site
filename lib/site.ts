@@ -9,7 +9,27 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICo
   WHATSAPP_MESSAGE,
 )}`;
 
-export const EMAIL = "comautomacao@gmail.com";
+export const EMAIL = "joao@comautomacao.com";
+
+export const LEGAL = {
+  razaoSocial: "João Maria de Jesus Paulino",
+  cnpj: "25.187.426/0001-27",
+  endereco: {
+    rua: "R. Epitácio Piedade, 204",
+    bairro: "Vila Ophelia",
+    cidade: "Itapeva",
+    uf: "SP",
+    cep: "18400-817",
+  },
+  telefone: "(15) 3526-9980",
+  telefoneHref: "+551535269980",
+  telefoneSchema: "+55 15 3526-9980",
+  horario: "Seg a Sex, 8h às 17h30",
+  areaAtendimento: "Itapeva e região — SP",
+  // Redes para o schema (sameAs) — adicionar quando disponíveis:
+  instagram: "",
+  googleBusiness: "",
+};
 
 
 export const OTHER_PROJECT = {

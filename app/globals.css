@@ -2041,6 +2041,21 @@ h3 {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.4);
 }
+.foot-contacts span {
+  color: var(--color-fg-2);
+}
+.foot-legal {
+  font-style: normal;
+  margin-top: 40px;
+  color: var(--color-fg-2);
+  font-size: 12.5px;
+  line-height: 1.7;
+  max-width: 72ch;
+}
+.foot-legal strong {
+  color: var(--color-fg-1);
+  font-weight: 500;
+}
 
 .hero-mark-layer {
   position: absolute;

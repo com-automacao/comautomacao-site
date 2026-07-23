@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Arrow } from "@/components/Icons";
 import { FlowButton } from "@/components/ui/flow-button";
-import { WHATSAPP_URL, EMAIL } from "@/lib/site";
+import { WHATSAPP_URL, EMAIL, LEGAL } from "@/lib/site";
 
 export default function Footer() {
   return (
@@ -32,6 +32,8 @@ export default function Footer() {
             </p>
             <div className="foot-contacts">
               <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+              <a href={`tel:${LEGAL.telefoneHref}`}>{LEGAL.telefone}</a>
+              <span>{LEGAL.horario}</span>
               <Link href="/#produtos">Ver todos os produtos</Link>
             </div>
             <FlowButton variant="primary" href={WHATSAPP_URL} style={{ marginTop: 22 }}>
@@ -40,6 +42,16 @@ export default function Footer() {
             </FlowButton>
           </div>
         </div>
+        <address className="foot-legal reveal" data-d="2">
+          <strong>{LEGAL.razaoSocial}</strong> · CNPJ {LEGAL.cnpj}
+          <br />
+          {LEGAL.endereco.rua} — {LEGAL.endereco.bairro},{" "}
+          {LEGAL.endereco.cidade}/{LEGAL.endereco.uf} · CEP{" "}
+          {LEGAL.endereco.cep}
+          <br />
+          {LEGAL.telefone} · {LEGAL.horario} · Atendimento:{" "}
+          {LEGAL.areaAtendimento}
+        </address>
       </div>
       <div className="watermark">DECOLE</div>
       <div className="foot-bottom">

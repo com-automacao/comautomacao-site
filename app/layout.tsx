@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import NavScroll from "@/components/NavScroll";
 import WhatsAppFab from "@/components/WhatsAppFab";
+import JsonLd from "@/components/JsonLd";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" data-theme="dark" data-scroll-behavior="smooth">
       <body className={`${inter.variable} ${spaceGrotesk.variable}`}>
+        <JsonLd />
         <ScrollReveal />
         <NavScroll />
         <Nav />
