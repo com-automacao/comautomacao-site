@@ -1791,7 +1791,12 @@ h3 {
 /* ---------- Carrossel de adquirentes (marquee) ---------- */
 .acq-carousel {
   margin-top: 44px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent,
@@ -1807,43 +1812,65 @@ h3 {
     transparent
   );
 }
+.acq-carousel::-webkit-scrollbar {
+  display: none;
+}
+.acq-carousel.is-dragging {
+  cursor: grabbing;
+}
 .acq-track {
   display: flex;
   align-items: flex-end;
   width: max-content;
-  animation: acq-scroll 50s linear infinite;
-}
-.acq-carousel:hover .acq-track {
-  animation-play-state: paused;
 }
 .acq-item {
   flex: 0 0 auto;
+  margin-right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  user-select: none;
+  transition:
+    transform 0.35s var(--ease-out),
+    opacity 0.35s var(--ease-out);
+}
+.acq-photo {
   height: 380px;
   width: auto;
-  margin-right: 24px;
   display: block;
-  user-select: none;
+  pointer-events: none;
   -webkit-user-drag: none;
 }
-@keyframes acq-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+.acq-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--color-fg-2);
+  text-align: center;
+  transition: color 0.3s var(--ease-out);
+}
+/* interação: o item sob o cursor ganha destaque; os demais atenuam */
+.acq-track:hover .acq-item {
+  opacity: 0.4;
+}
+.acq-track:hover .acq-item:hover {
+  opacity: 1;
+  transform: translateY(-10px) scale(1.04);
+}
+.acq-track:hover .acq-item:hover .acq-name {
+  color: #fff;
+}
+/* enquanto arrasta, suprime o realce pra não tremer */
+.acq-carousel.is-dragging .acq-item,
+.acq-carousel.is-dragging .acq-item:hover {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 @media (max-width: 820px) {
-  .acq-item {
+  .acq-photo {
     height: 300px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .acq-track {
-    animation: none;
-  }
-  .acq-carousel {
-    overflow-x: auto;
   }
 }
 

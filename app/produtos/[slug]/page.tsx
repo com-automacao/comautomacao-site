@@ -275,7 +275,7 @@ export default async function ProductPage({
               computador, sem trocar de adquirente.
             </p>
           </div>
-          <AcquirersCarousel images={product.acquirers} />
+          <AcquirersCarousel items={product.acquirers} />
         </section>
       )}
 

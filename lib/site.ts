@@ -25,7 +25,6 @@ export const LEGAL = {
   telefoneHref: "+551535269980",
   telefoneSchema: "+55 15 3526-9980",
   horario: "Seg a Sex, 8h às 17h30",
-  areaAtendimento: "Itapeva e região — SP",
   // Redes para o schema (sameAs) — adicionar quando disponíveis:
   instagram: "",
   googleBusiness: "",

@@ -52,7 +52,7 @@ export type Product = {
 
   gallery?: { src: string; caption: string; portrait?: boolean; light?: boolean }[];
 
-  acquirers?: string[];
+  acquirers?: { src: string; name: string }[];
 
   steps: { label: string; title: string; body: string }[];
 
@@ -177,23 +177,26 @@ export const products: Product[] = [
     category: "Varejo e Gastronomia",
     keywords: ["NFC-e", "Venda rápida", "Multiplataforma", "Offline", "Delivery"],
     tagline: "Do restaurante ao varejo, venda rápido e emita NFC-e.",
-    lead: "Um PDV que serve tanto restaurantes e bares quanto o varejo em geral: venda no balcão, na maquininha ou no celular, emita o cupom fiscal e continue vendendo mesmo sem internet.",
-    short: "PDV multiplataforma com NFC-e para restaurantes e varejo em geral.",
+    lead: "O PDV+ serve tanto restaurantes e bares quanto o varejo em geral: venda no balcão, na maquininha ou no celular, emita o cupom fiscal e continue vendendo mesmo sem internet.",
+    short: "PDV+ multiplataforma com NFC-e para restaurantes e varejo em geral.",
     audience: ["Varejo, MEI e Simples Nacional", "Mercados e conveniência", "Bares e restaurantes", "Delivery e food service"],
     wordmark: "/products/pdv-mais/wordmark.png",
     mark: "/products/pdv-mais/logo.png",
     mockup: "/products/pdv-mais/mockup.webp",
     acquirers: [
-      "/products/pdv-mais/acquirers/1.png",
-      "/products/pdv-mais/acquirers/2.png",
-      "/products/pdv-mais/acquirers/3.png",
-      "/products/pdv-mais/acquirers/4.png",
-      "/products/pdv-mais/acquirers/5.png",
-      "/products/pdv-mais/acquirers/6.png",
-      "/products/pdv-mais/acquirers/7.png",
-      "/products/pdv-mais/acquirers/8.png",
-      "/products/pdv-mais/acquirers/9.png",
-      "/products/pdv-mais/acquirers/10.png",
+      { src: "/products/pdv-mais/acquirers/1.png", name: "Clover" },
+      { src: "/products/pdv-mais/acquirers/2.png", name: "Getnet Smart" },
+      {
+        src: "/products/pdv-mais/acquirers/3.png",
+        name: "PagBank Moderninha Smart 2",
+      },
+      { src: "/products/pdv-mais/acquirers/4.png", name: "PicPay Smart" },
+      { src: "/products/pdv-mais/acquirers/5.png", name: "Rede Laranjinha Smart" },
+      { src: "/products/pdv-mais/acquirers/6.png", name: "SafraPay Smart" },
+      { src: "/products/pdv-mais/acquirers/7.png", name: "Sicredi Smart" },
+      { src: "/products/pdv-mais/acquirers/8.png", name: "Stone Smart" },
+      { src: "/products/pdv-mais/acquirers/9.png", name: "BIN/Fiserv Smart" },
+      { src: "/products/pdv-mais/acquirers/10.png", name: "Cielo LIO" },
     ],
     problem: {
       title: "Sistema travado é venda perdida.",
@@ -206,7 +209,7 @@ export const products: Product[] = [
     },
     solution: {
       title: "Venda em segundos, NFC-e no automático.",
-      body: "PDV enxuto com busca inteligente, leitor de código e NFC-e integrada, no computador, na maquininha smart ou no celular. Sincroniza na nuvem e continua vendendo offline.",
+      body: "PDV+ enxuto com busca inteligente, leitor de código e NFC-e integrada, no computador, na maquininha smart ou no celular. Sincroniza na nuvem e continua vendendo offline.",
       bullets: [
         "NFC-e rápida, até em contingência",
         "Roda em Windows, Android, iOS e maquininhas",
@@ -215,7 +218,7 @@ export const products: Product[] = [
     },
     features: [
       { icon: "bolt", title: "Venda rápida", body: "Busca inteligente, leitor de código de barras e divisão por categorias. O caixa não para." },
-      { icon: "card", title: "NFC-e integrada", body: "Emita o cupom fiscal direto do PDV, com diversas formas de pagamento, até em contingência." },
+      { icon: "card", title: "NFC-e integrada", body: "Emita o cupom fiscal direto do PDV+, com diversas formas de pagamento, até em contingência." },
       { icon: "clock", title: "Funciona offline", body: "Internet caiu? Continua vendendo e sincroniza tudo quando a conexão volta." },
       { icon: "cloud", title: "Multiplataforma na nuvem", body: "Windows, tablet, maquininha smart, mini PDV, Android e iOS, sempre sincronizados." },
       { icon: "cart", title: "Mesas, comandas e delivery", body: "Atendimento de balcão e mesas, com integração iFood e catálogo online." },
@@ -228,7 +231,7 @@ export const products: Product[] = [
     ],
     faq: [
       { q: "Funciona na minha maquininha?", a: "Sim. Roda em Windows, Android, iOS, maquininhas smart e mini PDV, sempre sincronizado na nuvem." },
-      { q: "Continua vendendo se a internet cair?", a: "Sim. O PDV segue vendendo offline e sincroniza tudo, inclusive a NFC-e em contingência, quando a conexão volta." },
+      { q: "Continua vendendo se a internet cair?", a: "Sim. O PDV+ segue vendendo offline e sincroniza tudo, inclusive a NFC-e em contingência, quando a conexão volta." },
       { q: "Serve pra loja e pra restaurante?", a: "Serve os dois. Venda rápida de balcão para o varejo, e mesas, comandas e delivery para bares e restaurantes." },
       { q: "Emite cupom fiscal?", a: "Sim. NFC-e integrada, com diversas formas de pagamento, sem etapa extra." },
     ],

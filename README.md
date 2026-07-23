@@ -59,7 +59,7 @@ components/
   HeroVideo.tsx, HeroMarkAlign.tsx        # vídeo do hero + alinhamento do foguete na home
   ProductStripe.tsx, ProductStripes.tsx   # vitrine de produtos (faixas acordeão)
   Icons.tsx                               # ícones (incl. ícones de feature)
-  HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV)
+  HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, etc.
@@ -88,7 +88,7 @@ Tudo vem de [`lib/products.ts`](lib/products.ts). Cada produto tem cor-assinatur
 (`accent`), `lead`, `solution`, `features`, `audience`, `faq` **próprio por produto**
 (com `PRODUCT_FAQ` só como fallback) e, opcionalmente, `wordmark`/`mark` (logo),
 `mockup`, `gallery` (com flag `light` p/ mockups de fundo branco) e `acquirers`
-(carrossel de maquininhas do PDV). Adicionar/editar produto = editar esse arquivo;
+(carrossel de maquininhas do PDV+). Adicionar/editar produto = editar esse arquivo;
 as rotas `/produtos/[slug]` são geradas automaticamente (`generateStaticParams`).
 
 Produtos atuais: GourmetSA, Finances Web, PDV Plus, FaloApp, CRM Com e
