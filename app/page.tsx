@@ -6,6 +6,7 @@ import { GooeyText } from "@/components/ui/gooey-text-morphing";
 import { MagneticText } from "@/components/ui/morphing-cursor";
 import { FlowButton } from "@/components/ui/flow-button";
 import ProductStripes from "@/components/ProductStripes";
+import StatsBand from "@/components/StatsBand";
 import { CircularTestimonials } from "@/components/ui/circular-testimonials";
 import { Arrow } from "@/components/Icons";
 import { products } from "@/lib/products";
@@ -122,6 +123,9 @@ export default function Home() {
           <span className="bar" />
         </div>
       </header>
+
+      {/* ===== FAIXA DE NÚMEROS (PS-06) — só renderiza com dado real ===== */}
+      <StatsBand />
 
       {/* ===== DOBRA 2 · O QUE FAZEMOS (bloco único) ===== */}
       <section id="frentes" className="s-dark pad">
