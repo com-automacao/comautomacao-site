@@ -9,7 +9,7 @@ type P = { x: number; y: number; age: number; life: number; trail: number[] };
 // rastro cinza (o canvas é limpo a cada frame). No hover do [data-absorb-target]
 // as linhas encurtam e são sugadas em direção a ele (se desfazem).
 export default function FlowFieldBackground({
-  color = "128, 162, 255",
+  color = "206, 214, 236",
 }: {
   color?: string;
 }) {
@@ -24,7 +24,7 @@ export default function FlowFieldBackground({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const TRAIL = 130;
+    const TRAIL = 210;
     const speed = 2.3;
     let w = 0;
     let h = 0;
@@ -84,7 +84,7 @@ export default function FlowFieldBackground({
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(520, Math.max(140, Math.round((w * h) / 2600)));
+      const count = Math.min(280, Math.max(80, Math.round((w * h) / 5200)));
       ps = Array.from({ length: count }, () => {
         const x = Math.random() * w;
         const y = Math.random() * h;
@@ -101,10 +101,12 @@ export default function FlowFieldBackground({
       by = b.top + b.height / 2 - c.top;
     };
 
-    // campo suave de baixa frequência -> curvas longas e coerentes
+    // campo de baixa frequência (linhas longas e coerentes) porém com o ângulo
+    // amplificado abaixo -> curvas que percorrem grandes arcos e dobram em
+    // laços/U suaves, orgânicas, sem virar ruído.
     const field = (x: number, y: number) =>
-      Math.sin(x * 0.0023 + Math.cos(y * 0.0019 + t * 0.0016) * 1.0) +
-      Math.cos(y * 0.0021 - Math.sin(x * 0.0018 + t * 0.0011) * 1.0);
+      Math.sin(x * 0.0024 + Math.cos(y * 0.002 + t * 0.0015) * 1.2) +
+      Math.cos(y * 0.0022 - Math.sin(x * 0.0019 + t * 0.001) * 1.2);
 
     const step = () => {
       if (!alive || paused) {
@@ -116,15 +118,15 @@ export default function FlowFieldBackground({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
 
-      // no hover as linhas encurtam (se desfazem)
+      // no hover os rastros encurtam (se desfazem)
       const maxLen = Math.max(2, Math.round(TRAIL * (1 - absorb * 0.9)));
-      ctx.strokeStyle = `rgba(${color}, ${0.42 + absorb * 0.28})`;
-      ctx.lineWidth = 1.3;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      // grão fino de partículas ao longo do rastro (estilo "fluid particles")
+      const r = 0.9;
+      ctx.fillStyle = `rgba(${color}, ${0.5 + absorb * 0.2})`;
+      ctx.beginPath();
 
       for (const p of ps) {
-        const ang = field(p.x, p.y) * Math.PI;
+        const ang = field(p.x, p.y) * Math.PI * 1.5;
         let vx = Math.cos(ang) * speed;
         let vy = Math.sin(ang) * speed;
 
@@ -143,12 +145,7 @@ export default function FlowFieldBackground({
 
         p.x += vx;
         p.y += vy;
-        if (
-          p.x < -28 ||
-          p.x > w + 28 ||
-          p.y < -28 ||
-          p.y > h + 28
-        ) {
+        if (p.x < -28 || p.x > w + 28 || p.y < -28 || p.y > h + 28) {
           spawn(p);
           continue;
         }
@@ -157,14 +154,14 @@ export default function FlowFieldBackground({
         if (p.trail.length > maxLen * 2)
           p.trail.splice(0, p.trail.length - maxLen * 2);
 
+        // um ponto a cada ~2 amostras -> grão com espaços (não vira linha sólida)
         const tr = p.trail;
-        if (tr.length >= 4) {
-          ctx.beginPath();
-          ctx.moveTo(tr[0], tr[1]);
-          for (let i = 2; i < tr.length; i += 2) ctx.lineTo(tr[i], tr[i + 1]);
-          ctx.stroke();
+        for (let i = 0; i < tr.length; i += 4) {
+          ctx.moveTo(tr[i] + r, tr[i + 1]);
+          ctx.arc(tr[i], tr[i + 1], r, 0, Math.PI * 2);
         }
       }
+      ctx.fill();
 
       // recorta o flow de trás do texto solto (bordas suaves)
       if (occ.length) {
