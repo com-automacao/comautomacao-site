@@ -44,7 +44,7 @@ export default function FlowFieldBackground({
       p.x = Math.random() * w;
       p.y = Math.random() * h;
       p.age = 0;
-      p.life = 90 + Math.random() * 170;
+      p.life = 500 + Math.random() * 500;
     };
 
     const resize = () => {
@@ -90,13 +90,14 @@ export default function FlowFieldBackground({
       updateBtn();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // fade das trilhas (destination-out -> some para transparente)
+      // fade das trilhas: baixo no normal (linhas contínuas/persistentes) e
+      // alto no hover (as linhas se desfazem)
       ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = `rgba(0,0,0,${0.035 + absorb * 0.06})`;
+      ctx.fillStyle = `rgba(0,0,0,${0.018 + absorb * 0.16})`;
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = "source-over";
 
-      ctx.fillStyle = `rgba(${color}, ${0.62 + absorb * 0.35})`;
+      ctx.fillStyle = `rgba(${color}, ${0.3 + absorb * 0.4})`;
       ctx.beginPath();
       for (const p of ps) {
         const ang = field(p.x, p.y) * Math.PI;
@@ -129,8 +130,8 @@ export default function FlowFieldBackground({
           spawn(p);
           continue;
         }
-        ctx.moveTo(p.x + 1.2, p.y);
-        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+        ctx.moveTo(p.x + 1, p.y);
+        ctx.arc(p.x, p.y, 1, 0, Math.PI * 2);
       }
       ctx.fill();
 

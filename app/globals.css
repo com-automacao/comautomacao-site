@@ -1111,20 +1111,32 @@ h3 {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 5%,
-    #000 95%,
-    transparent
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 5%,
-    #000 95%,
-    transparent
-  );
+  /* mostra o flow só nas laterais (centro, onde fica o texto, fica oculto) e
+     desvanece no topo/base — via interseção das duas máscaras */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent),
+    linear-gradient(
+      to right,
+      #000 0,
+      #000 calc(50% - 720px),
+      transparent calc(50% - 660px),
+      transparent calc(50% + 660px),
+      #000 calc(50% + 720px),
+      #000 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent, #000 5%, #000 95%, transparent),
+    linear-gradient(
+      to right,
+      #000 0,
+      #000 calc(50% - 720px),
+      transparent calc(50% - 660px),
+      transparent calc(50% + 660px),
+      #000 calc(50% + 720px),
+      #000 100%
+    );
+  mask-composite: intersect;
 }
 .flowfield canvas {
   display: block;
