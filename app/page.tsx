@@ -8,6 +8,7 @@ import { FlowButton } from "@/components/ui/flow-button";
 import ProductStripes from "@/components/ProductStripes";
 import StatsBand from "@/components/StatsBand";
 import SupportProof from "@/components/SupportProof";
+import FlowFieldBackground from "@/components/FlowFieldBackground";
 import { CircularTestimonials } from "@/components/ui/circular-testimonials";
 import { Arrow } from "@/components/Icons";
 import { products } from "@/lib/products";
@@ -242,6 +243,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== ZONA COM FLOW FIELD (Diferenciais + Suporte, unidas) ===== */}
+      <div className="ff-zone">
+      <FlowFieldBackground />
+
       {/* ===== DOBRA 5 · DIFERENCIAIS ===== */}
       <section id="diferenciais" className="s-dark pad">
         <div className="wrap">
@@ -310,6 +315,7 @@ export default function Home() {
 
       {/* ===== PROVA DO SUPORTE (PS-14) ===== */}
       <SupportProof />
+      </div>
 
       {/* ===== DEPOIMENTOS ===== */}
       {false && (

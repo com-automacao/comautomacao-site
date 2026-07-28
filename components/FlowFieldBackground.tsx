@@ -35,9 +35,9 @@ export default function FlowFieldBackground({
     let by = 0;
     let ps: P[] = [];
 
-    const section =
-      (root.closest("section") as HTMLElement | null) ?? root.parentElement;
-    const btn = section?.querySelector(
+    // o botão-alvo fica na mesma zona (pai do flowfield)
+    const scope = (root.parentElement as HTMLElement | null) ?? document.body;
+    const btn = scope.querySelector(
       "[data-absorb-target]",
     ) as HTMLElement | null;
 
@@ -68,7 +68,7 @@ export default function FlowFieldBackground({
       if (!w || !h) return;
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
-      const count = Math.min(220, Math.max(70, Math.round((w * h) / 5200)));
+      const count = Math.min(320, Math.max(90, Math.round((w * h) / 3600)));
       ps = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
@@ -133,9 +133,9 @@ export default function FlowFieldBackground({
         const len = Math.min(p.l + sp * 2.4, 40);
         const nx = vx / (sp || 1);
         const ny = vy / (sp || 1);
-        const a = (0.2 + absorb * 0.5) * Math.min(1, sp / 1.1);
+        const a = (0.34 + absorb * 0.5) * Math.min(1, sp / 0.7);
         ctx.strokeStyle = `rgba(${color}, ${a})`;
-        ctx.lineWidth = 1 + absorb * 0.7;
+        ctx.lineWidth = 1.2 + absorb * 0.8;
         ctx.beginPath();
         ctx.moveTo(p.x - nx * len, p.y - ny * len);
         ctx.lineTo(p.x, p.y);

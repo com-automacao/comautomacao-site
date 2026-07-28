@@ -1094,12 +1094,37 @@ h3 {
 }
 
 /* ---------- PROVA DO SUPORTE (PS-14) ---------- */
+/* zona compartilhada: Diferenciais + Suporte com um flow field contínuo */
+.ff-zone {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+.ff-zone > section {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
 .flowfield {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
 }
 .flowfield canvas {
   display: block;
