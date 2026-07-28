@@ -2,11 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
-type P = { x: number; y: number; age: number; life: number };
+type P = { x: number; y: number; age: number; life: number; trail: number[] };
 
-// Flow field: partículas seguem um campo de fluxo curvo (pseudo curl-noise) e
-// deixam TRILHAS (o canvas não é limpo, só desvanece) formando streamlines. No
-// hover do [data-absorb-target] da mesma zona, são sugadas em direção a ele.
+// Flow field: partículas seguem um campo de fluxo curvo e cada uma desenha o
+// seu próprio traçado (buffer de posições) — linhas sólidas e contínuas, sem
+// rastro cinza (o canvas é limpo a cada frame). No hover do [data-absorb-target]
+// as linhas encurtam e são sugadas em direção a ele (se desfazem).
 export default function FlowFieldBackground({
   color = "128, 162, 255",
 }: {
@@ -23,6 +24,8 @@ export default function FlowFieldBackground({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const TRAIL = 100;
+    const speed = 1.5;
     let w = 0;
     let h = 0;
     let raf = 0;
@@ -34,8 +37,22 @@ export default function FlowFieldBackground({
     let bx = 0;
     let by = 0;
     let ps: P[] = [];
+    let occ: { x: number; y: number; w: number; h: number }[] = [];
 
     const scope = (root.parentElement as HTMLElement | null) ?? document.body;
+
+    // "recorta" o flow de trás do texto solto (fora dos cards, que já ocultam
+    // pelo fundo opaco). Posição relativa ao canvas (constante no scroll).
+    const computeOcc = () => {
+      const c = canvas.getBoundingClientRect();
+      const els = scope.querySelectorAll<HTMLElement>(
+        ".eyebrow, .section-title, .lead",
+      );
+      occ = Array.from(els).map((el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height };
+      });
+    };
     const btn = scope.querySelector(
       "[data-absorb-target]",
     ) as HTMLElement | null;
@@ -44,7 +61,8 @@ export default function FlowFieldBackground({
       p.x = Math.random() * w;
       p.y = Math.random() * h;
       p.age = 0;
-      p.life = 500 + Math.random() * 500;
+      p.life = 500 + Math.random() * 600;
+      p.trail = [p.x, p.y];
     };
 
     const resize = () => {
@@ -55,14 +73,14 @@ export default function FlowFieldBackground({
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      const count = Math.min(460, Math.max(140, Math.round((w * h) / 2500)));
+      const count = Math.min(520, Math.max(140, Math.round((w * h) / 2600)));
       ps = Array.from({ length: count }, () => {
-        const p: P = { x: 0, y: 0, age: 0, life: 0 };
+        const p: P = { x: 0, y: 0, age: 0, life: 0, trail: [] };
         spawn(p);
         p.age = Math.random() * p.life;
         return p;
       });
+      computeOcc();
     };
 
     const updateBtn = () => {
@@ -79,8 +97,6 @@ export default function FlowFieldBackground({
         Math.cos(y * 0.0055 - Math.sin(x * 0.0052 - t * 0.0018) * 1.7)) *
       1.15;
 
-    const speed = 1.05;
-
     const step = () => {
       if (!alive || paused) {
         raf = 0;
@@ -89,16 +105,15 @@ export default function FlowFieldBackground({
       absorb += (absorbTarget - absorb) * 0.06;
       updateBtn();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
 
-      // fade das trilhas: baixo no normal (linhas contínuas/persistentes) e
-      // alto no hover (as linhas se desfazem)
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = `rgba(0,0,0,${0.018 + absorb * 0.16})`;
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "source-over";
+      // no hover as linhas encurtam (se desfazem)
+      const maxLen = Math.max(2, Math.round(TRAIL * (1 - absorb * 0.9)));
+      ctx.strokeStyle = `rgba(${color}, ${0.42 + absorb * 0.28})`;
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
 
-      ctx.fillStyle = `rgba(${color}, ${0.3 + absorb * 0.4})`;
-      ctx.beginPath();
       for (const p of ps) {
         const ang = field(p.x, p.y) * Math.PI;
         let vx = Math.cos(ang) * speed;
@@ -122,18 +137,39 @@ export default function FlowFieldBackground({
         p.age++;
         if (
           p.age > p.life ||
-          p.x < -8 ||
-          p.x > w + 8 ||
-          p.y < -8 ||
-          p.y > h + 8
+          p.x < -12 ||
+          p.x > w + 12 ||
+          p.y < -12 ||
+          p.y > h + 12
         ) {
           spawn(p);
           continue;
         }
-        ctx.moveTo(p.x + 1, p.y);
-        ctx.arc(p.x, p.y, 1, 0, Math.PI * 2);
+
+        p.trail.push(p.x, p.y);
+        if (p.trail.length > maxLen * 2)
+          p.trail.splice(0, p.trail.length - maxLen * 2);
+
+        const tr = p.trail;
+        if (tr.length >= 4) {
+          ctx.beginPath();
+          ctx.moveTo(tr[0], tr[1]);
+          for (let i = 2; i < tr.length; i += 2) ctx.lineTo(tr[i], tr[i + 1]);
+          ctx.stroke();
+        }
       }
-      ctx.fill();
+
+      // recorta o flow de trás do texto solto (bordas suaves)
+      if (occ.length) {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.filter = "blur(6px)";
+        ctx.fillStyle = "#000";
+        for (const o of occ) {
+          ctx.fillRect(o.x - 12, o.y - 8, o.w + 24, o.h + 16);
+        }
+        ctx.filter = "none";
+        ctx.globalCompositeOperation = "source-over";
+      }
 
       t += 1;
       raf = requestAnimationFrame(step);
@@ -165,7 +201,19 @@ export default function FlowFieldBackground({
     };
     btn?.addEventListener("pointerenter", onEnter);
     btn?.addEventListener("pointerleave", onLeave);
-    window.addEventListener("scroll", updateBtn, { passive: true });
+
+    let stick = false;
+    const onScroll = () => {
+      updateBtn();
+      if (stick) return;
+      stick = true;
+      requestAnimationFrame(() => {
+        stick = false;
+        computeOcc();
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const occTimer = window.setTimeout(computeOcc, 900);
 
     kick();
 
@@ -176,7 +224,8 @@ export default function FlowFieldBackground({
       io.disconnect();
       btn?.removeEventListener("pointerenter", onEnter);
       btn?.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("scroll", updateBtn);
+      window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(occTimer);
     };
   }, [color]);
 
