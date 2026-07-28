@@ -2,18 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
-type Particle = {
-  x: number;
-  y: number;
-  tx: number;
-  ty: number;
-  sx: number;
-  sy: number;
-};
+type Particle = { tx: number; ty: number; sx: number; sy: number };
 
-// Texto revelado em partículas: monta quando entra na tela e dispersa no
-// hover/toque. Renderiza o texto num canvas offscreen, amostra os pixels e
-// anima cada partícula entre a posição "montada" (tx/ty) e a "dispersa" (sx/sy).
+// Em repouso o número é TEXTO nítido (anti-aliased, sem pixel). As partículas
+// só aparecem na transição: montam ao entrar na tela e dispersam no hover/toque.
+// Um valor `disperse` (0 = montado/texto, 1 = disperso/partículas) dirige tudo,
+// com crossfade entre o texto e as partículas.
 export default function MagicTextReveal({
   text,
   className,
@@ -32,14 +26,18 @@ export default function MagicTextReveal({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let particles: Particle[] = [];
+    let ps: Particle[] = [];
     let w = 0;
     let h = 0;
+    let pad = 0;
+    let baseline = 0;
     let dot = 2;
     let fill = "#fff";
+    let fontStr = "";
     let revealed = false;
     let hovered = false;
-    let rafId = 0;
+    let disperse = 1; // começa disperso; monta ao revelar
+    let raf = 0;
     let running = false;
     let alive = true;
 
@@ -48,16 +46,17 @@ export default function MagicTextReveal({
       const cs = getComputedStyle(root);
       fill = cs.color || "#fff";
       const fontSize = parseFloat(cs.fontSize) || 48;
-      const font = `${cs.fontStyle} ${cs.fontWeight} ${fontSize}px ${cs.fontFamily}`;
-      dot = Math.max(2, fontSize / 19);
+      fontStr = `${cs.fontStyle} ${cs.fontWeight} ${fontSize}px ${cs.fontFamily}`;
+      dot = Math.max(1.8, fontSize / 22);
 
       const meas = document.createElement("canvas").getContext("2d");
       if (!meas) return;
-      meas.font = font;
+      meas.font = fontStr;
       const m = meas.measureText(text);
       const ascent = m.actualBoundingBoxAscent || fontSize * 0.78;
       const descent = m.actualBoundingBoxDescent || fontSize * 0.22;
-      const pad = Math.ceil(fontSize * 0.6);
+      pad = Math.ceil(fontSize * 0.6);
+      baseline = pad + ascent;
       w = Math.ceil(m.width) + pad * 2;
       h = Math.ceil(ascent + descent) + pad * 2;
 
@@ -73,72 +72,77 @@ export default function MagicTextReveal({
       if (!octx) return;
       octx.scale(dpr, dpr);
       octx.fillStyle = "#fff";
-      octx.font = font;
+      octx.font = fontStr;
       octx.textBaseline = "alphabetic";
-      octx.fillText(text, pad, pad + ascent);
+      octx.fillText(text, pad, baseline);
       const img = octx.getImageData(0, 0, off.width, off.height).data;
 
-      const stepCss = Math.max(1.4, fontSize / 33);
-      const step = Math.max(1, Math.round(stepCss * dpr));
+      const step = Math.max(1, Math.round(Math.max(1.4, fontSize / 26) * dpr));
       const next: Particle[] = [];
       for (let y = 0; y < off.height; y += step) {
         for (let x = 0; x < off.width; x += step) {
-          if (img[(y * off.width + x) * 4 + 3] > 80) {
+          if (img[(y * off.width + x) * 4 + 3] > 90) {
             const tx = x / dpr;
             const ty = y / dpr;
             const ang = Math.random() * Math.PI * 2;
-            const rad = fontSize * (0.4 + Math.random() * 1.2);
-            const sx = tx + Math.cos(ang) * rad;
-            const sy = ty + Math.sin(ang) * rad;
-            // se já revelado, nasce montado (rebuild não re-espalha)
+            const rad = fontSize * (0.5 + Math.random() * 1.3);
             next.push({
-              x: revealed ? tx : sx,
-              y: revealed ? ty : sy,
               tx,
               ty,
-              sx,
-              sy,
+              sx: tx + Math.cos(ang) * rad,
+              sy: ty + Math.sin(ang) * rad,
             });
           }
         }
       }
-      particles = next;
+      ps = next;
       kick();
     };
 
     const frame = () => {
+      const target = hovered ? 1 : revealed ? 0 : 1;
+      disperse += (target - disperse) * 0.12;
+      if (Math.abs(target - disperse) < 0.004) disperse = target;
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = fill;
-      const assemble = revealed && !hovered;
-      ctx.globalAlpha = assemble ? 1 : 0.5;
-      const r = dot / 2;
-      let moving = false;
-      // pontos redondos (batched) — bordas suaves, sem serrilhado
-      ctx.beginPath();
-      for (const p of particles) {
-        const gx = assemble ? p.tx : p.sx;
-        const gy = assemble ? p.ty : p.sy;
-        p.x += (gx - p.x) * 0.12;
-        p.y += (gy - p.y) * 0.12;
-        if (Math.abs(gx - p.x) > 0.3 || Math.abs(gy - p.y) > 0.3) moving = true;
-        const cx = p.x + r;
-        const cy = p.y + r;
-        ctx.moveTo(cx + r, cy);
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+
+      // texto nítido quando montado (some no início da dispersão)
+      const textA = Math.max(0, 1 - disperse / 0.12);
+      if (textA > 0.01) {
+        ctx.globalAlpha = textA;
+        ctx.fillStyle = fill;
+        ctx.font = fontStr;
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(text, pad, baseline);
       }
-      ctx.fill();
-      if (moving) rafId = requestAnimationFrame(frame);
+
+      // partículas na transição/dispersão
+      const pA = Math.min(1, disperse / 0.1);
+      if (pA > 0.01 && ps.length) {
+        ctx.globalAlpha = pA;
+        ctx.fillStyle = fill;
+        const r = dot / 2;
+        ctx.beginPath();
+        for (const p of ps) {
+          const px = p.tx + (p.sx - p.tx) * disperse;
+          const py = p.ty + (p.sy - p.ty) * disperse;
+          ctx.moveTo(px + r, py);
+          ctx.arc(px, py, r, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
+
+      if (disperse !== target) raf = requestAnimationFrame(frame);
       else running = false;
     };
     function kick() {
-      if (!running) {
+      if (!running && alive) {
         running = true;
-        rafId = requestAnimationFrame(frame);
+        raf = requestAnimationFrame(frame);
       }
     }
 
-    // reveal determinístico pelo scroll (mais confiável que IO async)
     const evalReveal = () => {
       const r = root.getBoundingClientRect();
       const vh = window.innerHeight || 0;
@@ -197,7 +201,7 @@ export default function MagicTextReveal({
 
     return () => {
       alive = false;
-      if (rafId) cancelAnimationFrame(rafId);
+      if (raf) cancelAnimationFrame(raf);
       if (tt) window.clearTimeout(tt);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
