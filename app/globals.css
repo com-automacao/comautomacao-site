@@ -1143,18 +1143,17 @@ h3 {
   flex-direction: column;
   gap: 8px;
   padding: 22px 24px;
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-bg-elev);
 }
 .tilt {
   will-change: transform;
   transform-style: preserve-3d;
 }
 .support-item.tilt:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.045);
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.4);
+  border-color: var(--border-strong);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
 }
 .support-k {
   font-family: var(--font-mono);
