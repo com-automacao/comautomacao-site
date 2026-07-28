@@ -3,11 +3,17 @@ import { LEGAL, WHATSAPP_URL } from "@/lib/site";
 import { FlowButton } from "@/components/ui/flow-button";
 import { Arrow } from "@/components/Icons";
 import TiltCard from "@/components/TiltCard";
+import FlowFieldBackground from "@/components/FlowFieldBackground";
 
 export default function SupportProof() {
   return (
-    <section id="suporte" className="s-dark pad" style={{ paddingTop: 0 }}>
-      <div className="wrap">
+    <section
+      id="suporte"
+      className="s-dark pad"
+      style={{ paddingTop: 0, position: "relative", overflow: "hidden" }}
+    >
+      <FlowFieldBackground />
+      <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
         <div className="eyebrow reveal r-left">Suporte local</div>
         <h2 className="section-title reveal r-left" data-d="1">
           Suporte de verdade, com nome e rosto.
@@ -49,6 +55,7 @@ export default function SupportProof() {
           href={WHATSAPP_URL}
           className="reveal r-left"
           data-d="3"
+          data-absorb-target=""
           style={{ marginTop: 34 }}
         >
           Falar com o suporte
