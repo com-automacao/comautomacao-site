@@ -1,78 +1,57 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import type { CSSProperties } from "react";
 
 type Props = {
   text: string;
   className?: string;
 };
 
-// hash determinístico por índice — evita re-randomizar e mismatch de hidratação
+// hash determinístico por índice — mesmo resultado no SSR e no cliente
 function rnd(seed: number) {
   const x = Math.sin(seed * 99.13 + 3.7) * 43758.5453;
   return x - Math.floor(x);
 }
 
 export default function TextDisperse({ text, className }: Props) {
-  const [active, setActive] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
   const timer = useRef<number | null>(null);
-  const chars = useMemo(() => Array.from(text), [text]);
+  const chars = Array.from(text);
 
-  const offsets = useMemo(
-    () =>
-      chars.map((_, i) => {
-        const angle = rnd(i + 1) * Math.PI * 2;
-        const dist = 18 + rnd(i + 7) * 28;
-        return {
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist,
-          rot: (rnd(i + 13) - 0.5) * 55,
-        };
-      }),
-    [chars],
-  );
-
-  useEffect(
-    () => () => {
-      if (timer.current) window.clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const disperse = () => setActive(true);
-  const reform = () => setActive(false);
-  // no touch não há "sair" confiável: dispara e volta sozinho
+  // no touch não há "sair": dispara e volta sozinho
   const onTouchStart = () => {
-    setActive(true);
+    const el = ref.current;
+    if (!el) return;
+    el.classList.add("is-active");
     if (timer.current) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setActive(false), 1400);
+    timer.current = window.setTimeout(
+      () => el.classList.remove("is-active"),
+      1400,
+    );
   };
 
   return (
     <span
+      ref={ref}
       className={"td-wrap" + (className ? " " + className : "")}
-      onMouseEnter={disperse}
-      onMouseLeave={reform}
       onTouchStart={onTouchStart}
       aria-label={text}
-      role="text"
     >
-      {chars.map((ch, i) => (
-        <motion.span
-          key={i}
-          className="td-char"
-          aria-hidden
-          animate={
-            active
-              ? { x: offsets[i].x, y: offsets[i].y, rotate: offsets[i].rot }
-              : { x: 0, y: 0, rotate: 0 }
-          }
-          transition={{ type: "spring", stiffness: 220, damping: 12, mass: 0.6 }}
-        >
-          {ch === " " ? " " : ch}
-        </motion.span>
-      ))}
+      {chars.map((ch, i) => {
+        const angle = rnd(i + 1) * Math.PI * 2;
+        const dist = 18 + rnd(i + 7) * 28;
+        const style = {
+          "--tx": `${(Math.cos(angle) * dist).toFixed(1)}px`,
+          "--ty": `${(Math.sin(angle) * dist).toFixed(1)}px`,
+          "--tr": `${((rnd(i + 13) - 0.5) * 55).toFixed(1)}deg`,
+        } as CSSProperties;
+        return (
+          <span key={i} className="td-char" aria-hidden style={style}>
+            {ch === " " ? " " : ch}
+          </span>
+        );
+      })}
     </span>
   );
 }

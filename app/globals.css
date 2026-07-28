@@ -1086,11 +1086,26 @@ h3 {
 .td-wrap {
   display: inline-block;
   white-space: nowrap;
+  letter-spacing: normal;
   cursor: pointer;
 }
 .td-char {
   display: inline-block;
   will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.td-wrap:hover .td-char,
+.td-wrap.is-active .td-char {
+  transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--tr, 0));
+}
+@media (prefers-reduced-motion: reduce) {
+  .td-char {
+    transition: none;
+  }
+  .td-wrap:hover .td-char,
+  .td-wrap.is-active .td-char {
+    transform: none;
+  }
 }
 
 /* ---------- PROVA DO SUPORTE (PS-14) ---------- */
