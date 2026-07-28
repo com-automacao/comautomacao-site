@@ -2,6 +2,7 @@ import { SUPPORT } from "@/lib/social-proof";
 import { LEGAL, WHATSAPP_URL } from "@/lib/site";
 import { FlowButton } from "@/components/ui/flow-button";
 import { Arrow } from "@/components/Icons";
+import TiltCard from "@/components/TiltCard";
 
 export default function SupportProof() {
   return (
@@ -17,29 +18,29 @@ export default function SupportProof() {
         </p>
 
         <div className="support-grid reveal r-left" data-d="3">
-          <div className="support-item">
+          <TiltCard className="support-item">
             <span className="support-k">Atendimento</span>
             <span className="support-v">{SUPPORT.canais.join(" · ")}</span>
-          </div>
-          <div className="support-item">
+          </TiltCard>
+          <TiltCard className="support-item">
             <span className="support-k">Horário</span>
             <span className="support-v">{LEGAL.horario}</span>
-          </div>
-          <div className="support-item">
+          </TiltCard>
+          <TiltCard className="support-item">
             <span className="support-k">Telefone direto</span>
             <span className="support-v">{LEGAL.telefone}</span>
-          </div>
+          </TiltCard>
           {SUPPORT.tempoPrimeiraResposta && (
-            <div className="support-item">
+            <TiltCard className="support-item">
               <span className="support-k">Tempo médio de 1ª resposta</span>
               <span className="support-v">{SUPPORT.tempoPrimeiraResposta}</span>
-            </div>
+            </TiltCard>
           )}
           {SUPPORT.politicaPico && (
-            <div className="support-item">
+            <TiltCard className="support-item">
               <span className="support-k">Em horário de pico</span>
               <span className="support-v">{SUPPORT.politicaPico}</span>
-            </div>
+            </TiltCard>
           )}
         </div>
 

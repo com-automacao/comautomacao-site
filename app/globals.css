@@ -1109,6 +1109,15 @@ h3 {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.02);
 }
+.tilt {
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.support-item.tilt:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.4);
+}
 .support-k {
   font-family: var(--font-mono);
   font-size: 11.5px;

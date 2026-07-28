@@ -49,7 +49,7 @@ export default function MagicTextReveal({
       fill = cs.color || "#fff";
       const fontSize = parseFloat(cs.fontSize) || 48;
       const font = `${cs.fontStyle} ${cs.fontWeight} ${fontSize}px ${cs.fontFamily}`;
-      dot = Math.max(1.6, fontSize / 24);
+      dot = Math.max(1.8, fontSize / 21);
 
       const meas = document.createElement("canvas").getContext("2d");
       if (!meas) return;
@@ -78,12 +78,12 @@ export default function MagicTextReveal({
       octx.fillText(text, pad, pad + ascent);
       const img = octx.getImageData(0, 0, off.width, off.height).data;
 
-      const stepCss = Math.max(1.5, fontSize / 28);
+      const stepCss = Math.max(1.4, fontSize / 33);
       const step = Math.max(1, Math.round(stepCss * dpr));
       const next: Particle[] = [];
       for (let y = 0; y < off.height; y += step) {
         for (let x = 0; x < off.width; x += step) {
-          if (img[(y * off.width + x) * 4 + 3] > 90) {
+          if (img[(y * off.width + x) * 4 + 3] > 80) {
             const tx = x / dpr;
             const ty = y / dpr;
             const ang = Math.random() * Math.PI * 2;
