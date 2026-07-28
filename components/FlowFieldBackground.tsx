@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-type P = { x: number; y: number; age: number; life: number; trail: number[] };
+type P = { x: number; y: number; vx: number; vy: number; trail: number[] };
 
 // Flow field: partículas seguem um campo de fluxo curvo e cada uma desenha o
 // seu próprio traçado (buffer de posições) como grão fino de pontos — estilo
@@ -57,21 +57,30 @@ export default function FlowFieldBackground({
       "[data-absorb-target]",
     ) as HTMLElement | null;
 
-    // (re)nasce FORA da tela, numa borda aleatória, e some quando sai da tela
+    // (re)nasce FORA da tela, numa borda aleatória, já com velocidade apontando
+    // para dentro (evita acúmulo na borda) e some quando sai da tela
     const spawn = (p: P) => {
       const s = Math.floor(Math.random() * 4);
       if (s === 0) {
         p.x = -22;
         p.y = Math.random() * h;
+        p.vx = speed;
+        p.vy = 0;
       } else if (s === 1) {
         p.x = w + 22;
         p.y = Math.random() * h;
+        p.vx = -speed;
+        p.vy = 0;
       } else if (s === 2) {
         p.y = -22;
         p.x = Math.random() * w;
+        p.vx = 0;
+        p.vy = speed;
       } else {
         p.y = h + 22;
         p.x = Math.random() * w;
+        p.vx = 0;
+        p.vy = -speed;
       }
       p.trail = [p.x, p.y];
     };
@@ -84,11 +93,11 @@ export default function FlowFieldBackground({
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(280, Math.max(80, Math.round((w * h) / 5200)));
+      const count = Math.min(220, Math.max(70, Math.round((w * h) / 6600)));
       ps = Array.from({ length: count }, () => {
         const x = Math.random() * w;
         const y = Math.random() * h;
-        return { x, y, age: 0, life: 0, trail: [x, y] };
+        return { x, y, vx: 0, vy: 0, trail: [x, y] };
       });
       computeOcc();
     };
@@ -120,31 +129,34 @@ export default function FlowFieldBackground({
 
       // no hover os rastros encurtam (se desfazem)
       const maxLen = Math.max(2, Math.round(TRAIL * (1 - absorb * 0.9)));
-      // grão fino de partículas ao longo do rastro (estilo "fluid particles")
-      const r = 0.9;
-      ctx.fillStyle = `rgba(${color}, ${0.5 + absorb * 0.2})`;
+      // grão fino e discreto de partículas (estilo "fluid particles")
+      const r = 0.8;
+      ctx.fillStyle = `rgba(${color}, ${0.32 + absorb * 0.16})`;
       ctx.beginPath();
 
       for (const p of ps) {
         const ang = field(p.x, p.y) * Math.PI * 1.5;
-        let vx = Math.cos(ang) * speed;
-        let vy = Math.sin(ang) * speed;
+        let tvx = Math.cos(ang) * speed;
+        let tvy = Math.sin(ang) * speed;
 
         if (absorb > 0.002) {
           const dx = bx - p.x;
           const dy = by - p.y;
           const d = Math.hypot(dx, dy) || 1;
           const pull = absorb * (3 + 90 / d);
-          vx = vx * (1 - absorb) + (dx / d) * pull;
-          vy = vy * (1 - absorb) + (dy / d) * pull;
+          tvx = tvx * (1 - absorb) + (dx / d) * pull;
+          tvy = tvy * (1 - absorb) + (dy / d) * pull;
           if (d < 16) {
             spawn(p);
             continue;
           }
         }
 
-        p.x += vx;
-        p.y += vy;
+        // inércia: a velocidade persegue o campo em vez de saltar -> fluidez
+        p.vx += (tvx - p.vx) * 0.12;
+        p.vy += (tvy - p.vy) * 0.12;
+        p.x += p.vx;
+        p.y += p.vy;
         if (p.x < -28 || p.x > w + 28 || p.y < -28 || p.y > h + 28) {
           spawn(p);
           continue;
@@ -154,9 +166,9 @@ export default function FlowFieldBackground({
         if (p.trail.length > maxLen * 2)
           p.trail.splice(0, p.trail.length - maxLen * 2);
 
-        // um ponto a cada ~2 amostras -> grão com espaços (não vira linha sólida)
+        // um ponto por amostra -> grão mais denso (espaçamento reduzido à metade)
         const tr = p.trail;
-        for (let i = 0; i < tr.length; i += 4) {
+        for (let i = 0; i < tr.length; i += 2) {
           ctx.moveTo(tr[i] + r, tr[i + 1]);
           ctx.arc(tr[i], tr[i + 1], r, 0, Math.PI * 2);
         }
