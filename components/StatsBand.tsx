@@ -1,5 +1,5 @@
 import { STATS } from "@/lib/social-proof";
-import TextDisperse from "@/components/ui/text-disperse";
+import MagicTextReveal from "@/components/ui/magic-text-reveal";
 
 export default function StatsBand() {
   const stats = STATS.filter((s) => s.value.trim() !== "");
@@ -15,7 +15,7 @@ export default function StatsBand() {
               className="stat reveal r-rise"
               data-d={String(Math.min(i + 1, 4))}
             >
-              <TextDisperse text={s.value} className="stat-value" />
+              <MagicTextReveal text={s.value} className="stat-value" />
               <span className="stat-label">{s.label}</span>
             </div>
           ))}

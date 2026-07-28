@@ -1082,30 +1082,15 @@ h3 {
   color: var(--color-fg-2);
   max-width: 20ch;
 }
-/* efeito text-disperse (letras se espalham no hover / toque) */
-.td-wrap {
+/* magic-text-reveal (número revelado em partículas) */
+.mtr {
+  position: relative;
   display: inline-block;
-  white-space: nowrap;
-  letter-spacing: normal;
+  line-height: 0;
   cursor: pointer;
 }
-.td-char {
-  display: inline-block;
-  will-change: transform;
-  transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.5, 1);
-}
-.td-wrap:hover .td-char,
-.td-wrap.is-active .td-char {
-  transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--tr, 0));
-}
-@media (prefers-reduced-motion: reduce) {
-  .td-char {
-    transition: none;
-  }
-  .td-wrap:hover .td-char,
-  .td-wrap.is-active .td-char {
-    transform: none;
-  }
+.mtr canvas {
+  display: block;
 }
 
 /* ---------- PROVA DO SUPORTE (PS-14) ---------- */
@@ -1452,16 +1437,12 @@ h3 {
 .b-d {
   grid-column: span 1;
 }
-.b-e {
-  grid-column: span 2;
-}
 @media (max-width: 780px) {
   .bento {
     grid-template-columns: repeat(2, 1fr);
   }
   .b-a,
-  .b-b,
-  .b-e {
+  .b-b {
     grid-column: span 2;
   }
 }
@@ -1472,8 +1453,7 @@ h3 {
   .b-a,
   .b-b,
   .b-c,
-  .b-d,
-  .b-e {
+  .b-d {
     grid-column: span 1;
   }
 }

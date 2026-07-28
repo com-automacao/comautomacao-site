@@ -304,16 +304,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="card b-e reveal r-flip" data-d="2">
-              <div className="mono-label">INTEGRAÇÃO</div>
-              <h3 style={{ fontSize: 20, fontWeight: 600, margin: "12px 0 6px" }}>
-                Tudo conversa.
-              </h3>
-              <p style={{ color: "var(--color-fg-2)", fontSize: 14, fontWeight: 300, lineHeight: 1.55 }}>
-                Atendimento, vendas, caixa e financeiro num fluxo só. A gente
-                ajuda a integrar os sistemas ao que a sua empresa já usa.
-              </p>
-            </div>
           </div>
         </div>
       </section>
