@@ -49,7 +49,7 @@ export default function MagicTextReveal({
       fill = cs.color || "#fff";
       const fontSize = parseFloat(cs.fontSize) || 48;
       const font = `${cs.fontStyle} ${cs.fontWeight} ${fontSize}px ${cs.fontFamily}`;
-      dot = Math.max(1.4, fontSize / 30);
+      dot = Math.max(1.6, fontSize / 24);
 
       const meas = document.createElement("canvas").getContext("2d");
       if (!meas) return;
@@ -78,19 +78,27 @@ export default function MagicTextReveal({
       octx.fillText(text, pad, pad + ascent);
       const img = octx.getImageData(0, 0, off.width, off.height).data;
 
-      const stepCss = Math.max(2, Math.round(fontSize / 18));
+      const stepCss = Math.max(1.5, fontSize / 28);
       const step = Math.max(1, Math.round(stepCss * dpr));
       const next: Particle[] = [];
       for (let y = 0; y < off.height; y += step) {
         for (let x = 0; x < off.width; x += step) {
-          if (img[(y * off.width + x) * 4 + 3] > 130) {
+          if (img[(y * off.width + x) * 4 + 3] > 90) {
             const tx = x / dpr;
             const ty = y / dpr;
             const ang = Math.random() * Math.PI * 2;
             const rad = fontSize * (0.4 + Math.random() * 1.2);
             const sx = tx + Math.cos(ang) * rad;
             const sy = ty + Math.sin(ang) * rad;
-            next.push({ x: sx, y: sy, tx, ty, sx, sy });
+            // se já revelado, nasce montado (rebuild não re-espalha)
+            next.push({
+              x: revealed ? tx : sx,
+              y: revealed ? ty : sy,
+              tx,
+              ty,
+              sx,
+              sy,
+            });
           }
         }
       }
@@ -113,11 +121,8 @@ export default function MagicTextReveal({
         ctx.globalAlpha = assemble ? 1 : 0.55;
         ctx.fillRect(p.x, p.y, dot, dot);
       }
-      if (moving) {
-        rafId = requestAnimationFrame(frame);
-      } else {
-        running = false;
-      }
+      if (moving) rafId = requestAnimationFrame(frame);
+      else running = false;
     };
     function kick() {
       if (!running) {
@@ -126,22 +131,38 @@ export default function MagicTextReveal({
       }
     }
 
-    if (document.fonts?.ready) document.fonts.ready.then(build);
-    else build();
+    // reveal determinístico pelo scroll (mais confiável que IO async)
+    const evalReveal = () => {
+      const r = root.getBoundingClientRect();
+      const vh = window.innerHeight || 0;
+      const nowIn = r.top < vh * 0.88 && r.bottom > vh * 0.12;
+      if (nowIn !== revealed) {
+        revealed = nowIn;
+        kick();
+      }
+    };
+
+    const doBuild = () => {
+      build();
+      evalReveal();
+    };
+    doBuild();
+    if (document.fonts?.ready) document.fonts.ready.then(doBuild);
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        evalReveal();
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
 
     const ro = new ResizeObserver(() => build());
     ro.observe(root);
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          revealed = e.isIntersecting;
-        }
-        kick();
-      },
-      { threshold: 0.25 },
-    );
-    io.observe(root);
 
     const onEnter = (e: PointerEvent) => {
       if (e.pointerType && e.pointerType !== "mouse") return;
@@ -172,7 +193,8 @@ export default function MagicTextReveal({
       if (rafId) cancelAnimationFrame(rafId);
       if (tt) window.clearTimeout(tt);
       ro.disconnect();
-      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
       root.removeEventListener("pointerenter", onEnter);
       root.removeEventListener("pointerleave", onLeave);
       root.removeEventListener("touchstart", onTouch);
