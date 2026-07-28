@@ -10,8 +10,16 @@ export type Stat = {
 
 // PS-06 · Faixa de números (home, logo após o hero).
 export const STATS: Stat[] = [
-  { value: "", label: "Clientes atendidos" },
-  { value: "", label: "Anos de estrada" },
-  { value: "", label: "Cidades atendidas" },
+  { value: "+400", label: "Clientes atendidos" },
+  { value: "14", label: "Anos de estrada" },
+  { value: "+25", label: "Cidades em 4 estados" },
   { value: "", label: "Prazo médio de implantação" },
 ];
+
+// PS-14 · Prova do suporte (SLA declarado). Canais e horário são fatos reais.
+// tempoPrimeiraResposta e politicaPico só entram com base real (deixe "" p/ ocultar).
+export const SUPPORT = {
+  canais: ["WhatsApp", "Telefone", "Presencial na região"],
+  tempoPrimeiraResposta: "",
+  politicaPico: "",
+};

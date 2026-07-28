@@ -7,6 +7,7 @@ import { MagneticText } from "@/components/ui/morphing-cursor";
 import { FlowButton } from "@/components/ui/flow-button";
 import ProductStripes from "@/components/ProductStripes";
 import StatsBand from "@/components/StatsBand";
+import SupportProof from "@/components/SupportProof";
 import { CircularTestimonials } from "@/components/ui/circular-testimonials";
 import { Arrow } from "@/components/Icons";
 import { products } from "@/lib/products";
@@ -316,6 +317,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== PROVA DO SUPORTE (PS-14) ===== */}
+      <SupportProof />
 
       {/* ===== DEPOIMENTOS ===== */}
       {false && (
