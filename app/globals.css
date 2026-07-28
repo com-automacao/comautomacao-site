@@ -1082,6 +1082,16 @@ h3 {
   color: var(--color-fg-2);
   max-width: 20ch;
 }
+/* efeito text-disperse (letras se espalham no hover / toque) */
+.td-wrap {
+  display: inline-block;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.td-char {
+  display: inline-block;
+  will-change: transform;
+}
 
 /* ---------- PROVA DO SUPORTE (PS-14) ---------- */
 .support-grid {

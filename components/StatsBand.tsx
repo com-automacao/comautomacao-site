@@ -1,4 +1,5 @@
 import { STATS } from "@/lib/social-proof";
+import TextDisperse from "@/components/ui/text-disperse";
 
 export default function StatsBand() {
   const stats = STATS.filter((s) => s.value.trim() !== "");
@@ -14,7 +15,7 @@ export default function StatsBand() {
               className="stat reveal r-rise"
               data-d={String(Math.min(i + 1, 4))}
             >
-              <span className="stat-value">{s.value}</span>
+              <TextDisperse text={s.value} className="stat-value" />
               <span className="stat-label">{s.label}</span>
             </div>
           ))}
