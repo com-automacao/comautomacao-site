@@ -2,13 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
-type P = { x: number; y: number; l: number };
+type P = { x: number; y: number; age: number; life: number };
 
-// Flow field de partículas (streaks) que fluem num sentido fixo. Quando o
-// elemento [data-absorb-target] da mesma section recebe hover, as partículas
-// são "sugadas" em direção a ele (efeito de absorção).
+// Flow field: partículas seguem um campo de fluxo curvo (pseudo curl-noise) e
+// deixam TRILHAS (o canvas não é limpo, só desvanece) formando streamlines. No
+// hover do [data-absorb-target] da mesma zona, são sugadas em direção a ele.
 export default function FlowFieldBackground({
-  color = "150, 180, 255",
+  color = "128, 162, 255",
 }: {
   color?: string;
 }) {
@@ -35,30 +35,16 @@ export default function FlowFieldBackground({
     let by = 0;
     let ps: P[] = [];
 
-    // o botão-alvo fica na mesma zona (pai do flowfield)
     const scope = (root.parentElement as HTMLElement | null) ?? document.body;
     const btn = scope.querySelector(
       "[data-absorb-target]",
     ) as HTMLElement | null;
 
-    const baseAngle = -0.5;
-    const speed = 0.55;
-
-    const spawnEdge = (p: P) => {
-      const s = Math.floor(Math.random() * 4);
-      if (s === 0) {
-        p.x = -10;
-        p.y = Math.random() * h;
-      } else if (s === 1) {
-        p.x = w + 10;
-        p.y = Math.random() * h;
-      } else if (s === 2) {
-        p.y = -10;
-        p.x = Math.random() * w;
-      } else {
-        p.y = h + 10;
-        p.x = Math.random() * w;
-      }
+    const spawn = (p: P) => {
+      p.x = Math.random() * w;
+      p.y = Math.random() * h;
+      p.age = 0;
+      p.life = 90 + Math.random() * 170;
     };
 
     const resize = () => {
@@ -68,12 +54,15 @@ export default function FlowFieldBackground({
       if (!w || !h) return;
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
-      const count = Math.min(320, Math.max(90, Math.round((w * h) / 3600)));
-      ps = Array.from({ length: count }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        l: 8 + Math.random() * 9,
-      }));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const count = Math.min(460, Math.max(140, Math.round((w * h) / 2500)));
+      ps = Array.from({ length: count }, () => {
+        const p: P = { x: 0, y: 0, age: 0, life: 0 };
+        spawn(p);
+        p.age = Math.random() * p.life;
+        return p;
+      });
     };
 
     const updateBtn = () => {
@@ -84,64 +73,68 @@ export default function FlowFieldBackground({
       by = b.top + b.height / 2 - c.top;
     };
 
+    // campo de fluxo (pseudo curl-noise via senos em camadas) -> ângulo
+    const field = (x: number, y: number) =>
+      (Math.sin(x * 0.005 + Math.cos(y * 0.006 + t * 0.0022) * 1.7) +
+        Math.cos(y * 0.0055 - Math.sin(x * 0.0052 - t * 0.0018) * 1.7)) *
+      1.15;
+
+    const speed = 1.05;
+
     const step = () => {
       if (!alive || paused) {
         raf = 0;
         return;
       }
-      absorb += (absorbTarget - absorb) * 0.07;
+      absorb += (absorbTarget - absorb) * 0.06;
       updateBtn();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      ctx.lineCap = "round";
+
+      // fade das trilhas (destination-out -> some para transparente)
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = `rgba(0,0,0,${0.035 + absorb * 0.06})`;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+
+      ctx.fillStyle = `rgba(${color}, ${0.62 + absorb * 0.35})`;
+      ctx.beginPath();
       for (const p of ps) {
-        const ang =
-          baseAngle +
-          Math.sin(p.x * 0.006 + t) * 0.5 +
-          Math.cos(p.y * 0.008 - t * 0.6) * 0.4;
+        const ang = field(p.x, p.y) * Math.PI;
         let vx = Math.cos(ang) * speed;
         let vy = Math.sin(ang) * speed;
 
         if (absorb > 0.002) {
           const dx = bx - p.x;
           const dy = by - p.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          const pull = absorb * (1.6 + 46 / dist);
-          vx = vx * (1 - absorb) + (dx / dist) * pull;
-          vy = vy * (1 - absorb) + (dy / dist) * pull;
-          if (dist < 16) {
-            spawnEdge(p);
+          const d = Math.hypot(dx, dy) || 1;
+          const pull = absorb * (1.4 + 42 / d);
+          vx = vx * (1 - absorb) + (dx / d) * pull;
+          vy = vy * (1 - absorb) + (dy / d) * pull;
+          if (d < 14) {
+            spawn(p);
             continue;
           }
         }
 
         p.x += vx;
         p.y += vy;
-
-        if (p.x < -24 || p.x > w + 24 || p.y < -24 || p.y > h + 24) {
-          if (absorb > 0.3) {
-            spawnEdge(p);
-          } else {
-            if (p.x < -24) p.x = w + 12;
-            else if (p.x > w + 24) p.x = -12;
-            if (p.y < -24) p.y = h + 12;
-            else if (p.y > h + 24) p.y = -12;
-          }
+        p.age++;
+        if (
+          p.age > p.life ||
+          p.x < -8 ||
+          p.x > w + 8 ||
+          p.y < -8 ||
+          p.y > h + 8
+        ) {
+          spawn(p);
+          continue;
         }
-
-        const sp = Math.hypot(vx, vy);
-        const len = Math.min(p.l + sp * 2.4, 40);
-        const nx = vx / (sp || 1);
-        const ny = vy / (sp || 1);
-        const a = (0.34 + absorb * 0.5) * Math.min(1, sp / 0.7);
-        ctx.strokeStyle = `rgba(${color}, ${a})`;
-        ctx.lineWidth = 1.2 + absorb * 0.8;
-        ctx.beginPath();
-        ctx.moveTo(p.x - nx * len, p.y - ny * len);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
+        ctx.moveTo(p.x + 1.2, p.y);
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
       }
-      t += 0.006;
+      ctx.fill();
+
+      t += 1;
       raf = requestAnimationFrame(step);
     };
     const kick = () => {
