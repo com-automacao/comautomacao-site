@@ -49,7 +49,7 @@ export default function MagicTextReveal({
       fill = cs.color || "#fff";
       const fontSize = parseFloat(cs.fontSize) || 48;
       const font = `${cs.fontStyle} ${cs.fontWeight} ${fontSize}px ${cs.fontFamily}`;
-      dot = Math.max(1.8, fontSize / 21);
+      dot = Math.max(2, fontSize / 19);
 
       const meas = document.createElement("canvas").getContext("2d");
       if (!meas) return;
@@ -111,16 +111,23 @@ export default function MagicTextReveal({
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = fill;
       const assemble = revealed && !hovered;
+      ctx.globalAlpha = assemble ? 1 : 0.5;
+      const r = dot / 2;
       let moving = false;
+      // pontos redondos (batched) — bordas suaves, sem serrilhado
+      ctx.beginPath();
       for (const p of particles) {
         const gx = assemble ? p.tx : p.sx;
         const gy = assemble ? p.ty : p.sy;
         p.x += (gx - p.x) * 0.12;
         p.y += (gy - p.y) * 0.12;
         if (Math.abs(gx - p.x) > 0.3 || Math.abs(gy - p.y) > 0.3) moving = true;
-        ctx.globalAlpha = assemble ? 1 : 0.55;
-        ctx.fillRect(p.x, p.y, dot, dot);
+        const cx = p.x + r;
+        const cy = p.y + r;
+        ctx.moveTo(cx + r, cy);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
       }
+      ctx.fill();
       if (moving) rafId = requestAnimationFrame(frame);
       else running = false;
     };
