@@ -24,8 +24,8 @@ export default function FlowFieldBackground({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const TRAIL = 100;
-    const speed = 1.5;
+    const TRAIL = 130;
+    const speed = 2.3;
     let w = 0;
     let h = 0;
     let raf = 0;
@@ -57,11 +57,22 @@ export default function FlowFieldBackground({
       "[data-absorb-target]",
     ) as HTMLElement | null;
 
+    // (re)nasce FORA da tela, numa borda aleatória, e some quando sai da tela
     const spawn = (p: P) => {
-      p.x = Math.random() * w;
-      p.y = Math.random() * h;
-      p.age = 0;
-      p.life = 500 + Math.random() * 600;
+      const s = Math.floor(Math.random() * 4);
+      if (s === 0) {
+        p.x = -22;
+        p.y = Math.random() * h;
+      } else if (s === 1) {
+        p.x = w + 22;
+        p.y = Math.random() * h;
+      } else if (s === 2) {
+        p.y = -22;
+        p.x = Math.random() * w;
+      } else {
+        p.y = h + 22;
+        p.x = Math.random() * w;
+      }
       p.trail = [p.x, p.y];
     };
 
@@ -75,10 +86,9 @@ export default function FlowFieldBackground({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const count = Math.min(520, Math.max(140, Math.round((w * h) / 2600)));
       ps = Array.from({ length: count }, () => {
-        const p: P = { x: 0, y: 0, age: 0, life: 0, trail: [] };
-        spawn(p);
-        p.age = Math.random() * p.life;
-        return p;
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        return { x, y, age: 0, life: 0, trail: [x, y] };
       });
       computeOcc();
     };
@@ -91,18 +101,17 @@ export default function FlowFieldBackground({
       by = b.top + b.height / 2 - c.top;
     };
 
-    // campo de fluxo (pseudo curl-noise via senos em camadas) -> ângulo
+    // campo suave de baixa frequência -> curvas longas e coerentes
     const field = (x: number, y: number) =>
-      (Math.sin(x * 0.005 + Math.cos(y * 0.006 + t * 0.0022) * 1.7) +
-        Math.cos(y * 0.0055 - Math.sin(x * 0.0052 - t * 0.0018) * 1.7)) *
-      1.15;
+      Math.sin(x * 0.0023 + Math.cos(y * 0.0019 + t * 0.0016) * 1.0) +
+      Math.cos(y * 0.0021 - Math.sin(x * 0.0018 + t * 0.0011) * 1.0);
 
     const step = () => {
       if (!alive || paused) {
         raf = 0;
         return;
       }
-      absorb += (absorbTarget - absorb) * 0.06;
+      absorb += (absorbTarget - absorb) * 0.11;
       updateBtn();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
@@ -123,10 +132,10 @@ export default function FlowFieldBackground({
           const dx = bx - p.x;
           const dy = by - p.y;
           const d = Math.hypot(dx, dy) || 1;
-          const pull = absorb * (1.4 + 42 / d);
+          const pull = absorb * (3 + 90 / d);
           vx = vx * (1 - absorb) + (dx / d) * pull;
           vy = vy * (1 - absorb) + (dy / d) * pull;
-          if (d < 14) {
+          if (d < 16) {
             spawn(p);
             continue;
           }
@@ -134,13 +143,11 @@ export default function FlowFieldBackground({
 
         p.x += vx;
         p.y += vy;
-        p.age++;
         if (
-          p.age > p.life ||
-          p.x < -12 ||
-          p.x > w + 12 ||
-          p.y < -12 ||
-          p.y > h + 12
+          p.x < -28 ||
+          p.x > w + 28 ||
+          p.y < -28 ||
+          p.y > h + 28
         ) {
           spawn(p);
           continue;
