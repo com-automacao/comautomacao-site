@@ -55,7 +55,7 @@ export default function MagicTextReveal({
       const m = meas.measureText(text);
       const ascent = m.actualBoundingBoxAscent || fontSize * 0.78;
       const descent = m.actualBoundingBoxDescent || fontSize * 0.22;
-      pad = Math.ceil(fontSize * 0.6);
+      pad = Math.ceil(fontSize * 0.9);
       baseline = pad + ascent;
       w = Math.ceil(m.width) + pad * 2;
       h = Math.ceil(ascent + descent) + pad * 2;
@@ -85,7 +85,7 @@ export default function MagicTextReveal({
             const tx = x / dpr;
             const ty = y / dpr;
             const ang = Math.random() * Math.PI * 2;
-            const rad = fontSize * (0.5 + Math.random() * 1.3);
+            const rad = fontSize * (0.2 + Math.random() * 0.6);
             next.push({
               tx,
               ty,
