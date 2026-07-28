@@ -12,7 +12,7 @@ export type Stat = {
 export const STATS: Stat[] = [
   { value: "+400", label: "Clientes atendidos" },
   { value: "14", label: "Anos de estrada" },
-  { value: "+25", label: "Cidades em 4 estados" },
+  { value: "+45", label: "Cidades em 3 estados" },
   { value: "", label: "Prazo médio de implantação" },
 ];
 

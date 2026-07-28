@@ -5,9 +5,9 @@ import { useEffect, useRef } from "react";
 type P = { x: number; y: number; age: number; life: number; trail: number[] };
 
 // Flow field: partículas seguem um campo de fluxo curvo e cada uma desenha o
-// seu próprio traçado (buffer de posições) — linhas sólidas e contínuas, sem
-// rastro cinza (o canvas é limpo a cada frame). No hover do [data-absorb-target]
-// as linhas encurtam e são sugadas em direção a ele (se desfazem).
+// seu próprio traçado (buffer de posições) como grão fino de pontos — estilo
+// "fluid particles", sem rastro cinza (o canvas é limpo a cada frame). No hover
+// do [data-absorb-target] os rastros encurtam e são sugados em direção a ele.
 export default function FlowFieldBackground({
   color = "206, 214, 236",
 }: {
@@ -120,11 +120,9 @@ export default function FlowFieldBackground({
 
       // no hover os rastros encurtam (se desfazem)
       const maxLen = Math.max(2, Math.round(TRAIL * (1 - absorb * 0.9)));
-      // linhas contínuas ao longo do rastro
-      ctx.strokeStyle = `rgba(${color}, ${0.5 + absorb * 0.2})`;
-      ctx.lineWidth = 1.3;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      // grão fino de partículas ao longo do rastro (estilo "fluid particles")
+      const r = 0.9;
+      ctx.fillStyle = `rgba(${color}, ${0.5 + absorb * 0.2})`;
       ctx.beginPath();
 
       for (const p of ps) {
@@ -156,13 +154,14 @@ export default function FlowFieldBackground({
         if (p.trail.length > maxLen * 2)
           p.trail.splice(0, p.trail.length - maxLen * 2);
 
+        // um ponto a cada ~2 amostras -> grão com espaços (não vira linha sólida)
         const tr = p.trail;
-        if (tr.length >= 4) {
-          ctx.moveTo(tr[0], tr[1]);
-          for (let i = 2; i < tr.length; i += 2) ctx.lineTo(tr[i], tr[i + 1]);
+        for (let i = 0; i < tr.length; i += 4) {
+          ctx.moveTo(tr[i] + r, tr[i + 1]);
+          ctx.arc(tr[i], tr[i + 1], r, 0, Math.PI * 2);
         }
       }
-      ctx.stroke();
+      ctx.fill();
 
       // recorta o flow de trás do texto solto (bordas suaves)
       if (occ.length) {

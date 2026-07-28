@@ -9,6 +9,14 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICo
   WHATSAPP_MESSAGE,
 )}`;
 
+// mensagem própria do botão "Falar com o suporte"
+export const WHATSAPP_MESSAGE_SUPORTE =
+  "Olá! Sou cliente da Com Automação e preciso de suporte.";
+
+export const WHATSAPP_URL_SUPORTE = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  WHATSAPP_MESSAGE_SUPORTE,
+)}`;
+
 export const EMAIL = "joao@comautomacao.com";
 
 export const LEGAL = {

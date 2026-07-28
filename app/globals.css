@@ -1672,6 +1672,27 @@ h3 {
   transform: translateX(6px);
   color: var(--color-fg-1);
 }
+@media (max-width: 640px) {
+  .brow {
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    padding: 22px 2px;
+  }
+  .brow .idx {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .brow .name {
+    font-size: 25px;
+    line-height: 1.08;
+  }
+  /* a categoria some no mobile (ela reaparece na página do produto):
+     libera a largura para o nome não quebrar e a descrição respirar */
+  .brow .meta,
+  .brow .accent-dot {
+    display: none;
+  }
+}
 
 /* ---------- FEATURES (grid de produto) ---------- */
 .feat-grid {

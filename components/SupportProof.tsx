@@ -1,5 +1,5 @@
 import { SUPPORT } from "@/lib/social-proof";
-import { LEGAL, WHATSAPP_URL } from "@/lib/site";
+import { LEGAL, WHATSAPP_URL_SUPORTE } from "@/lib/site";
 import { FlowButton } from "@/components/ui/flow-button";
 import { Arrow } from "@/components/Icons";
 import TiltCard from "@/components/TiltCard";
@@ -46,7 +46,7 @@ export default function SupportProof() {
 
         <FlowButton
           variant="primary"
-          href={WHATSAPP_URL}
+          href={WHATSAPP_URL_SUPORTE}
           className="reveal r-left"
           data-d="3"
           data-absorb-target=""

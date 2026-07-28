@@ -125,7 +125,9 @@ Requer `ffmpeg`/`ffprobe` no PATH.
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável
 `NEXT_PUBLIC_WHATSAPP_NUMBER` (ver `.env.example`) ou do fallback no arquivo.
-Formato internacional, só dígitos: `55 + DDD + número`.
+Formato internacional, só dígitos: `55 + DDD + número`. Há duas mensagens
+pré-definidas: `WHATSAPP_MESSAGE` (venda, usada nos botões "Fale conosco") e
+`WHATSAPP_MESSAGE_SUPORTE` (botão "Falar com o suporte").
 
 ### Favicon
 `app/icon.png` (aba do navegador) e `app/apple-icon.png` (iOS) — gerados a partir

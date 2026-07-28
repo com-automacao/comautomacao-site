@@ -48,8 +48,6 @@ export default function Footer() {
           {LEGAL.endereco.rua} — {LEGAL.endereco.bairro},{" "}
           {LEGAL.endereco.cidade}/{LEGAL.endereco.uf} · CEP{" "}
           {LEGAL.endereco.cep}
-          <br />
-          {LEGAL.telefone} · {LEGAL.horario}
         </address>
       </div>
       <div className="watermark">DECOLE</div>
