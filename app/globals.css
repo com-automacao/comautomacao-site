@@ -1516,17 +1516,22 @@ h3 {
 }
 .mascot3d {
   position: absolute;
-  right: max(16px, 4vw);
+  right: max(16px, 3vw);
   top: 50%;
   transform: translateY(-50%);
-  width: 360px;
-  height: 420px;
-  pointer-events: none;
+  width: 380px;
+  height: 440px;
   z-index: 0;
 }
+/* o texto fica por cima (foco na chamada), mas "transparente" ao ponteiro para
+   o robô (abaixo) receber o mouse; só os botões voltam a capturar o clique */
 .cta-mascot .wrap {
   position: relative;
   z-index: 1;
+  pointer-events: none;
+}
+.cta-mascot .wrap a {
+  pointer-events: auto;
 }
 .mascot3d canvas {
   display: block;

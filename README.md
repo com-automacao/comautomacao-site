@@ -63,7 +63,7 @@ components/
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
-  MascotAstronaut.tsx                     # mascote astronauta 3D (three.js, só desktop, lazy): cabeça segue o mouse, mãos ao hover em "Vamos decolar"
+  ui/interactive-robot.tsx                # mascote robô 3D (GLB + R3F): cabeça segue o cursor, acena (auto/hover), reage a clique; poster WebP de fallback. Na CTA da página de produto (desktop). Pacote-fonte em mascot3d-package/
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, glowing-effect, accordion (Radix), etc.
 
 lib/
