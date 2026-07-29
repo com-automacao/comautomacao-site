@@ -982,6 +982,57 @@ h3 {
     transform-origin: bottom;
   }
 }
+/* dica de scroll reforçada no hero de vídeo (Pedra & Pixel): a tela inicial é
+   só o 1º frame, então o indicativo precisa ser óbvio — copy explícita + mouse
+   com rodinha animada (affordance universal de "role"). */
+.scroll-cue--pp {
+  /* a .nav sticky empurra o hero 100dvh ~74px p/ baixo, jogando o rodapé (e a
+     dica) abaixo da dobra; ancoramos com folga relativa à viewport p/ a dica
+     ficar sempre visível já no topo da página */
+  bottom: clamp(88px, 11vh, 120px);
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.scroll-cue--pp .mono-label {
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.14em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+.scroll-cue--pp .scroll-mouse {
+  position: relative;
+  width: 26px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 14px;
+  box-shadow: 0 0 22px rgba(0, 0, 0, 0.3);
+}
+.scroll-cue--pp .scroll-mouse .wheel {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 3px;
+  height: 8px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: #fff;
+  animation: mouseWheel 1.5s var(--ease-out) infinite;
+}
+@keyframes mouseWheel {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(13px);
+  }
+}
 
 /* ---------- DOBRA 2 · SÍNTESE (split) ---------- */
 .split {

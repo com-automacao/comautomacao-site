@@ -116,10 +116,19 @@ export default async function ProductPage({
           </div>
         </>
       )}
-      <div className="scroll-cue">
-        <span className="mono-label">Role</span>
-        <span className="bar" />
-      </div>
+      {isPP ? (
+        <div className="scroll-cue scroll-cue--pp">
+          <span className="scroll-mouse" aria-hidden>
+            <span className="wheel" />
+          </span>
+          <span className="mono-label">Role para revelar o projeto</span>
+        </div>
+      ) : (
+        <div className="scroll-cue">
+          <span className="mono-label">Role</span>
+          <span className="bar" />
+        </div>
+      )}
     </>
   );
 
@@ -281,7 +290,7 @@ export default async function ProductPage({
 
       {/* ===== FAQ (acordeão nativo) ===== */}
       <section className="s-dark pad">
-        <div className="wrap" style={{ maxWidth: 820 }}>
+        <div className="wrap">
           <div className="eyebrow reveal r-left">Dúvidas frequentes</div>
           <h2 className="section-title reveal r-left" data-d="1">
             Perguntas que ajudam a decidir.
