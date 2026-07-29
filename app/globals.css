@@ -998,39 +998,40 @@ h3 {
   letter-spacing: 0.14em;
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
 }
-.scroll-cue--pp .scroll-mouse {
-  position: relative;
-  width: 26px;
-  height: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.78);
-  border-radius: 14px;
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.3);
+.scroll-cue--pp .scroll-arrow {
+  width: 13px;
+  height: 13px;
+  border-right: 2px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.85);
+  transform: rotate(45deg);
+  animation: arrowPulse 1.5s ease-in-out infinite;
 }
-.scroll-cue--pp .scroll-mouse .wheel {
-  position: absolute;
-  top: 7px;
-  left: 50%;
-  width: 3px;
-  height: 8px;
-  margin-left: -1.5px;
-  border-radius: 2px;
-  background: #fff;
-  animation: mouseWheel 1.5s var(--ease-out) infinite;
-}
-@keyframes mouseWheel {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  25% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 1;
-  }
+@keyframes arrowPulse {
+  0%,
   100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* fade-in ao abrir uma página de produto (o template.tsx remonta a cada
+   navegação, então a animação toca ao selecionar o produto) */
+.page-fade {
+  animation: pageFade 0.45s var(--ease-out) both;
+}
+@keyframes pageFade {
+  from {
     opacity: 0;
-    transform: translateY(13px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-fade {
+    animation: none;
   }
 }
 

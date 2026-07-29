@@ -50,6 +50,7 @@ app/
   page.tsx                # home (todas as dobras da landing)
   globals.css             # design system + estilos de todas as sections
   produtos/[slug]/page.tsx# página dinâmica de cada produto (SSG)
+  produtos/[slug]/template.tsx # remonta a cada navegação -> fade-in ao abrir o produto
   icon.png, apple-icon.png# favicon (foguete da marca)
 
 components/

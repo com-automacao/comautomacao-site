@@ -118,10 +118,8 @@ export default async function ProductPage({
       )}
       {isPP ? (
         <div className="scroll-cue scroll-cue--pp">
-          <span className="scroll-mouse" aria-hidden>
-            <span className="wheel" />
-          </span>
-          <span className="mono-label">Role para revelar o projeto</span>
+          <span className="mono-label">Role para revelar</span>
+          <span className="scroll-arrow" aria-hidden />
         </div>
       ) : (
         <div className="scroll-cue">
