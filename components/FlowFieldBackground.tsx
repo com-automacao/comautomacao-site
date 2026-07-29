@@ -23,8 +23,15 @@ export default function FlowFieldBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // reduced-motion: sem fundo animado
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // downgrade em mobile/touch: menos partículas p/ manter fluido
+    const lowPower =
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(max-width: 820px)").matches;
+
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const TRAIL = 150;
+    const TRAIL = lowPower ? 110 : 150;
     const speed = 2.3;
     let w = 0;
     let h = 0;
@@ -110,7 +117,9 @@ export default function FlowFieldBackground({
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(160, Math.max(60, Math.round((w * h) / 8600)));
+      const count = lowPower
+        ? Math.min(75, Math.max(30, Math.round((w * h) / 16000)))
+        : Math.min(160, Math.max(60, Math.round((w * h) / 8600)));
       ps = Array.from({ length: count }, () => {
         const x = Math.random() * w;
         const y = Math.random() * h;
@@ -140,7 +149,6 @@ export default function FlowFieldBackground({
         return;
       }
       absorb += (absorbTarget - absorb) * 0.11;
-      updateBtn();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
 

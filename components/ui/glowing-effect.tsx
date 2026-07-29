@@ -10,7 +10,6 @@ interface GlowingEffectProps {
   proximity?: number;
   spread?: number;
   variant?: "default" | "white";
-  glow?: boolean;
   className?: string;
   disabled?: boolean;
   movementDuration?: number;
@@ -98,7 +97,14 @@ const GlowingEffect = memo(
     );
 
     useEffect(() => {
-      if (disabled) return;
+      // glow de cursor: sem valor no touch e caro no mobile (N listeners lendo
+      // layout). Só ativa em ponteiro fino e sem prefers-reduced-motion.
+      if (
+        disabled ||
+        !window.matchMedia("(pointer: fine)").matches ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      )
+        return;
 
       const handleScroll = () => handleMove();
       const handlePointerMove = (e: PointerEvent) => handleMove(e);
@@ -128,25 +134,18 @@ const GlowingEffect = memo(
             "--start": "0",
             "--active": "0",
             "--glowingeffect-border-width": `${borderWidth}px`,
-            "--repeating-conic-gradient-times": "5",
+            // brilho de borda na cor do produto (var --accent), não a "lanterna"
+            // multicolor: um leve realce mais claro no meio do arco.
             "--gradient":
               variant === "white"
-                ? `repeating-conic-gradient(
-                from 236.84deg at 50% 50%,
-                var(--black),
-                var(--black) calc(25% / var(--repeating-conic-gradient-times))
-              )`
-                : `radial-gradient(circle, #dd7bbb 10%, #dd7bbb00 20%),
-              radial-gradient(circle at 40% 40%, #d79f1e 5%, #d79f1e00 15%),
-              radial-gradient(circle at 60% 60%, #5a922c 10%, #5a922c00 20%),
-              radial-gradient(circle at 40% 60%, #4c7894 10%, #4c789400 20%),
-              repeating-conic-gradient(
-                from 236.84deg at 50% 50%,
-                #dd7bbb 0%,
-                #d79f1e calc(25% / var(--repeating-conic-gradient-times)),
-                #5a922c calc(50% / var(--repeating-conic-gradient-times)),
-                #4c7894 calc(75% / var(--repeating-conic-gradient-times)),
-                #dd7bbb calc(100% / var(--repeating-conic-gradient-times))
+                ? "#ffffff"
+                : `conic-gradient(
+                from 0deg at 50% 50%,
+                color-mix(in srgb, var(--accent, #2f6bff) 65%, #ffffff),
+                var(--accent, #2f6bff),
+                color-mix(in srgb, var(--accent, #2f6bff) 65%, #ffffff),
+                var(--accent, #2f6bff),
+                color-mix(in srgb, var(--accent, #2f6bff) 65%, #ffffff)
               )`,
           } as React.CSSProperties
         }

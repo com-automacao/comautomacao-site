@@ -223,7 +223,6 @@ export default async function ProductPage({
               >
                 <GlowingEffect
                   spread={40}
-                  glow
                   disabled={false}
                   proximity={64}
                   inactiveZone={0.01}
@@ -266,7 +265,6 @@ export default async function ProductPage({
               >
                 <GlowingEffect
                   spread={40}
-                  glow
                   disabled={false}
                   proximity={64}
                   inactiveZone={0.01}

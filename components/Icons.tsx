@@ -43,16 +43,6 @@ export function CloseIcon(props: SvgProps) {
   );
 }
 
-export function BrandMark(props: SvgProps) {
-
-  return (
-    <svg {...base} strokeWidth={1.6} {...props}>
-      <path d="M5 19c0-4 1.5-7 4-9.5C11.5 7 14 6 16 6c0 2-1 4.5-3.5 7S9 19 9 19l-4 0z" />
-      <path d="M9 15l-3 3" />
-    </svg>
-  );
-}
-
 const paths: Record<IconKey, React.ReactNode> = {
   bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" />,
   chart: (

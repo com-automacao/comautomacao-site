@@ -9,63 +9,9 @@ import ProductStripes from "@/components/ProductStripes";
 import StatsBand from "@/components/StatsBand";
 import SupportProof from "@/components/SupportProof";
 import FlowFieldBackground from "@/components/FlowFieldBackground";
-import { CircularTestimonials } from "@/components/ui/circular-testimonials";
 import { Arrow } from "@/components/Icons";
 import { products } from "@/lib/products";
 import { OTHER_PROJECT } from "@/lib/site";
-
-
-const testimonials = [
-  {
-    quote:
-      "Implantaram o sistema no nosso restaurante em um dia. Quando precisamos, o suporte responde na hora.",
-    name: "Depoimento 1.",
-    designation: "Local 1 · Cidade 1",
-    src: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "Trocamos a planilha pelo controle financeiro e, pela primeira vez, enxergamos o caixa de verdade.",
-    name: "Depoimento 2.",
-    designation: "Local 2 · Cidade 2",
-    src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Depoimento 3.",
-    designation: "Local 3 · Cidade 3",
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Depoimento 4.",
-    designation: "Local 4 · Cidade 4",
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Depoimento 5.",
-    designation: "Local 5 · Cidade 5",
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Depoimento 6.",
-    designation: "Local 6 · Cidade 6",
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
-  },
-  {
-    quote:
-      "A fila no balcão acabou. O caixa ficou rápido e o estoque finalmente bate.",
-    name: "Depoimento 7.",
-    designation: "Local 7 · Cidade 7",
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80",
-  },
-];
 
 const accentVar: Record<string, string> = {
   gourmetsa: "var(--color-gourmet)",
@@ -316,33 +262,6 @@ export default function Home() {
       {/* ===== PROVA DO SUPORTE (PS-14) ===== */}
       <SupportProof />
       </div>
-
-      {/* ===== DEPOIMENTOS ===== */}
-      {false && (
-      <section id="depoimentos" className="s-light pad">
-        <div className="wrap">
-          <div className="eyebrow reveal r-scale">Depoimentos</div>
-          <h2 className="section-title reveal r-scale" data-d="1">
-            Quem organizou, decolou.
-          </h2>
-          <div className="testimonials-wrap reveal r-scale" data-d="1">
-            <CircularTestimonials
-              testimonials={testimonials}
-              autoplay
-              colors={{
-                name: "#000",
-                designation: "#6e6e73",
-                testimony: "#4b5563",
-                arrowBackground: "#000",
-                arrowForeground: "#fff",
-                arrowHoverBackground: "#2e2e2e",
-              }}
-              fontSizes={{ name: "1.6rem", quote: "1.15rem" }}
-            />
-          </div>
-        </div>
-      </section>
-      )}
 
       {/* ===== DOBRA 6 · DIRETÓRIO DE PRODUTOS ===== */}
       <section id="marcas" className="s-dark pad">
