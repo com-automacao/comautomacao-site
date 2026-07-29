@@ -2143,7 +2143,12 @@ h3 {
 .faq-item {
   border-bottom: 1px solid var(--hairline);
 }
-.faq-item summary {
+.faq-header {
+  margin: 0;
+  display: flex;
+}
+.faq-trigger {
+  flex: 1;
   list-style: none;
   cursor: pointer;
   display: flex;
@@ -2151,13 +2156,18 @@ h3 {
   justify-content: space-between;
   gap: 18px;
   padding: 22px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(17px, 2.4vw, 21px);
   letter-spacing: var(--ls-tight);
+  transition: color var(--dur-base);
 }
-.faq-item summary::-webkit-details-marker {
-  display: none;
+.faq-trigger:hover {
+  color: var(--accent);
 }
 .faq-icon {
   position: relative;
@@ -2185,17 +2195,49 @@ h3 {
   width: 2px;
   height: 16px;
 }
-.faq-item[open] .faq-icon::after {
+.faq-item[data-state="open"] .faq-icon::after {
   transform: rotate(90deg);
   opacity: 0;
 }
-.faq-item p {
+/* Radix anima a altura com --radix-accordion-content-height */
+.faq-content {
+  overflow: hidden;
+}
+.faq-content[data-state="open"] {
+  animation: faq-down var(--dur-base) var(--ease-out);
+}
+.faq-content[data-state="closed"] {
+  animation: faq-up var(--dur-base) var(--ease-out);
+}
+@keyframes faq-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes faq-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+.faq-answer {
   color: var(--color-fg-2);
   font-weight: 300;
   line-height: 1.65;
   max-width: 64ch;
   padding: 0 4px 24px;
   margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-content[data-state="open"],
+  .faq-content[data-state="closed"] {
+    animation: none;
+  }
 }
 
 /* ---------- FOOTER ---------- */

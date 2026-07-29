@@ -10,6 +10,12 @@ import HeroDataGrid from "@/components/HeroDataGrid";
 import ScrollVideo from "@/components/ScrollVideo";
 import { FlowButton } from "@/components/ui/flow-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { getProduct, products, PRODUCT_FAQ } from "@/lib/products";
 import { WHATSAPP_URL } from "@/lib/site";
 
@@ -303,24 +309,26 @@ export default async function ProductPage({
         </section>
       )}
 
-      {/* ===== FAQ (acordeão nativo) ===== */}
+      {/* ===== FAQ (acordeão Radix — originui/21st.dev) ===== */}
       <section className="s-dark pad">
         <div className="wrap">
           <div className="eyebrow reveal r-left">Dúvidas frequentes</div>
           <h2 className="section-title reveal r-left" data-d="1">
             Perguntas que ajudam a decidir.
           </h2>
-          <div className="faq reveal r-left" data-d="2">
+          <Accordion
+            type="single"
+            collapsible
+            className="faq reveal r-left"
+            data-d="2"
+          >
             {(product.faq ?? PRODUCT_FAQ).map((f) => (
-              <details key={f.q} className="faq-item">
-                <summary>
-                  <span>{f.q}</span>
-                  <span className="faq-icon" aria-hidden />
-                </summary>
-                <p>{f.a}</p>
-              </details>
+              <AccordionItem key={f.q} value={f.q}>
+                <AccordionTrigger>{f.q}</AccordionTrigger>
+                <AccordionContent>{f.a}</AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 

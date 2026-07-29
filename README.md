@@ -63,7 +63,7 @@ components/
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
-  ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, etc.
+  ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, glowing-effect, accordion (Radix), etc.
 
 lib/
   products.ts             # FONTE DA VERDADE dos produtos + FAQ (todo o conteúdo)
