@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "design-system"
+    "design-system",
+    "components/ui/interactive-3d-robot-r3f"
   ]
 }

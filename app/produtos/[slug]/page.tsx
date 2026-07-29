@@ -10,7 +10,6 @@ import HeroDataGrid from "@/components/HeroDataGrid";
 import ScrollVideo from "@/components/ScrollVideo";
 import MascotAstronaut from "@/components/MascotAstronaut";
 import { FlowButton } from "@/components/ui/flow-button";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 import {
   Accordion,
   AccordionItem,
@@ -221,13 +220,6 @@ export default async function ProductPage({
                 className="card feat reveal r-flip"
                 data-d={Math.min((i % 3) + 1, 3)}
               >
-                <GlowingEffect
-                  spread={40}
-                  disabled={false}
-                  proximity={64}
-                  inactiveZone={0.01}
-                  borderWidth={2}
-                />
                 <div className="ic">
                   <FeatureIcon name={f.icon} />
                 </div>
@@ -263,13 +255,6 @@ export default async function ProductPage({
                 className="audience-item reveal r-left"
                 data-d={String(Math.min(i + 1, 5))}
               >
-                <GlowingEffect
-                  spread={40}
-                  disabled={false}
-                  proximity={64}
-                  inactiveZone={0.01}
-                  borderWidth={2}
-                />
                 <span className="audience-dot" />
                 {a}
               </div>
