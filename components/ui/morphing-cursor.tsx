@@ -36,6 +36,10 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
   }, [])
 
   useEffect(() => {
+    // só anima enquanto o cursor está sobre o texto (fora disso o círculo está
+    // recolhido) — evita um rAF rodando à toa a vida toda
+    if (!isHovered) return
+
     const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor
 
     const animate = () => {
@@ -57,7 +61,7 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
     }
-  }, [])
+  }, [isHovered])
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return
