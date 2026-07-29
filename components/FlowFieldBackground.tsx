@@ -24,7 +24,7 @@ export default function FlowFieldBackground({
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const TRAIL = 210;
+    const TRAIL = 150;
     const speed = 2.3;
     let w = 0;
     let h = 0;
@@ -41,8 +41,14 @@ export default function FlowFieldBackground({
 
     const scope = (root.parentElement as HTMLElement | null) ?? document.body;
 
+    // máscara de occlusion pré-renderizada (borrada uma vez, fora do loop):
+    // no frame só compomos por drawImage, sem reaplicar blur a cada quadro.
+    const occCanvas = document.createElement("canvas");
+    const occCtx = occCanvas.getContext("2d");
+
     // "recorta" o flow de trás do texto solto (fora dos cards, que já ocultam
-    // pelo fundo opaco). Posição relativa ao canvas (constante no scroll).
+    // pelo fundo opaco). Posição relativa ao canvas (constante no scroll), então
+    // só precisa recalcular em resize / quando o reveal assenta — não no scroll.
     const computeOcc = () => {
       const c = canvas.getBoundingClientRect();
       const els = scope.querySelectorAll<HTMLElement>(
@@ -52,6 +58,17 @@ export default function FlowFieldBackground({
         const r = el.getBoundingClientRect();
         return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height };
       });
+      if (!occCtx) return;
+      if (occCanvas.width !== canvas.width || occCanvas.height !== canvas.height) {
+        occCanvas.width = canvas.width;
+        occCanvas.height = canvas.height;
+      }
+      occCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      occCtx.clearRect(0, 0, w, h);
+      occCtx.filter = "blur(6px)";
+      occCtx.fillStyle = "#000";
+      for (const o of occ) occCtx.fillRect(o.x - 12, o.y - 8, o.w + 24, o.h + 16);
+      occCtx.filter = "none";
     };
     const btn = scope.querySelector(
       "[data-absorb-target]",
@@ -93,7 +110,7 @@ export default function FlowFieldBackground({
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.min(220, Math.max(70, Math.round((w * h) / 6600)));
+      const count = Math.min(160, Math.max(60, Math.round((w * h) / 8600)));
       ps = Array.from({ length: count }, () => {
         const x = Math.random() * w;
         const y = Math.random() * h;
@@ -166,24 +183,22 @@ export default function FlowFieldBackground({
         if (p.trail.length > maxLen * 2)
           p.trail.splice(0, p.trail.length - maxLen * 2);
 
-        // um ponto por amostra -> grão mais denso (espaçamento reduzido à metade)
+        // um ponto por amostra -> grão denso (quadradinho: bem mais barato que
+        // arc, visualmente igual neste tamanho)
         const tr = p.trail;
+        const s = r * 2;
         for (let i = 0; i < tr.length; i += 2) {
-          ctx.moveTo(tr[i] + r, tr[i + 1]);
-          ctx.arc(tr[i], tr[i + 1], r, 0, Math.PI * 2);
+          ctx.rect(tr[i] - r, tr[i + 1] - r, s, s);
         }
       }
       ctx.fill();
 
-      // recorta o flow de trás do texto solto (bordas suaves)
-      if (occ.length) {
+      // recorta o flow de trás do texto solto compondo a máscara já borrada
+      if (occ.length && occCtx) {
         ctx.globalCompositeOperation = "destination-out";
-        ctx.filter = "blur(6px)";
-        ctx.fillStyle = "#000";
-        for (const o of occ) {
-          ctx.fillRect(o.x - 12, o.y - 8, o.w + 24, o.h + 16);
-        }
-        ctx.filter = "none";
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(occCanvas, 0, 0);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.globalCompositeOperation = "source-over";
       }
 
@@ -218,18 +233,15 @@ export default function FlowFieldBackground({
     btn?.addEventListener("pointerenter", onEnter);
     btn?.addEventListener("pointerleave", onLeave);
 
-    let stick = false;
+    // o botão e o texto rolam junto com o canvas -> posição relativa constante;
+    // no scroll não recalculamos occ (caro), só a âncora do botão.
     const onScroll = () => {
       updateBtn();
-      if (stick) return;
-      stick = true;
-      requestAnimationFrame(() => {
-        stick = false;
-        computeOcc();
-      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    const occTimer = window.setTimeout(computeOcc, 900);
+    // recalcula depois que os reveals assentam (a máscara é feita 1x aqui)
+    const occTimer1 = window.setTimeout(computeOcc, 900);
+    const occTimer2 = window.setTimeout(computeOcc, 1800);
 
     kick();
 
@@ -241,7 +253,8 @@ export default function FlowFieldBackground({
       btn?.removeEventListener("pointerenter", onEnter);
       btn?.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("scroll", onScroll);
-      window.clearTimeout(occTimer);
+      window.clearTimeout(occTimer1);
+      window.clearTimeout(occTimer2);
     };
   }, [color]);
 
