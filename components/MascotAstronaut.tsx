@@ -16,7 +16,7 @@ export default function MascotAstronaut() {
     if (!host) return;
 
     const okDesktop =
-      window.matchMedia("(min-width: 980px)").matches &&
+      window.matchMedia("(min-width: 1200px)").matches &&
       window.matchMedia("(pointer: fine)").matches &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!okDesktop) return;
@@ -84,9 +84,9 @@ export default function MascotAstronaut() {
       // ---- paleta / materiais ----
       const matWhite = new THREE.MeshStandardMaterial({
         color: 0xeef2f9,
-        roughness: 0.4,
-        metalness: 0.02,
-        envMapIntensity: 0.9,
+        roughness: 0.32,
+        metalness: 0.04,
+        envMapIntensity: 1.15,
       });
       const matWhiteSoft = new THREE.MeshStandardMaterial({
         color: 0xd8dfec,
@@ -101,21 +101,24 @@ export default function MascotAstronaut() {
         envMapIntensity: 1,
       });
       const matVisor = new THREE.MeshStandardMaterial({
-        color: 0x0a1428,
-        roughness: 0.08,
-        metalness: 0.2,
-        envMapIntensity: 1.4,
+        color: 0x070b16,
+        roughness: 0.05,
+        metalness: 0.35,
+        envMapIntensity: 1.9,
+      });
+      // reflexo azul em crescente no visor (feature marcante da referência)
+      const matReflect = new THREE.MeshStandardMaterial({
+        color: 0xaad2ff,
+        emissive: 0x3f7bff,
+        emissiveIntensity: 0.8,
+        roughness: 0.2,
+        metalness: 0.1,
       });
       const matRed = new THREE.MeshStandardMaterial({
         color: 0xe0342f,
         roughness: 0.3,
         metalness: 0.05,
         emissive: 0x300000,
-      });
-      const matDark = new THREE.MeshStandardMaterial({
-        color: 0x1b2130,
-        roughness: 0.6,
-        metalness: 0.1,
       });
 
       // ---- helpers ----
@@ -178,23 +181,37 @@ export default function MascotAstronaut() {
       head.position.set(0, 1.05, 0);
       model.add(head);
       const neck = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.28, 0.16, 28),
+        new THREE.CylinderGeometry(0.26, 0.3, 0.16, 28),
         matAccent,
       );
       neck.position.y = 0.02;
       head.add(neck);
-      const helmet = sphere(0.6, matWhite);
-      helmet.position.y = 0.42;
+      const helmet = sphere(0.66, matWhite);
+      helmet.position.y = 0.46;
       head.add(helmet);
-      // visor
-      const visor = sphere(0.5, matVisor);
-      visor.scale.set(0.92, 0.74, 0.7);
-      visor.position.set(0, 0.44, 0.26);
+      // colar azul na base do capacete
+      const collar = ring(0.5, 0.06, matAccent);
+      collar.rotation.x = Math.PI / 2;
+      collar.position.y = 0.16;
+      collar.scale.z = 0.82;
+      head.add(collar);
+      // visor (rounded-rectangle escuro e brilhante)
+      const visor = sphere(0.54, matVisor);
+      visor.scale.set(0.96, 0.72, 0.72);
+      visor.position.set(0, 0.48, 0.28);
       head.add(visor);
-      const visorRing = ring(0.42, 0.05, matAccent);
-      visorRing.position.set(0, 0.44, 0.28);
-      visorRing.scale.set(1, 0.82, 1);
+      const visorRing = ring(0.46, 0.05, matAccent);
+      visorRing.position.set(0, 0.48, 0.3);
+      visorRing.scale.set(1, 0.8, 1);
       head.add(visorRing);
+      // crescente de reflexo azul no alto do visor (achatado contra a superfície)
+      const reflect = new THREE.Mesh(
+        new THREE.TorusGeometry(0.24, 0.026, 10, 32, Math.PI * 0.8),
+        matReflect,
+      );
+      reflect.position.set(-0.07, 0.6, 0.6);
+      reflect.rotation.set(0.15, 0.15, 0.55);
+      head.add(reflect);
       // antena
       const antenna = new THREE.Mesh(
         new THREE.CylinderGeometry(0.02, 0.02, 0.22, 8),
@@ -365,14 +382,9 @@ export default function MascotAstronaut() {
           const m = o as T.Mesh;
           if (m.geometry) m.geometry.dispose();
         });
-        [
-          matWhite,
-          matWhiteSoft,
-          matAccent,
-          matVisor,
-          matRed,
-          matDark,
-        ].forEach((m) => m.dispose());
+        [matWhite, matWhiteSoft, matAccent, matVisor, matReflect, matRed].forEach(
+          (m) => m.dispose(),
+        );
         scene.environment?.dispose();
         pmrem.dispose();
         renderer.dispose();

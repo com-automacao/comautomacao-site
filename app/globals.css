@@ -1788,16 +1788,29 @@ h3 {
 }
 
 /* ---------- MASCOTE 3D (astronauta, só desktop) ---------- */
+/* fica à direita da CTA, como complemento — o foco é a chamada de venda */
+.cta-mascot {
+  position: relative;
+  overflow: hidden;
+}
 .mascot3d {
-  width: min(320px, 60vw);
-  height: 360px;
-  margin: 0 auto 4px;
+  position: absolute;
+  right: max(16px, 4vw);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 360px;
+  height: 420px;
   pointer-events: none;
+  z-index: 0;
+}
+.cta-mascot .wrap {
+  position: relative;
+  z-index: 1;
 }
 .mascot3d canvas {
   display: block;
 }
-@media (max-width: 979px) {
+@media (max-width: 1199px) {
   .mascot3d {
     display: none;
   }

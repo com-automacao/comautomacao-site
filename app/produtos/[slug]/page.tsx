@@ -332,9 +332,9 @@ export default async function ProductPage({
       </section>
 
       {/* ===== DOBRA 5 · CTA (acento) ===== */}
-      <section className="s-dark pad">
+      <section className="s-dark pad cta-mascot">
+        <MascotAstronaut />
         <div className="wrap" style={{ textAlign: "center" }}>
-          <MascotAstronaut />
           <h2
             className="reveal r-scale"
             style={{
