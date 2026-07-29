@@ -1787,6 +1787,22 @@ h3 {
   position: relative;
 }
 
+/* ---------- MASCOTE 3D (astronauta, só desktop) ---------- */
+.mascot3d {
+  width: min(320px, 60vw);
+  height: 360px;
+  margin: 0 auto 4px;
+  pointer-events: none;
+}
+.mascot3d canvas {
+  display: block;
+}
+@media (max-width: 979px) {
+  .mascot3d {
+    display: none;
+  }
+}
+
 /* ---------- GLOWING EFFECT (21st.dev/originui) ---------- */
 /* borda com brilho em gradiente cônico que segue o ponteiro; só acende quando
    --active=1 (definido pelo componente conforme a proximidade do mouse) */

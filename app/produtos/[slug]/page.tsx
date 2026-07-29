@@ -8,6 +8,7 @@ import AcquirersCarousel from "@/components/AcquirersCarousel";
 import HeroPaths from "@/components/HeroPaths";
 import HeroDataGrid from "@/components/HeroDataGrid";
 import ScrollVideo from "@/components/ScrollVideo";
+import MascotAstronaut from "@/components/MascotAstronaut";
 import { FlowButton } from "@/components/ui/flow-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import {
@@ -335,6 +336,7 @@ export default async function ProductPage({
       {/* ===== DOBRA 5 · CTA (acento) ===== */}
       <section className="s-dark pad">
         <div className="wrap" style={{ textAlign: "center" }}>
+          <MascotAstronaut />
           <h2
             className="reveal r-scale"
             style={{
@@ -361,7 +363,7 @@ export default async function ProductPage({
             data-d="2"
             style={{ marginTop: 30 }}
           >
-            <FlowButton variant="accent" href={WHATSAPP_URL}>
+            <FlowButton variant="accent" href={WHATSAPP_URL} data-mascot-cheer="">
               Vamos decolar
               <Arrow />
             </FlowButton>
