@@ -106,10 +106,22 @@ export default function ScrollVideo({
       img.onload = () => {
         if (i === Math.round(currentF)) paint(i, true);
       };
-      // pré-decodifica pra o scrub não travar ao trocar de frame
-      img.decode?.().catch(() => {});
       images[i] = img;
     }
+
+    // pré-decodifica em cadeia (um frame por vez) pra o scrub não travar, sem
+    // "decode storm" no load (antes decodificava os 90 de uma vez)
+    let decodeIdx = 0;
+    let decodeStop = false;
+    const decodeNext = () => {
+      if (decodeStop || decodeIdx >= frameCount) return;
+      const img = images[decodeIdx++];
+      const next = () => decodeNext();
+      const d = img.decode?.();
+      if (d) d.then(next).catch(next);
+      else next();
+    };
+    decodeNext();
 
     const onScroll = () => {
       updateTarget();
@@ -128,6 +140,7 @@ export default function ScrollVideo({
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
+      decodeStop = true;
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);

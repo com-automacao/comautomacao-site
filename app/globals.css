@@ -619,7 +619,6 @@ h3 {
   background: var(--accent);
   opacity: 0.06;
   animation: gridPulse 5s ease-in-out infinite;
-  will-change: opacity;
 }
 .grid-hero-cell--dark {
   background: var(--accent);
