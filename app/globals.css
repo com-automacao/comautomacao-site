@@ -1783,6 +1783,58 @@ h3 {
     grid-template-columns: 1fr;
   }
 }
+.feat {
+  position: relative;
+}
+
+/* ---------- GLOWING EFFECT (21st.dev/originui) ---------- */
+/* borda com brilho em gradiente cônico que segue o ponteiro; só acende quando
+   --active=1 (definido pelo componente conforme a proximidade do mouse) */
+.glowing-effect {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.glowing-effect--blur {
+  filter: blur(var(--blur));
+}
+.glowing-effect .glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.glowing-effect .glow::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--glowingeffect-border-width));
+  border-radius: inherit;
+  padding: var(--glowingeffect-border-width);
+  background: var(--gradient);
+  opacity: var(--active);
+  transition: opacity 0.3s;
+  /* camada 1∖2 (exclude) = só o anel de borda; ∩ camada 3 (arco cônico do
+     --start) = o segmento de borda que aponta para o mouse */
+  mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0),
+    conic-gradient(
+      from calc((var(--start) - var(--spread)) * 1deg),
+      #0000 0deg,
+      #fff,
+      #0000 calc(var(--spread) * 2deg)
+    );
+  mask-clip: content-box, border-box, border-box;
+  mask-composite: exclude, intersect;
+  -webkit-mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0),
+    conic-gradient(
+      from calc((var(--start) - var(--spread)) * 1deg),
+      #0000 0deg,
+      #fff,
+      #0000 calc(var(--spread) * 2deg)
+    );
+  -webkit-mask-clip: content-box, border-box, border-box;
+  -webkit-mask-composite: xor, source-in;
+}
+
 .feat .ic {
   width: 42px;
   height: 42px;
@@ -1828,6 +1880,7 @@ h3 {
   }
 }
 .audience-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
