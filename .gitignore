@@ -41,3 +41,5 @@ components/com-automation-robot-animations-arms-only/
 
 # pacote-fonte do robô de produção (referência local; contém GLBs pesados)
 components/com-automation-robot-production/
+
+components/com-automation-robot-production-v2/

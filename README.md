@@ -63,8 +63,8 @@ components/
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
-  CtaMascot.tsx                           # wrapper do mascote na CTA: braços p/ cima (clip ArmsUp_Celebrate) enquanto o mouse está no botão "Vamos decolar"; clique alterna
-  ui/interactive-robot.tsx                # mascote robô 3D HQ (GLB texturizado + R3F) na CTA do produto: cabeça segue o cursor, clips relaxed/celebrate, poster de fallback. GLB desktop em public/models/com-automation-robot-hq.glb (~13,8 MB, quality="desktop", só ≥1200px, lazy). Pacote-fonte em components/com-automation-robot-production/ (gitignored; tem tb o GLB mobile e o wrapper dinâmico)
+  CtaMascot.tsx                           # wrapper do mascote na CTA: braços p/ cima (clip ArmsUp_Celebrate) enquanto o mouse está no botão "Vamos decolar"; clique/toque alterna
+  ui/interactive-mascot.tsx               # mascote robô 3D HQ (GLB texturizado + R3F, produção V2). Técnica: frameloop "demand", ambiente PMREM local, cabeça por quaternion c/ dead zone + micro-idle, raycast num box invisível (não na malha 288k), DPR adaptativo, crossfade poster↔canvas + entre poses. Desktop: cabeça segue o cursor. Mobile: cabeça segue o GIROSCÓPIO (gyro prop; permissão iOS por gesto). GLBs: com-automation-robot-hq.glb (~13,8MB desktop) e -hq-mobile.glb (~9,8MB, texturas reduzidas) — só um baixa por device. Pacote-fonte em components/com-automation-robot-production-v2/ (gitignored)
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, glowing-effect, accordion (Radix), etc.
 
 lib/

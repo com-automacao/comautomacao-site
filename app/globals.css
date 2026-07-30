@@ -1508,8 +1508,8 @@ h3 {
   position: relative;
 }
 
-/* ---------- MASCOTE 3D (astronauta, só desktop) ---------- */
-/* fica à direita da CTA, como complemento — o foco é a chamada de venda */
+/* ---------- MASCOTE 3D (astronauta) ---------- */
+/* desktop (≥1200px): à direita da CTA, como complemento — foco na chamada */
 .cta-mascot {
   position: relative;
   overflow: hidden;
@@ -1523,22 +1523,48 @@ h3 {
   height: 440px;
   z-index: 0;
 }
-/* o texto fica por cima (foco na chamada), mas "transparente" ao ponteiro para
-   o robô (abaixo) receber o mouse; só os botões voltam a capturar o clique */
+/* "palco": halo radial sutil na cor do produto, dando profundidade ao mascote */
+.mascot3d::before {
+  content: "";
+  position: absolute;
+  inset: -6% -10%;
+  z-index: -1;
+  background: radial-gradient(
+    58% 52% at 50% 44%,
+    color-mix(in srgb, var(--accent) 15%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
 .cta-mascot .wrap {
   position: relative;
   z-index: 1;
-  pointer-events: none;
 }
-.cta-mascot .wrap a {
-  pointer-events: auto;
+/* no desktop o texto fica por cima mas "transparente" ao ponteiro p/ o robô
+   (atrás) receber o mouse; só os botões voltam a capturar o clique */
+@media (min-width: 1200px) {
+  .cta-mascot .wrap {
+    pointer-events: none;
+  }
+  .cta-mascot .wrap a {
+    pointer-events: auto;
+  }
 }
 .mascot3d canvas {
   display: block;
 }
+/* mobile/tablet: o mascote vira um bloco centralizado ACIMA do texto (o head
+   segue o giroscópio; toque no robô alterna a comemoração) */
 @media (max-width: 1199px) {
+  .cta-mascot {
+    overflow: visible;
+  }
   .mascot3d {
-    display: none;
+    position: static;
+    transform: none;
+    width: min(300px, 74vw);
+    height: min(330px, 82vw);
+    margin: 0 auto 6px;
   }
 }
 

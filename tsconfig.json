@@ -40,6 +40,7 @@
     "design-system",
     "mascot3d-package",
     "components/com-automation-robot-animations-arms-only",
-    "components/com-automation-robot-production"
+    "components/com-automation-robot-production",
+    "components/com-automation-robot-production-v2"
   ]
 }
