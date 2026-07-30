@@ -8,8 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { Canvas, ThreeEvent, useFrame } from "@react-three/fiber";
+import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, useGLTF } from "@react-three/drei";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import * as THREE from "three";
 
 type RobotQuality = "auto" | "high" | "low";
@@ -159,8 +160,16 @@ function RobotModel({
 
         if (cloned.name === "MAT_VisorBlack") {
           const visor = cloned as THREE.MeshStandardMaterial;
-          visor.roughness = 0.06;
-          visor.metalness = 0.2;
+          // visor "molhado": bem liso e reflexivo, puxando o reflexo do estúdio
+          visor.roughness = 0.03;
+          visor.metalness = 0.35;
+          visor.envMapIntensity = 1.9;
+        }
+
+        // reflexos suaves do ambiente no plástico branco e nos demais materiais
+        if ("envMapIntensity" in cloned && cloned.name !== "MAT_VisorBlack") {
+          const std = cloned as THREE.MeshStandardMaterial;
+          std.envMapIntensity = 0.95;
         }
 
         return cloned;
@@ -354,22 +363,42 @@ function RobotModel({
   );
 }
 
+// ambiente de estúdio (PMREM + RoomEnvironment) -> reflexos reais no plástico
+// branco e no visor, sem HDRI externo/CDN. Faz o maior salto de fidelidade.
+function StudioEnvironment() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04);
+    scene.environment = env.texture;
+    return () => {
+      scene.environment = null;
+      env.texture.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+  return null;
+}
+
 function StudioLights({ lowQuality }: { lowQuality: boolean }) {
   return (
     <>
-      <hemisphereLight intensity={1.2} color="#ffffff" groundColor="#dfe6ee" />
+      {/* com o environment dando preenchimento, as luzes diretas ficam mais
+         contidas para não estourar o branco */}
+      <hemisphereLight intensity={0.5} color="#ffffff" groundColor="#c8d4e2" />
       <directionalLight
         position={[-3.5, 5, 4]}
-        intensity={2.6}
+        intensity={2.0}
         color="#ffffff"
       />
       <directionalLight
         position={[4, 2.5, 3]}
-        intensity={lowQuality ? 0.65 : 0.9}
+        intensity={lowQuality ? 0.5 : 0.7}
         color="#dcecff"
       />
       {!lowQuality && (
-        <pointLight position={[0, 2.6, -2.5]} intensity={1.1} color="#d8e8ff" />
+        <pointLight position={[-2, 1.4, 3.5]} intensity={0.6} color="#eaf2ff" />
       )}
     </>
   );
@@ -447,7 +476,7 @@ export function InteractiveRobot({
       {!useStaticPoster && visible && (
         <Canvas
           frameloop={visible ? "always" : "never"}
-          dpr={lowQuality ? 1 : [1, 1.6]}
+          dpr={lowQuality ? 1 : [1, 2]}
           camera={{ position: [0, 0.95, 4.25], fov: 30, near: 0.1, far: 50 }}
           gl={{
             alpha: true,
@@ -475,6 +504,7 @@ export function InteractiveRobot({
           }}
         >
           <Suspense fallback={null}>
+            <StudioEnvironment />
             <StudioLights lowQuality={lowQuality} />
             <RobotModel
               modelUrl={modelUrl}

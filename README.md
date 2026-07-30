@@ -63,9 +63,7 @@ components/
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
-  CtaMascot.tsx                           # alternador do mascote na CTA (?mascot=robot|sprite) para comparar v1 x v2
-  ui/interactive-robot.tsx                # mascote v1: robô 3D (GLB + R3F) contínuo — cabeça segue o cursor, acena, reage a clique. Pacote-fonte em mascot3d-package/
-  ui/mascote-v2/mascot-sprite.tsx         # mascote v2: folha de sprites (25 frames 5x5) pré-renderizada — troca de frame p/ seguir o cursor, ~0 custo de runtime. Assets em public/mascote/ (hoje um stand-in via WebGL; render Cycles final sai de render_sprites.py no Blender)
+  ui/interactive-robot.tsx                # mascote robô 3D (GLB + R3F) na CTA do produto: cabeça segue o cursor, acena, reage a clique; ambiente de estúdio (PMREM) p/ reflexos; poster de fallback. Pacote-fonte em mascot3d-package/ (ui/mascote-v2/ = abordagem alternativa por sprites, mantida como referência, não usada)
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, glowing-effect, accordion (Radix), etc.
 
 lib/
