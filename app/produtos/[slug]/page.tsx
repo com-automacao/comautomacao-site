@@ -8,7 +8,7 @@ import AcquirersCarousel from "@/components/AcquirersCarousel";
 import HeroPaths from "@/components/HeroPaths";
 import HeroDataGrid from "@/components/HeroDataGrid";
 import ScrollVideo from "@/components/ScrollVideo";
-import { InteractiveRobot } from "@/components/ui/interactive-robot";
+import CtaMascot from "@/components/CtaMascot";
 import { FlowButton } from "@/components/ui/flow-button";
 import {
   Accordion,
@@ -319,17 +319,7 @@ export default async function ProductPage({
       {/* ===== DOBRA 5 · CTA (acento) ===== */}
       <section className="s-dark pad cta-mascot">
         <div className="mascot3d">
-          <InteractiveRobot
-            accentColor={product.accent}
-            ariaLabel={`Mascote 3D interativo — ${product.name}`}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              minHeight: 0,
-            }}
-          />
+          <CtaMascot accent={product.accent} name={product.name} />
         </div>
         <div className="wrap" style={{ textAlign: "center" }}>
           <h2
