@@ -37,6 +37,7 @@ Demais scripts:
 
 ```bash
 npm run build        # gera o export estático em out/ (ver Deploy)
+npm run deploy       # build + zip pronto para o cPanel (ver Deploy)
 npm run lint         # ESLint (flat config em eslint.config.mjs)
 ```
 
@@ -136,13 +137,23 @@ Requer `ffmpeg`/`ffprobe` no PATH.
 O componente [`ui/interactive-mascot.tsx`](components/ui/interactive-mascot.tsx)
 renderiza um astronauta riggado com React Three Fiber. Duas interações:
 
-- **cabeça segue o ponteiro** — no desktop o cursor é lido na janela inteira (não
-  só sobre o canvas), então o mascote acompanha quem lê o texto ao lado;
-- **braços para cima** — enquanto o mouse está no botão "Vamos decolar"
-  (`[data-mascot-cheer]`). Clique/toque no mascote também alterna.
+**No desktop (com ponteiro):**
 
-No mobile não há ponteiro: a cabeça segue o **giroscópio** (no iOS 13+ a permissão
-é pedida no primeiro toque).
+- **cabeça segue o cursor** — lido na janela inteira, não só sobre o canvas, para
+  o mascote acompanhar quem lê o texto ao lado;
+- **braços para cima** — enquanto o mouse está no botão "Vamos decolar"
+  (`[data-mascot-cheer]`). Clicar no mascote também alterna.
+
+**No toque (celular/tablet):**
+
+- **cabeça segue o giroscópio** — no iOS 13+ a permissão é pedida no primeiro toque;
+- **a comemoração não existe.** Sem hover não há gatilho, e simular com tap
+  roubaria o toque de quem só quer rolar a página. O mascote fica sempre relaxado.
+
+A distinção é feita por `(hover: none), (pointer: coarse)` — capacidade de
+interação, não largura de tela. São perguntas diferentes: a largura decide só
+**qual GLB baixar**. Se fossem a mesma query, uma janela de desktop estreita
+perderia o rastreamento da cabeça sem ganhar giroscópio em troca.
 
 **Como as poses funcionam.** O rig do Meshy vem em T-pose e com rotações de bind
 irregulares, então as poses **não** são clipes de animação: são ângulos escritos
@@ -187,11 +198,22 @@ do logo-mark da marca. O Next injeta as tags `<link>` automaticamente.
 
 O site é 100% estático, então roda em hospedagem compartilhada sem Node.
 
-1. **Build:** `npm run build` → gera a pasta `out/` (HTML/CSS/JS puro).
-2. **Zipar** o conteúdo de `out/` (arquivos na raiz do zip, incluindo `.htaccess`).
-3. No **cPanel → Gerenciador de Arquivos → `public_html`**: limpe o conteúdo
-   antigo, faça **Upload** do zip e **Extract** ali mesmo. Apague o zip depois.
-4. Para atualizar, repita os passos (build → zip → upload/extract).
+```bash
+npm run deploy       # build + empacota out/ em comautomacao-site-export.zip
+```
+
+Depois, no **cPanel → Gerenciador de Arquivos → `public_html`**: limpe o conteúdo
+antigo, faça **Upload** do zip e **Extract** ali mesmo. Apague o zip depois.
+
+O empacotamento é o [`scripts/pack-deploy.mjs`](scripts/pack-deploy.mjs). Ele põe
+os arquivos na **raiz** do zip (é o que o Extract do cPanel espera), garante que
+o `.htaccess` entrou e confere que nenhum caminho saiu com barra invertida.
+
+> ⚠️ Não troque por `Compress-Archive` do PowerShell: ele grava os caminhos
+> internos com `\`, e o extrator do cPanel (Linux/PHP) criaria arquivos chamados
+> `models\arquivo.glb` em vez de pastas — o site sobe quebrado. O script usa o
+> `tar.exe` do Windows (bsdtar), chamado pelo caminho absoluto porque num shell
+> tipo Git Bash o `tar` do PATH é o GNU tar, que não escreve zip.
 
 `out/` e o `.zip` de deploy são ignorados pelo Git (são artefatos de build).
 

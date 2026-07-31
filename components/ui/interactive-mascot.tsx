@@ -199,7 +199,7 @@ interface MascotSceneProps {
   pose: MascotPose;
   animationTrigger: number;
   followPointer: boolean;
-  mobileGyro: boolean;
+  useGyro: boolean;
   pointerStrength: number;
   breathing: boolean;
   reducedMotion: boolean;
@@ -213,7 +213,7 @@ function MascotScene({
   pose,
   animationTrigger,
   followPointer,
-  mobileGyro,
+  useGyro,
   pointerStrength,
   breathing,
   reducedMotion,
@@ -393,7 +393,7 @@ function MascotScene({
   // canvas: o mascote fica na lateral da CTA e precisa "acompanhar" quem lê o
   // texto ao lado — é o que dá a sensação de presença.
   useEffect(() => {
-    if (!followPointer || mobileGyro) return;
+    if (!followPointer || useGyro) return;
     const canvas = gl.domElement;
 
     const handleWindowMove = (event: PointerEvent) => {
@@ -412,12 +412,12 @@ function MascotScene({
 
     window.addEventListener("pointermove", handleWindowMove, { passive: true });
     return () => window.removeEventListener("pointermove", handleWindowMove);
-  }, [followPointer, gl, invalidate, mobileGyro]);
+  }, [followPointer, gl, invalidate, useGyro]);
 
   // Mobile não tem ponteiro: a cabeça segue a inclinação do aparelho. No iOS
   // 13+ o acesso ao sensor exige um gesto do usuário.
   useEffect(() => {
-    if (!mobileGyro || typeof window === "undefined") return;
+    if (!useGyro || typeof window === "undefined") return;
 
     let lastGamma = 0;
     let lastBeta = 42;
@@ -476,7 +476,7 @@ function MascotScene({
         window.removeEventListener("click", grant);
       }
     };
-  }, [mobileGyro, invalidate]);
+  }, [useGyro, invalidate]);
 
   useEffect(() => {
     return () => {
@@ -626,17 +626,23 @@ export function InteractiveMascot({
   onLoaded,
   ariaLabel = "Mascote astronauta interativo da Com Automação",
 }: InteractiveMascotProps) {
-  const mobileDevice = useMediaQuery("(max-width: 768px), (pointer: coarse)");
+  // Duas perguntas diferentes, dois media queries diferentes:
+  // "é tela pequena?" decide QUAL MODELO baixar (banda/GPU);
+  // "não tem hover?" decide COMO se interage (giroscópio no lugar do ponteiro).
+  // Misturar as duas fazia uma janela de desktop estreita perder o
+  // rastreamento da cabeça sem ganhar giroscópio em troca.
+  const smallScreen = useMediaQuery("(max-width: 768px), (pointer: coarse)");
+  const hoverless = useMediaQuery("(hover: none), (pointer: coarse)");
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const pageVisible = usePageVisible();
   const { ref, hasEntered, intersecting } = useViewportActivity<HTMLDivElement>();
   const [loaded, setLoaded] = useState(false);
 
   const useMobileModel =
-    quality === "mobile" || (quality === "auto" && mobileDevice);
+    quality === "mobile" || (quality === "auto" && smallScreen);
   const modelUrl = useMobileModel ? mobileModelUrl : desktopModelUrl;
   const active = intersecting && pageVisible;
-  const mobileGyro = mobileDevice && gyro && !reducedMotion;
+  const useGyro = hoverless && gyro && !reducedMotion;
 
   const handleLoaded = useCallback(() => {
     requestAnimationFrame(() => setLoaded(true));
@@ -689,8 +695,8 @@ export function InteractiveMascot({
               modelUrl={modelUrl}
               pose={pose}
               animationTrigger={animationTrigger}
-              followPointer={followPointer && (!mobileDevice || mobileGyro)}
-              mobileGyro={mobileGyro}
+              followPointer={followPointer && (!hoverless || useGyro)}
+              useGyro={useGyro}
               pointerStrength={pointerStrength}
               breathing={breathing}
               reducedMotion={reducedMotion}
