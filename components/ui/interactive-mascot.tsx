@@ -61,19 +61,22 @@ const POSE_RELAXED: PoseMap = {
   Hips: {},
 };
 
-// Braços em "V": o úmero sobe pouco e para FORA (senão os cotovelos colam na
-// cabeça) e o antebraço faz o resto do caminho para cima.
+// Braços erguidos em ÂNGULO RETO no cotovelo: úmero quase na horizontal e
+// antebraço para cima. Como os dois ângulos são medidos a partir do MESMO bind
+// (a T-pose), o cotovelo fica reto quando a diferença entre eles é exatamente
+// 90 — é isso que tira a "quebra" no meio do braço. Se mexer num, mexa no
+// outro para manter os 90.
 //
 // A torção vai no ANTEBRAÇO, não no úmero — é onde a pronação acontece de
 // verdade, e é o único ponto onde ela gira só a mão. Torcer o úmero levaria
 // junto o plano de dobra do cotovelo, e os braços fechariam para dentro.
 const POSE_CELEBRATE: PoseMap = {
-  LeftArm: { z: 30, x: 12 },
-  RightArm: { z: -30, x: 12 },
-  LeftForeArm: { z: 54, x: 6, t: -90 },
-  RightForeArm: { z: -54, x: 6, t: 90 },
-  LeftShoulder: { z: 12 },
-  RightShoulder: { z: -12 },
+  LeftArm: { z: -30, x: 16 },
+  RightArm: { z: 30, x: 16 },
+  LeftForeArm: { z: 60, x: 6, t: -90 },
+  RightForeArm: { z: -60, x: 6, t: 90 },
+  LeftShoulder: { z: 8 },
+  RightShoulder: { z: -8 },
   Spine01: { x: -5 },
   Hips: {},
 };
@@ -205,14 +208,18 @@ function StudioEnvironment({ intensity = 1 }: { intensity?: number }) {
 
 function AdaptiveQuality({ mobile }: { mobile: boolean }) {
   const { setDpr } = useThree();
-  const highDpr = mobile ? 1.1 : 1.5;
+  // No celular a tela é 2x–3x: renderizar a 1x deixava o mascote visivelmente
+  // serrilhado. O piso de queda também sobe — 1x num aparelho denso não é
+  // "modo econômico", é borrão.
+  const high = mobile ? 2 : 1.5;
+  const low = mobile ? 1.5 : 1;
 
   return (
     <PerformanceMonitor
       flipflops={3}
-      onIncline={() => setDpr(highDpr)}
-      onDecline={() => setDpr(1)}
-      onFallback={() => setDpr(1)}
+      onIncline={() => setDpr(high)}
+      onDecline={() => setDpr(low)}
+      onFallback={() => setDpr(low)}
     />
   );
 }
@@ -489,17 +496,39 @@ function MascotScene({
   useEffect(() => {
     if (!useGyro || typeof window === "undefined") return;
 
+    /*
+     * A leitura é RELATIVA a como a pessoa está segurando o aparelho, não
+     * absoluta. A versão anterior assumia beta = 42° como "neutro"; quem
+     * segura o celular mais em pé (beta ~75°) já começava com a inclinação
+     * saturada e a cabeça travada olhando para um lado — que é o efeito de
+     * "não funciona direito" no celular.
+     *
+     * Agora a primeira leitura vira o zero. `beta` só é calibrado quando o
+     * aparelho está numa posição plausível de leitura, para o caso de o
+     * primeiro evento chegar com o celular deitado na mesa.
+     */
+    let baseGamma: number | null = null;
+    let baseBeta: number | null = null;
     let lastGamma = 0;
-    let lastBeta = 42;
+    let lastBeta = 0;
+
     const onOrient = (event: DeviceOrientationEvent) => {
       const gamma = event.gamma ?? 0;
-      const beta = event.beta ?? 42;
-      if (Math.abs(gamma - lastGamma) < 0.4 && Math.abs(beta - lastBeta) < 0.4) return;
+      const beta = event.beta ?? 0;
+
+      if (baseGamma === null) {
+        baseGamma = gamma;
+        baseBeta = THREE.MathUtils.clamp(beta, 20, 80);
+      }
+
+      if (Math.abs(gamma - lastGamma) < 0.3 && Math.abs(beta - lastBeta) < 0.3) return;
       lastGamma = gamma;
       lastBeta = beta;
+
+      // ±26° a partir do neutro cobre o quanto se gira o pulso sem esforço
       pointerRef.current.set(
-        applyDeadZone(THREE.MathUtils.clamp(gamma / 28, -1, 1)),
-        applyDeadZone(THREE.MathUtils.clamp((beta - 42) / 26, -1, 1)),
+        applyDeadZone(THREE.MathUtils.clamp((gamma - baseGamma) / 26, -1, 1)),
+        applyDeadZone(THREE.MathUtils.clamp((beta - (baseBeta ?? beta)) / 24, -1, 1)),
       );
       pointerInsideRef.current = true;
       invalidate();
@@ -840,11 +869,14 @@ export function InteractiveMascot({
       {hasEntered && (
         <Canvas
           frameloop="demand"
-          dpr={useMobileModel ? 1 : 1.25}
+          /* faixa, não valor fixo: o R3F usa o devicePixelRatio do aparelho
+             limitado a ela. O teto 2 no celular é o que tira o serrilhado. */
+          dpr={useMobileModel ? [1.5, 2] : [1, 1.5]}
           camera={{ position: [0, 0, 5.2], fov: 30, near: 0.1, far: 20 }}
           gl={{
             alpha: true,
-            antialias: !useMobileModel,
+            // 17k triângulos: dá para manter antialias em todo lugar
+            antialias: true,
             powerPreference: "high-performance",
             stencil: false,
           }}

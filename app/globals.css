@@ -1549,7 +1549,9 @@ h3 {
   overflow: hidden;
   /* largura do mascote em um lugar só: a coluna de texto reserva o espaço a
      partir dela, então as duas nunca saem de sincronia */
-  --mascot-w: clamp(300px, 24vw, 380px);
+  /* +20% sobre os 380px originais. A coluna de texto reserva o espaço a partir
+     desta mesma variável, então as duas nunca saem de sincronia. */
+  --mascot-w: clamp(340px, 29vw, 456px);
 }
 .mascot3d {
   position: absolute;

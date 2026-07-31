@@ -153,7 +153,11 @@ renderiza um astronauta riggado com React Three Fiber. Duas interações:
 
 **No toque (celular/tablet):**
 
-- **cabeça segue o giroscópio** — no iOS 13+ a permissão é pedida no primeiro toque;
+- **cabeça segue o giroscópio** — no iOS 13+ a permissão é pedida no primeiro
+  toque. A leitura é **relativa**: a primeira amostra vira o neutro. Uma linha de
+  base fixa não funciona, porque `beta` depende de como cada pessoa segura o
+  aparelho — quem segura mais em pé já começava com a inclinação saturada e a
+  cabeça travada para um lado;
 - **a comemoração não existe.** Sem hover não há gatilho, e simular com tap
   roubaria o toque de quem só quer rolar a página. O mascote fica sempre relaxado;
 - **o arrasto para girar também não.** Ele competiria com a rolagem da página.
@@ -176,6 +180,14 @@ torcer, o braço sobe com a palma para fora. E ela fica no **antebraço**, não 
 úmero: é onde a pronação acontece de verdade e é o único ponto onde ela gira só
 a mão. Torcer o úmero levaria junto o plano de dobra do cotovelo, e os braços
 fechariam para dentro.
+
+> **Cotovelo reto:** como `LeftArm.z` e `LeftForeArm.z` são medidos a partir do
+> MESMO bind (a T-pose), o cotovelo fica em ângulo reto quando a diferença entre
+> eles é exatamente **90**. Hoje é `-30` e `60`. Se mexer num, mexa no outro —
+> qualquer outro valor reaparece como uma "quebra" no meio do braço.
+> O úmero aponta para BAIXO de propósito: com ele na horizontal o cotovelo sobe
+> à altura da cabeça e os antebraços passam raspando no capacete, o que lê como
+> "mãos na cabeça" em vez de comemoração.
 
 **Cabeça.** O giro vai até 40° de yaw / 20° de pitch, repartido entre `neck`
 (35%) e `Head` (65%), e o tronco (`Spine01`) acompanha com uma fração disso.
@@ -234,6 +246,10 @@ Motion: a transição entre poses é uma **mola** (subida levemente subamortecid
 amortecimento exponencial com dead zone, e há uma respiração sutil no repouso.
 Tudo respeita `prefers-reduced-motion`. O `frameloop` é `"demand"`: nada é
 renderizado com o mascote fora da viewport ou com a aba em segundo plano.
+
+> **Resolução:** o `dpr` do Canvas é uma **faixa**, não um valor fixo — no
+> celular `[1.5, 2]`. Fixar em 1 num aparelho de tela 2x/3x não é "modo
+> econômico", é borrão: era a causa do mascote sair serrilhado no mobile.
 
 **Gerando os GLBs.** O arquivo cru do Meshy tem ~17MB (288.776 triângulos +
 textura PNG de 5,69MB) e **não vai para o repo** (ver `.gitignore`). Guarde-o fora
