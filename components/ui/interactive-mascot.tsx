@@ -20,6 +20,8 @@ export interface InteractiveMascotProps {
   quality?: MascotQuality;
   followPointer?: boolean;
   gyro?: boolean;
+  /** arrastar sobre o mascote gira o corpo; volta à frente sozinho após 2s */
+  dragToSpin?: boolean;
   pointerStrength?: number;
   breathing?: boolean;
   shadows?: boolean;
@@ -89,6 +91,14 @@ const BODY_MAX_PITCH = 2.5;
 const POINTER_DEAD_ZONE = 0.04;
 /** comemorando, o astronauta também olha um pouco para cima */
 const CELEBRATE_HEAD_PITCH = 7;
+
+/* ---- girar arrastando (só onde existe ponteiro) ---- */
+/** graus de giro por pixel arrastado: ~340° ao atravessar a caixa do mascote */
+const SPIN_PER_PX = 0.9;
+/** segundos parado antes de voltar sozinho para a frente */
+const SPIN_IDLE_BEFORE_RETURN = 2;
+/** acima disto o gesto é arrasto, não clique */
+const DRAG_THRESHOLD_PX = 4;
 
 type BoneRig = {
   bone: THREE.Object3D;
@@ -213,6 +223,8 @@ interface MascotSceneProps {
   animationTrigger: number;
   followPointer: boolean;
   useGyro: boolean;
+  /** arrastar para girar — só onde existe ponteiro */
+  spinnable: boolean;
   pointerStrength: number;
   breathing: boolean;
   reducedMotion: boolean;
@@ -227,6 +239,7 @@ function MascotScene({
   animationTrigger,
   followPointer,
   useGyro,
+  spinnable,
   pointerStrength,
   breathing,
   reducedMotion,
@@ -255,6 +268,12 @@ function MascotScene({
   const headYawRef = useRef(0);
   const headPitchRef = useRef(0);
   const clockRef = useRef(0);
+
+  // girar arrastando
+  const spinGroupRef = useRef<THREE.Group>(null);
+  const spinRef = useRef(0);
+  const idleAfterDragRef = useRef(0);
+  const dragRef = useRef({ active: false, lastX: 0, moved: 0, pointerId: -1 });
 
   const targetBlend = pose === "celebrate" ? 1 : 0;
 
@@ -365,12 +384,36 @@ function MascotScene({
 
       for (const material of materials) {
         const pbr = material as THREE.MeshStandardMaterial;
-        if ("envMapIntensity" in pbr) pbr.envMapIntensity = 1.15;
-        for (const texture of [pbr.map, pbr.roughnessMap, pbr.normalMap]) {
+
+        /*
+         * Correções sobre o que o Meshy exporta — são o que faz o modelo
+         * deixar de parecer chapado:
+         *
+         * 1. `emissiveFactor: [1,1,1]` com a própria textura como mapa
+         *    emissivo. O modelo se auto-ilumina em cheio, o que anula
+         *    qualquer trabalho de luz: não há sombra, nem volume, nem
+         *    contorno. Zerado aqui, com uma fração mínima só para os vincos
+         *    mais fundos não virarem preto puro.
+         * 2. `metallicFactor`/`roughnessFactor` ausentes. No glTF isso NÃO é
+         *    zero: o default é 1.0 nos dois, ou seja, o traje inteiro era
+         *    metal totalmente fosco — sem albedo difuso, daí o aspecto de giz.
+         *    Um traje é dielétrico: metal 0, rugosidade média-alta.
+         * 3. `doubleSided: true` numa malha fechada só dobra o trabalho de
+         *    fragmento e bagunça o sombreamento nas silhuetas.
+         */
+        if ("emissiveIntensity" in pbr) pbr.emissiveIntensity = 0.05;
+        if ("metalness" in pbr) pbr.metalness = 0;
+        if ("roughness" in pbr) pbr.roughness = 0.52;
+        if ("envMapIntensity" in pbr) pbr.envMapIntensity = 1.05;
+        pbr.side = THREE.FrontSide;
+
+        for (const texture of [pbr.map, pbr.emissiveMap, pbr.roughnessMap, pbr.normalMap]) {
           if (!texture) continue;
           texture.anisotropy = maxAnisotropy;
           texture.needsUpdate = true;
         }
+
+        pbr.needsUpdate = true;
       }
 
       object.material = Array.isArray(object.material) ? materials : materials[0];
@@ -505,6 +548,43 @@ function MascotScene({
     };
   }, [useGyro, invalidate]);
 
+  /* Arrastar sobre o mascote gira o corpo no próprio eixo, sem limite (dá a
+     volta inteira). Os listeners ficam na janela, não no canvas: quem arrasta
+     costuma sair da caixa do mascote no meio do gesto, e sem isso o giro
+     travaria ali. */
+  useEffect(() => {
+    if (!spinnable) return;
+
+    const onMove = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag.active) return;
+      const dx = event.clientX - drag.lastX;
+      drag.lastX = event.clientX;
+      drag.moved += Math.abs(dx);
+      spinRef.current += DEG(dx * SPIN_PER_PX);
+      idleAfterDragRef.current = 0;
+      invalidate();
+    };
+
+    const onUp = () => {
+      const drag = dragRef.current;
+      if (!drag.active) return;
+      drag.active = false;
+      idleAfterDragRef.current = 0;
+      document.body.style.cursor = hoveredRef.current ? "grab" : "";
+      invalidate();
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [invalidate, spinnable]);
+
   useEffect(() => {
     return () => {
       document.body.style.cursor = "";
@@ -543,10 +623,37 @@ function MascotScene({
 
     /* --- respiração: o peito sobe e desce de leve. É o que separa "modelo
        parado" de "personagem esperando". --- */
+    /* --- giro por arrasto + volta ao centro ---
+       O alvo do retorno é a volta INTEIRA mais próxima, não zero: se a pessoa
+       deu três voltas, ele não desenrola as três — só completa a que está. --- */
+    const drag = dragRef.current;
+    if (spinnable) {
+      if (!drag.active && spinRef.current !== 0) {
+        idleAfterDragRef.current += delta;
+        if (idleAfterDragRef.current >= SPIN_IDLE_BEFORE_RETURN) {
+          const target = Math.round(spinRef.current / (Math.PI * 2)) * Math.PI * 2;
+          if (reducedMotion) {
+            spinRef.current = 0;
+          } else {
+            const k = 1 - Math.exp(-5.5 * delta);
+            spinRef.current += (target - spinRef.current) * k;
+            // chegou: zera de vez. Um múltiplo de 2π é visualmente idêntico a
+            // zero, então o "snap" não aparece e o estado não fica acumulando.
+            if (Math.abs(target - spinRef.current) < 0.0015) spinRef.current = 0;
+          }
+        }
+      }
+      if (spinGroupRef.current) spinGroupRef.current.rotation.y = spinRef.current;
+    }
+
+
     /* --- cabeça: amortecimento exponencial, independente de framerate --- */
     const pointerActive =
       followPointer && !reducedMotion && pointerInsideRef.current;
-    const gain = hoveredRef.current ? 1.12 : 1;
+    // de costas, a cabeça não deve tentar procurar o cursor: o ganho cai com o
+    // cosseno do giro e volta sozinho quando o corpo encara a frente de novo
+    const facing = Math.max(0, Math.cos(spinRef.current));
+    const gain = (hoveredRef.current ? 1.12 : 1) * facing;
 
     const targetYaw = pointerActive
       ? pointerRef.current.x * HEAD_MAX_YAW * pointerStrength * gain
@@ -607,7 +714,12 @@ function MascotScene({
 
     // comparado contra o ref (intenção), não contra `pitch`, que já está com o
     // sinal invertido para virar rotação de mundo
+    // enquanto o giro não voltou ao zero o laço precisa seguir vivo, inclusive
+    // durante os 2s de espera — é ele que conta o tempo
+    const spinSettled = !spinnable || (!drag.active && spinRef.current === 0);
+
     const settled =
+      spinSettled &&
       Math.abs(blend - targetBlend) < 0.001 &&
       Math.abs(blendVelRef.current) < 0.001 &&
       Math.abs(targetYaw - yaw) < 0.02 &&
@@ -623,31 +735,55 @@ function MascotScene({
     // cabeça precisa passar por baixo do título da CTA, e os punhos erguidos
     // não podem estourar o topo do canvas.
     <group position={[0, -1.34, 0]}>
-      <primitive object={model} dispose={null} />
+      {/* o giro por arrasto vive aqui, envolvendo modelo e alvo de ponteiro,
+          para que a área clicável acompanhe o corpo */}
+      <group ref={spinGroupRef}>
+        <primitive object={model} dispose={null} />
 
-      {/* alvo de ponteiro: uma caixa simples no lugar de 58k triângulos */}
-      <mesh
-        position={[0, 0.8, 0]}
-        onPointerOver={(event) => {
-          event.stopPropagation();
-          hoveredRef.current = true;
-          document.body.style.cursor = onMascotClick ? "pointer" : "";
-          invalidate();
-        }}
-        onPointerOut={(event) => {
-          event.stopPropagation();
-          hoveredRef.current = false;
-          document.body.style.cursor = "";
-          invalidate();
-        }}
-        onClick={(event) => {
-          event.stopPropagation();
-          onMascotClick?.();
-        }}
-      >
-        <boxGeometry args={[0.72, 1.66, 0.6]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
-      </mesh>
+        {/* alvo de ponteiro: uma caixa simples no lugar de 58k triângulos */}
+        <mesh
+          position={[0, 0.8, 0]}
+          onPointerOver={(event) => {
+            event.stopPropagation();
+            hoveredRef.current = true;
+            document.body.style.cursor = spinnable
+              ? "grab"
+              : onMascotClick
+                ? "pointer"
+                : "";
+            invalidate();
+          }}
+          onPointerOut={(event) => {
+            event.stopPropagation();
+            hoveredRef.current = false;
+            if (!dragRef.current.active) document.body.style.cursor = "";
+            invalidate();
+          }}
+          onPointerDown={(event) => {
+            if (!spinnable) return;
+            event.stopPropagation();
+            dragRef.current = {
+              active: true,
+              lastX: event.clientX,
+              moved: 0,
+              pointerId: event.pointerId,
+            };
+            idleAfterDragRef.current = 0;
+            document.body.style.cursor = "grabbing";
+            invalidate();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            // um arrasto não é um clique: sem isto, girar o mascote também
+            // disparava a comemoração ao soltar
+            if (dragRef.current.moved > DRAG_THRESHOLD_PX) return;
+            onMascotClick?.();
+          }}
+        >
+          <boxGeometry args={[0.72, 1.66, 0.6]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -661,6 +797,7 @@ export function InteractiveMascot({
   quality = "auto",
   followPointer = true,
   gyro = true,
+  dragToSpin = true,
   pointerStrength = 1,
   breathing = true,
   shadows = true,
@@ -720,13 +857,13 @@ export function InteractiveMascot({
           onCreated={({ gl }) => {
             gl.outputColorSpace = THREE.SRGBColorSpace;
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1;
+            gl.toneMappingExposure = 1.12;
             gl.setClearColor(0x000000, 0);
           }}
         >
           <AdaptiveQuality mobile={useMobileModel} />
           {/* ambiente só como base macia: o desenho vem das luzes abaixo */}
-          <StudioEnvironment intensity={0.5} />
+          <StudioEnvironment intensity={0.62} />
 
           {/*
             Esquema de 4 pontos, montado para um traje BRANCO sobre fundo PRETO.
@@ -737,18 +874,18 @@ export function InteractiveMascot({
             silhueta. A ambiente fica quase zerada de propósito: subi-la achata
             tudo de novo.
           */}
-          <ambientLight intensity={0.14} />
+          <ambientLight intensity={0.2} />
 
           {/* chave — morna, alta, à esquerda de quem olha */}
           <directionalLight
             position={[-3.6, 4.4, 3.8]}
-            intensity={2.9}
+            intensity={3.4}
             color="#fff4e8"
           />
           {/* preenchimento — frio e discreto, abre a sombra do lado direito */}
           <directionalLight
             position={[3.8, 1.4, 2.6]}
-            intensity={0.55}
+            intensity={0.75}
             color="#cfe0ff"
           />
           {/* contorno na cor do produto — amarra o mascote ao halo da seção */}
@@ -778,6 +915,9 @@ export function InteractiveMascot({
               animationTrigger={animationTrigger}
               followPointer={followPointer && (!hoverless || useGyro)}
               useGyro={useGyro}
+              /* arrastar para girar é gesto de ponteiro: no toque ele
+                 competiria com a rolagem da página */
+              spinnable={dragToSpin && !hoverless}
               pointerStrength={pointerStrength}
               breathing={breathing}
               reducedMotion={reducedMotion}

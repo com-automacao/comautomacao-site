@@ -142,13 +142,21 @@ renderiza um astronauta riggado com React Three Fiber. Duas interações:
 - **cabeça segue o cursor** — lido na janela inteira, não só sobre o canvas, para
   o mascote acompanhar quem lê o texto ao lado;
 - **braços para cima** — enquanto o mouse está no botão "Vamos decolar"
-  (`[data-mascot-cheer]`). Clicar no mascote também alterna.
+  (`[data-mascot-cheer]`). Clicar no mascote também alterna;
+- **arrastar gira o corpo** no próprio eixo, sem limite (dá voltas completas);
+  2s depois de soltar ele volta sozinho para a frente. O alvo do retorno é a
+  volta inteira mais próxima, não zero: quem deu três voltas não vê as três
+  desenrolarem, só a atual se completar. De costas, a cabeça para de procurar o
+  cursor (o ganho cai com o cosseno do giro) e volta a segui-lo sozinha.
+  Os listeners do arrasto ficam na **janela**, não no canvas: quem arrasta sai
+  da caixa do mascote no meio do gesto e o giro travaria ali.
 
 **No toque (celular/tablet):**
 
 - **cabeça segue o giroscópio** — no iOS 13+ a permissão é pedida no primeiro toque;
 - **a comemoração não existe.** Sem hover não há gatilho, e simular com tap
-  roubaria o toque de quem só quer rolar a página. O mascote fica sempre relaxado.
+  roubaria o toque de quem só quer rolar a página. O mascote fica sempre relaxado;
+- **o arrasto para girar também não.** Ele competiria com a rolagem da página.
 
 A distinção é feita por `(hover: none), (pointer: coarse)` — capacidade de
 interação, não largura de tela. São perguntas diferentes: a largura decide só
@@ -179,6 +187,19 @@ ocupa na página.
 > ("cursor acima = olhar para cima") e inverte na hora de virar rotação. Trocar
 > isso faz o mascote olhar para o lado oposto do cursor.
 
+**Material — leia antes de mexer na luz.** O que o Meshy exporta precisa de três
+correções, aplicadas em `interactive-mascot.tsx` ao carregar o modelo. Sem elas
+nenhum ajuste de iluminação funciona:
+
+1. `emissiveFactor: [1,1,1]` com a própria textura como mapa emissivo — o modelo
+   **se auto-ilumina em cheio**, o que anula sombra, volume e contorno. É zerado
+   (sobra 0.05 para os vincos não virarem preto puro).
+2. `metallicFactor` e `roughnessFactor` **ausentes**. No glTF isso não é zero: o
+   default é **1.0 nos dois**, ou seja, o traje inteiro era metal totalmente
+   fosco, sem albedo difuso — daí o aspecto de giz. Um traje é dielétrico:
+   metal 0, rugosidade ~0.5.
+3. `doubleSided: true` numa malha fechada só dobra o trabalho de fragmento.
+
 **Luz.** Esquema de 4 pontos montado para um traje branco sobre fundo preto — o
 problema não é iluminar, é separar do fundo sem estourar o branco. Chave morna à
 frente-esquerda, preenchimento frio baixo, e duas luzes de **contorno** por trás
@@ -197,7 +218,11 @@ adesivo colado. O que o integra à página está no CSS, em `.mascot3d::before` 
   `.beam-h` do site — é o que faz ele pertencer à página;
 - no desktop (≥1200px) a dobra vira **duas colunas**: `.cta-mascot .wrap` ganha
   `padding-right`, então o texto ocupa a coluna da esquerda e o mascote a da
-  direita, em vez de texto centralizado com uma figura sobrando na margem.
+  direita, em vez de texto centralizado com uma figura sobrando na margem;
+- o mascote se alinha à **coluna de conteúdo**, não à borda da janela — em
+  monitor largo o texto para em 1280px e ele ficava colado no canto do monitor,
+  sozinho. A largura vive na variável `--mascot-w` (em `.cta-mascot`), de onde a
+  coluna de texto reserva o espaço: as duas nunca saem de sincronia.
 
 > As porcentagens dos gradientes são do pseudo-elemento, que o `inset` negativo
 > estica para além da caixa — por isso a poça fica em `90%`, não em `100%`.
@@ -218,10 +243,10 @@ do projeto e gere as versões web com:
 node scripts/build-mascot.mjs caminho/para/o-modelo-cru.glb
 ```
 
-Isso escreve `public/models/com-automation-astronaut.glb` (~527KB, 58.624 tri,
-textura 1024) e `-mobile.glb` (~187KB, 14.438 tri, textura 512) — só um baixa por
-device. A compressão é **meshopt** (não Draco): o decoder é empacotado junto do
-three, sem depender de CDN de terceiros.
+Isso escreve `public/models/com-automation-astronaut.glb` (~740KB, 58.624 tri,
+textura 2048) e `-mobile.glb` (~230KB, 17.326 tri, textura 1024) — só um baixa
+por device. A compressão é **meshopt** (não Draco): o decoder é empacotado junto
+do three, sem depender de CDN de terceiros.
 
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável

@@ -31,20 +31,22 @@ if (!source || !existsSync(source)) {
 
 const mb = (p) => (statSync(p).size / 1048576).toFixed(2) + " MB";
 
+// A textura de origem é 2048². No desktop vale manter: o mascote é renderizado
+// grande e a 1024 o visor e as faixas perdiam definição (custo: ~230KB).
 const targets = [
   {
     out: "public/models/com-automation-astronaut.glb",
     label: "desktop",
-    textureSize: "1024",
+    textureSize: "2048",
     ratio: "0.15",
     error: "0.0002",
   },
   {
     out: "public/models/com-automation-astronaut-mobile.glb",
     label: "mobile",
-    textureSize: "512",
-    ratio: "0.05",
-    error: "0.0015",
+    textureSize: "1024",
+    ratio: "0.06",
+    error: "0.0012",
   },
 ];
 

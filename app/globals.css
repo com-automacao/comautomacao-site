@@ -1547,14 +1547,24 @@ h3 {
 .cta-mascot {
   position: relative;
   overflow: hidden;
+  /* largura do mascote em um lugar só: a coluna de texto reserva o espaço a
+     partir dela, então as duas nunca saem de sincronia */
+  --mascot-w: clamp(300px, 24vw, 380px);
 }
 .mascot3d {
   position: absolute;
-  right: max(16px, 3vw);
+  /* Alinha o mascote à COLUNA DE CONTEÚDO, não à borda da janela. Em monitor
+     largo o texto para em 1280px e ele ficava colado no canto do monitor,
+     sozinho, longe de tudo. A conta é a distância da borda até o limite
+     interno do .wrap; abaixo de 1280px cai no gutter normal. */
+  right: max(
+    var(--gutter),
+    calc((100% - var(--maxw)) / 2 + var(--gutter))
+  );
   top: 50%;
   transform: translateY(-50%);
-  width: 380px;
-  height: 440px;
+  width: var(--mascot-w);
+  height: calc(var(--mascot-w) * 1.16);
   z-index: 0;
 }
 /* "Palco" do mascote.
@@ -1628,7 +1638,7 @@ h3 {
        inteira e deixar a figura sobrando na margem. Com isto a dobra vira
        duas colunas de verdade — texto à esquerda, mascote à direita — que é o
        que faz ele parecer parte da composição, e não encaixado depois. */
-    padding-right: calc(var(--gutter) + 300px);
+    padding-right: calc(var(--mascot-w) + 52px);
   }
   .cta-mascot .wrap a {
     pointer-events: auto;
@@ -1654,6 +1664,9 @@ h3 {
     width: min(300px, 74vw);
     height: min(330px, 82vw);
     margin: 0 auto 6px;
+  }
+  .cta-mascot .wrap {
+    padding-right: var(--gutter);
   }
   /* na coluna única o horizonte fica mais curto, senão vira uma régua
      atravessando a tela */
