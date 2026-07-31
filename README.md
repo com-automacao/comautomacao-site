@@ -162,6 +162,25 @@ convertidos para o espaço do pai em runtime. Por isso os números em
 `POSE_RELAXED` / `POSE_CELEBRATE` são legíveis — `z: -74` é literalmente "braço
 74° abaixo da horizontal". Para reajustar a pose, mexa só nesses dois objetos.
 
+O campo `t` é a exceção: é a **torção em torno do próprio osso**, aplicada no
+espaço local. Ela existe porque a T-pose tem as palmas viradas para BAIXO — sem
+torcer, o braço sobe com a palma para fora. E ela fica no **antebraço**, não no
+úmero: é onde a pronação acontece de verdade e é o único ponto onde ela gira só
+a mão. Torcer o úmero levaria junto o plano de dobra do cotovelo, e os braços
+fechariam para dentro.
+
+**Cabeça.** O giro vai até 40° de yaw / 20° de pitch, repartido entre `neck`
+(35%) e `Head` (65%), e o tronco (`Spine01`) acompanha com uma fração disso.
+O tronco importa: só a cabeça virando quase não se lê à distância que o mascote
+ocupa na página.
+
+**Luz.** Esquema de 4 pontos montado para um traje branco sobre fundo preto — o
+problema não é iluminar, é separar do fundo sem estourar o branco. Chave morna à
+frente-esquerda, preenchimento frio baixo, e duas luzes de **contorno** por trás
+desenhando a silhueta, uma delas na cor do produto (prop `accent`, que a página
+passa a partir de `product.accent`), amarrando o mascote ao halo da seção. A
+`ambientLight` fica quase zerada de propósito: subi-la achata tudo de novo.
+
 Motion: a transição entre poses é uma **mola** (subida levemente subamortecida,
 ~8% de overshoot; descida criticamente amortecida e mais curta), a cabeça usa
 amortecimento exponencial com dead zone, e há uma respiração sutil no repouso.

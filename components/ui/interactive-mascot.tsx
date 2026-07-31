@@ -23,6 +23,8 @@ export interface InteractiveMascotProps {
   pointerStrength?: number;
   breathing?: boolean;
   shadows?: boolean;
+  /** cor da luz de contorno; use o acento do produto para amarrar à seção */
+  accent?: string;
   onMascotClick?: () => void;
   onLoaded?: () => void;
   ariaLabel?: string;
@@ -38,8 +40,12 @@ const DEG = THREE.MathUtils.degToRad;
  * X = trazer para frente/trás, Y = girar) e convertidas para o espaço do
  * pai em tempo de execução. Assim os números continuam legíveis: "-72 em
  * Z" é literalmente "braço 72° abaixo da horizontal".
+ *
+ * `t` é a exceção e é aplicado no espaço LOCAL: é a torção em torno do
+ * próprio osso. Sem ela a T-pose (que tem as palmas viradas para BAIXO)
+ * termina com as palmas para fora quando o braço sobe.
  * ------------------------------------------------------------------ */
-type WorldAngles = { x?: number; y?: number; z?: number };
+type WorldAngles = { x?: number; y?: number; z?: number; t?: number };
 type PoseMap = Record<string, WorldAngles>;
 
 const POSE_RELAXED: PoseMap = {
@@ -55,11 +61,15 @@ const POSE_RELAXED: PoseMap = {
 
 // Braços em "V": o úmero sobe pouco e para FORA (senão os cotovelos colam na
 // cabeça) e o antebraço faz o resto do caminho para cima.
+//
+// A torção vai no ANTEBRAÇO, não no úmero — é onde a pronação acontece de
+// verdade, e é o único ponto onde ela gira só a mão. Torcer o úmero levaria
+// junto o plano de dobra do cotovelo, e os braços fechariam para dentro.
 const POSE_CELEBRATE: PoseMap = {
   LeftArm: { z: 30, x: 12 },
   RightArm: { z: -30, x: 12 },
-  LeftForeArm: { z: 54, x: 6 },
-  RightForeArm: { z: -54, x: 6 },
+  LeftForeArm: { z: 54, x: 6, t: -90 },
+  RightForeArm: { z: -54, x: 6, t: 90 },
   LeftShoulder: { z: 12 },
   RightShoulder: { z: -12 },
   Spine01: { x: -5 },
@@ -68,11 +78,14 @@ const POSE_CELEBRATE: PoseMap = {
 
 const POSE_BONES = Object.keys(POSE_RELAXED);
 
-const HEAD_MAX_YAW = 24;
-const HEAD_MAX_PITCH = 13;
-const HEAD_MAX_ROLL = 3;
+const HEAD_MAX_YAW = 40;
+const HEAD_MAX_PITCH = 20;
+const HEAD_MAX_ROLL = 6;
 /** o pescoço puxa uma fração do giro; o resto vai para a cabeça */
 const NECK_SHARE = 0.35;
+/** o tronco acompanha de leve — é o que faz o movimento ser lido de longe */
+const BODY_MAX_YAW = 7;
+const BODY_MAX_PITCH = 2.5;
 const POINTER_DEAD_ZONE = 0.04;
 /** comemorando, o astronauta também olha um pouco para cima */
 const CELEBRATE_HEAD_PITCH = 7;
@@ -249,8 +262,11 @@ function MascotScene({
   const scratch = useMemo(
     () => ({
       q: new THREE.Quaternion(),
+      qTwist: new THREE.Quaternion(),
       qOut: new THREE.Quaternion(),
       e: new THREE.Euler(0, 0, 0, "ZXY"),
+      // +Y local = direção do osso; girar em torno dele é torcer o braço
+      boneAxis: new THREE.Vector3(0, 1, 0),
     }),
     [],
   );
@@ -282,12 +298,18 @@ function MascotScene({
   }, [model]);
 
   /**
-   * Aplica uma rotação expressa em EIXOS DE MUNDO a um bone.
-   * Orientação de mundo desejada: R * (P * bind)  →  local = P⁻¹ · R · P · bind
+   * Aplica uma rotação expressa em EIXOS DE MUNDO a um bone, mais uma torção
+   * opcional em torno do próprio osso.
+   *
+   *   orientação de mundo desejada: R · (P · bind)
+   *   → local = P⁻¹ · R · P · bind · T
+   *
+   * A torção entra PÓS-multiplicada porque assim ela age no referencial do
+   * próprio osso (depois do bind), e não no do pai.
    */
   const applyWorldRotation = useCallback(
-    (rig: BoneRig, x: number, y: number, z: number) => {
-      const { q, qOut, e } = scratch;
+    (rig: BoneRig, x: number, y: number, z: number, twist = 0) => {
+      const { q, qTwist, qOut, e, boneAxis } = scratch;
       e.set(DEG(x), DEG(y), DEG(z), "ZXY");
       q.setFromEuler(e);
       qOut
@@ -295,6 +317,10 @@ function MascotScene({
         .multiply(q)
         .multiply(rig.parentWorld)
         .multiply(rig.bind);
+      if (twist !== 0) {
+        qTwist.setFromAxisAngle(boneAxis, DEG(twist));
+        qOut.multiply(qTwist);
+      }
       rig.bone.quaternion.copy(qOut);
     },
     [scratch],
@@ -313,6 +339,7 @@ function MascotScene({
           THREE.MathUtils.lerp(a.x ?? 0, b.x ?? 0, blend),
           THREE.MathUtils.lerp(a.y ?? 0, b.y ?? 0, blend),
           THREE.MathUtils.lerp(a.z ?? 0, b.z ?? 0, blend),
+          THREE.MathUtils.lerp(a.t ?? 0, b.t ?? 0, blend),
         );
       }
     },
@@ -516,22 +543,6 @@ function MascotScene({
 
     /* --- respiração: o peito sobe e desce de leve. É o que separa "modelo
        parado" de "personagem esperando". --- */
-    if (breathing && !reducedMotion) {
-      const spine = rigRef.current.get("Spine01");
-      const hips = rigRef.current.get("Hips");
-      const wave = Math.sin(clockRef.current * 1.15);
-      if (spine) {
-        const base = THREE.MathUtils.lerp(
-          POSE_RELAXED.Spine01.x ?? 0,
-          POSE_CELEBRATE.Spine01.x ?? 0,
-          blend,
-        );
-        applyWorldRotation(spine, base + wave * 0.9, 0, 0);
-      }
-      // o esqueleto está em centímetros (a raiz reescala para metros)
-      if (hips) hips.bone.position.y = hips.bindY + wave * 0.5 + blend * 1.4;
-    }
-
     /* --- cabeça: amortecimento exponencial, independente de framerate --- */
     const pointerActive =
       followPointer && !reducedMotion && pointerInsideRef.current;
@@ -552,6 +563,32 @@ function MascotScene({
     const yaw = headYawRef.current;
     const pitch = headPitchRef.current;
     const roll = (-yaw / HEAD_MAX_YAW) * HEAD_MAX_ROLL;
+    // fração normalizada do giro, para o tronco acompanhar na mesma proporção
+    const yawRatio = yaw / HEAD_MAX_YAW;
+    const pitchRatio = pitch / HEAD_MAX_PITCH;
+
+    /* --- tronco: respiração + um giro sutil atrás da cabeça. Só a cabeça
+       virando quase não se percebe de longe; o ombro acompanhando é o que
+       vende o movimento. --- */
+    const spine = rigRef.current.get("Spine01");
+    const hips = rigRef.current.get("Hips");
+    const wave = breathing && !reducedMotion ? Math.sin(clockRef.current * 1.15) : 0;
+
+    if (spine) {
+      const base = THREE.MathUtils.lerp(
+        POSE_RELAXED.Spine01.x ?? 0,
+        POSE_CELEBRATE.Spine01.x ?? 0,
+        blend,
+      );
+      applyWorldRotation(
+        spine,
+        base + wave * 0.9 + pitchRatio * BODY_MAX_PITCH,
+        yawRatio * BODY_MAX_YAW,
+        0,
+      );
+    }
+    // o esqueleto está em centímetros (a raiz reescala para metros)
+    if (hips) hips.bone.position.y = hips.bindY + wave * 0.5 + blend * 1.4;
 
     const neck = neckRef.current;
     const head = headRef.current;
@@ -622,6 +659,7 @@ export function InteractiveMascot({
   pointerStrength = 1,
   breathing = true,
   shadows = true,
+  accent = "#7fb2ff",
   onMascotClick,
   onLoaded,
   ariaLabel = "Mascote astronauta interativo da Com Automação",
@@ -677,17 +715,55 @@ export function InteractiveMascot({
           onCreated={({ gl }) => {
             gl.outputColorSpace = THREE.SRGBColorSpace;
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.05;
+            gl.toneMappingExposure = 1;
             gl.setClearColor(0x000000, 0);
           }}
         >
           <AdaptiveQuality mobile={useMobileModel} />
-          <StudioEnvironment intensity={1} />
+          {/* ambiente só como base macia: o desenho vem das luzes abaixo */}
+          <StudioEnvironment intensity={0.5} />
 
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[-3.4, 5, 4.4]} intensity={2.3} />
-          <directionalLight position={[3.2, 2.2, 3]} intensity={0.7} />
-          <directionalLight position={[0, 3, -4.2]} intensity={1.1} />
+          {/*
+            Esquema de 4 pontos, montado para um traje BRANCO sobre fundo PRETO.
+            O problema aqui não é iluminar — é separar o personagem do fundo sem
+            estourar o branco. Daí a chave morna e generosa na frente-esquerda,
+            um preenchimento frio bem baixo (mantém a sombra viva em vez de
+            cinza chapado) e DUAS luzes de contorno por trás, que desenham a
+            silhueta. A ambiente fica quase zerada de propósito: subi-la achata
+            tudo de novo.
+          */}
+          <ambientLight intensity={0.14} />
+
+          {/* chave — morna, alta, à esquerda de quem olha */}
+          <directionalLight
+            position={[-3.6, 4.4, 3.8]}
+            intensity={2.9}
+            color="#fff4e8"
+          />
+          {/* preenchimento — frio e discreto, abre a sombra do lado direito */}
+          <directionalLight
+            position={[3.8, 1.4, 2.6]}
+            intensity={0.55}
+            color="#cfe0ff"
+          />
+          {/* contorno na cor do produto — amarra o mascote ao halo da seção */}
+          <directionalLight
+            position={[-2.8, 2.6, -3.6]}
+            intensity={3.4}
+            color={accent}
+          />
+          {/* contorno frio do outro lado — dá o "brilho de estúdio" na borda */}
+          <directionalLight
+            position={[3.2, 2, -3.2]}
+            intensity={2.1}
+            color="#bcd6ff"
+          />
+          {/* rebote de baixo, quase imperceptível: tira o preto morto dos pés */}
+          <directionalLight
+            position={[0, -2.6, 1.8]}
+            intensity={0.28}
+            color="#4a5b7a"
+          />
 
           <Suspense fallback={null}>
             <MascotScene

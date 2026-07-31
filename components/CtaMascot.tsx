@@ -41,7 +41,13 @@ function useHoverless(): boolean {
  * de quem só quer rolar a página. A única interação é a cabeça seguindo o
  * GIROSCÓPIO do aparelho.
  */
-export default function CtaMascot({ name }: { name: string }) {
+export default function CtaMascot({
+  name,
+  accent,
+}: {
+  name: string;
+  accent?: string;
+}) {
   const hoverless = useHoverless();
   const [pose, setPose] = useState<MascotPose>("relaxed");
   const [trigger, setTrigger] = useState(0);
@@ -71,6 +77,7 @@ export default function CtaMascot({ name }: { name: string }) {
       className="h-full w-full"
       pose={hoverless ? "relaxed" : pose}
       animationTrigger={trigger}
+      accent={accent}
       onMascotClick={
         hoverless ? undefined : () => play(pose === "relaxed" ? "celebrate" : "relaxed")
       }

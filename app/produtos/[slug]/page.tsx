@@ -344,7 +344,7 @@ export default async function ProductPage({
       {/* ===== DOBRA 5 · CTA (acento) ===== */}
       <section className="s-dark pad cta-mascot">
         <div className="mascot3d">
-          <CtaMascot name={product.name} />
+          <CtaMascot name={product.name} accent={product.accent} />
         </div>
         <div className="wrap" style={{ textAlign: "center" }}>
           <h2
