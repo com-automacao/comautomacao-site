@@ -23,19 +23,19 @@ export default function ProductStripe({
     typeof window !== "undefined" &&
     window.matchMedia("(max-width: 820px)").matches;
 
+  // No mobile a faixa é um acordeão: o primeiro toque expande e o segundo
+  // navega. A seta é só um sinal visual — não um controle aninhado dentro do
+  // link, o que seria HTML inválido e inalcançável por teclado —, mas continua
+  // servindo para recolher o que está aberto.
   const handleClick = (e: React.MouseEvent) => {
+    if (!isMobile()) return;
 
-    if (isMobile() && !open) {
+    const onArrow = (e.target as HTMLElement).closest(".stripe-arrow") !== null;
+
+    if (!open || onArrow) {
       e.preventDefault();
       onToggle();
     }
-  };
-
-  const handleArrow = (e: React.MouseEvent) => {
-
-    e.preventDefault();
-    e.stopPropagation();
-    onToggle();
   };
 
   const expanded = hovered || open;
@@ -93,12 +93,7 @@ export default function ProductStripe({
         )}
       </div>
 
-      <span
-        className="stripe-arrow"
-        aria-label={open ? "Recolher" : "Abrir"}
-        role="button"
-        onClick={handleArrow}
-      />
+      <span className="stripe-arrow" aria-hidden />
     </Link>
   );
 }

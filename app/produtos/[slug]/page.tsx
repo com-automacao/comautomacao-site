@@ -35,6 +35,12 @@ export async function generateMetadata({
   if (!product) return {};
   const ogTitle = `${product.name} — Com Automação`;
   const url = `/produtos/${slug}/`;
+  // Declarar `openGraph` aqui anula a convenção de arquivo do
+  // app/opengraph-image.png, então a imagem precisa vir explícita — sem ela o
+  // link compartilhado (WhatsApp, LinkedIn) sai sem preview.
+  const images = [
+    { url: "/opengraph-image.png", width: 1200, height: 630, alt: ogTitle },
+  ];
   return {
     title: product.name,
     description: product.lead,
@@ -45,11 +51,13 @@ export async function generateMetadata({
       siteName: "Com Automação",
       title: ogTitle,
       description: product.lead,
+      images,
     },
     twitter: {
       card: "summary_large_image",
       title: ogTitle,
       description: product.lead,
+      images,
     },
   };
 }
@@ -65,6 +73,19 @@ export default async function ProductPage({
 
   const others = products.filter((p) => p.slug !== product.slug);
   const isPP = product.slug === "pedra-e-pixel";
+  const faq = product.faq ?? PRODUCT_FAQ;
+
+  // O acordeão de dúvidas já é conteúdo estruturado: declarar como FAQPage
+  // habilita o rich result do Google sem escrever nada novo.
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
 
   const heroBg = (
     <div
@@ -139,6 +160,10 @@ export default async function ProductPage({
 
   return (
     <div style={{ ["--accent" as string]: product.accent }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* ===== DOBRA 1 · HERO (acento) ===== */}
       {isPP ? (
         <header
@@ -306,7 +331,7 @@ export default async function ProductPage({
             className="faq reveal r-left"
             data-d="2"
           >
-            {(product.faq ?? PRODUCT_FAQ).map((f) => (
+            {faq.map((f) => (
               <AccordionItem key={f.q} value={f.q}>
                 <AccordionTrigger>{f.q}</AccordionTrigger>
                 <AccordionContent>{f.a}</AccordionContent>

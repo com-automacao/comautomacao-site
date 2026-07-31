@@ -43,7 +43,28 @@ export default function AcquirersCarousel({ items }: { items: Acquirer[] }) {
       }
       rafId = requestAnimationFrame(tick);
     };
-    if (!reduce) rafId = requestAnimationFrame(tick);
+
+    // O laço só roda com o carrossel à vista e a aba ativa — antes ele girava
+    // para sempre, mesmo com a seção fora da tela.
+    let onScreen = false;
+    const sync = () => {
+      const shouldRun = onScreen && !reduce && !document.hidden;
+      if (shouldRun && !rafId) rafId = requestAnimationFrame(tick);
+      else if (!shouldRun && rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        sync();
+      },
+      { rootMargin: "120px" },
+    );
+    io.observe(scroller);
+    document.addEventListener("visibilitychange", sync);
 
     const onEnter = () => {
       interacting = true;
@@ -84,6 +105,8 @@ export default function AcquirersCarousel({ items }: { items: Acquirer[] }) {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", sync);
       ro.disconnect();
       scroller.removeEventListener("pointerenter", onEnter);
       scroller.removeEventListener("pointerleave", onLeave);

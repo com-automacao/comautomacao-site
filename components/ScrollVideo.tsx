@@ -99,29 +99,35 @@ export default function ScrollVideo({
       paint(drawn < 0 ? 0 : drawn, true);
     };
 
-    for (let i = 0; i < frameCount; i++) {
+    // Baixa e decodifica em cadeia, com poucas requisições em voo. Antes os 90
+    // frames (6,9MB no desktop) eram pedidos de uma vez no mount, competindo
+    // com todo o resto do carregamento da página.
+    const LANES = 6;
+    let loadIdx = 0;
+    let stopped = false;
+
+    const loadNext = () => {
+      if (stopped || loadIdx >= frameCount) return;
+      const i = loadIdx++;
       const img = new Image();
       img.decoding = "async";
-      img.src = url(i);
-      img.onload = () => {
-        if (i === Math.round(currentF)) paint(i, true);
-      };
       images[i] = img;
-    }
 
-    // pré-decodifica em cadeia (um frame por vez) pra o scrub não travar, sem
-    // "decode storm" no load (antes decodificava os 90 de uma vez)
-    let decodeIdx = 0;
-    let decodeStop = false;
-    const decodeNext = () => {
-      if (decodeStop || decodeIdx >= frameCount) return;
-      const img = images[decodeIdx++];
-      const next = () => decodeNext();
-      const d = img.decode?.();
-      if (d) d.then(next).catch(next);
-      else next();
+      const next = () => {
+        if (i === Math.round(currentF)) paint(i, true);
+        loadNext();
+      };
+
+      img.onload = () => {
+        const d = img.decode?.();
+        if (d) d.then(next).catch(next);
+        else next();
+      };
+      img.onerror = () => loadNext();
+      img.src = url(i);
     };
-    decodeNext();
+
+    for (let lane = 0; lane < LANES; lane++) loadNext();
 
     const onScroll = () => {
       updateTarget();
@@ -140,7 +146,7 @@ export default function ScrollVideo({
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
-      decodeStop = true;
+      stopped = true;
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);

@@ -1,22 +1,8 @@
 "use client";
 
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  ContactShadows,
-  PerformanceMonitor,
-  Preload,
-  useAnimations,
-  useGLTF,
-} from "@react-three/drei";
+import { ContactShadows, PerformanceMonitor, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -27,70 +13,77 @@ export type MascotQuality = "auto" | "desktop" | "mobile";
 export interface InteractiveMascotProps {
   className?: string;
   pose?: MascotPose;
+  /** muda a cada disparo para reexecutar a pose mesmo sem trocar de estado */
   animationTrigger?: number;
   desktopModelUrl?: string;
   mobileModelUrl?: string;
-  posterUrl?: string;
   quality?: MascotQuality;
   followPointer?: boolean;
   gyro?: boolean;
   pointerStrength?: number;
-  bodyParallax?: boolean;
-  microIdle?: boolean;
+  breathing?: boolean;
   shadows?: boolean;
-  scale?: number;
-  position?: [number, number, number];
   onMascotClick?: () => void;
   onLoaded?: () => void;
-  onAnimationFinished?: (pose: MascotPose) => void;
   ariaLabel?: string;
 }
 
-interface MascotSceneProps {
-  modelUrl: string;
-  pose: MascotPose;
-  animationTrigger: number;
-  followPointer: boolean;
-  mobileGyro: boolean;
-  pointerStrength: number;
-  bodyParallax: boolean;
-  microIdle: boolean;
-  reducedMotion: boolean;
-  active: boolean;
-  scale: number;
-  position: [number, number, number];
-  onMascotClick?: () => void;
-  onLoaded?: () => void;
-  onAnimationFinished?: (pose: MascotPose) => void;
-}
-
 const DEG = THREE.MathUtils.degToRad;
-const HEAD_MAX_YAW = DEG(16);
-const HEAD_MAX_PITCH = DEG(7);
-const HEAD_MAX_ROLL = DEG(1.2);
-const BODY_MAX_YAW = DEG(2.4);
-const BODY_MAX_PITCH = DEG(0.8);
-const POINTER_DEAD_ZONE = 0.035;
-const SETTLE_EPSILON = 0.00012;
 
-const FINAL_POSES = {
-  relaxed: {
-    ShoulderPivot_Wave: [0, -4, 78] as const,
-    ElbowPivot_Wave: [0, 0, 8] as const,
-    WaveWristPivot: [0, 0, -4] as const,
-    ShoulderPivot_Hip: [0, 4, -78] as const,
-    ElbowPivot_Hip: [0, 0, -8] as const,
-    WristPivot_Hip: [0, 0, 4] as const,
-  },
-  celebrate: {
-    ShoulderPivot_Wave: [0, 4, -50] as const,
-    ElbowPivot_Wave: [0, 0, -48] as const,
-    WaveWristPivot: [0, 0, 8] as const,
-    ShoulderPivot_Hip: [0, -4, 50] as const,
-    ElbowPivot_Hip: [0, 0, 48] as const,
-    WristPivot_Hip: [0, 0, -8] as const,
-  },
-} satisfies Record<MascotPose, Record<string, readonly [number, number, number]>>;
+/* ------------------------------------------------------------------ *
+ * O rig do Meshy vem em T-pose: os braços saem retos para os lados e
+ * cada bone aponta pelo seu +Y local, com rotações de bind irregulares.
+ * Em vez de tentar adivinhar o eixo local de cada osso, as poses abaixo
+ * são escritas em ÂNGULOS DE MUNDO (Z = levantar/baixar o braço,
+ * X = trazer para frente/trás, Y = girar) e convertidas para o espaço do
+ * pai em tempo de execução. Assim os números continuam legíveis: "-72 em
+ * Z" é literalmente "braço 72° abaixo da horizontal".
+ * ------------------------------------------------------------------ */
+type WorldAngles = { x?: number; y?: number; z?: number };
+type PoseMap = Record<string, WorldAngles>;
+
+const POSE_RELAXED: PoseMap = {
+  LeftArm: { z: -74, x: 6 },
+  RightArm: { z: 74, x: 6 },
+  LeftForeArm: { z: -8, x: 4 },
+  RightForeArm: { z: 8, x: 4 },
+  LeftShoulder: { z: -4 },
+  RightShoulder: { z: 4 },
+  Spine01: {},
+  Hips: {},
+};
+
+// Braços em "V": o úmero sobe pouco e para FORA (senão os cotovelos colam na
+// cabeça) e o antebraço faz o resto do caminho para cima.
+const POSE_CELEBRATE: PoseMap = {
+  LeftArm: { z: 30, x: 12 },
+  RightArm: { z: -30, x: 12 },
+  LeftForeArm: { z: 54, x: 6 },
+  RightForeArm: { z: -54, x: 6 },
+  LeftShoulder: { z: 12 },
+  RightShoulder: { z: -12 },
+  Spine01: { x: -5 },
+  Hips: {},
+};
+
+const POSE_BONES = Object.keys(POSE_RELAXED);
+
+const HEAD_MAX_YAW = 24;
+const HEAD_MAX_PITCH = 13;
+const HEAD_MAX_ROLL = 3;
+/** o pescoço puxa uma fração do giro; o resto vai para a cabeça */
+const NECK_SHARE = 0.35;
+const POINTER_DEAD_ZONE = 0.04;
+/** comemorando, o astronauta também olha um pouco para cima */
+const CELEBRATE_HEAD_PITCH = 7;
+
+type BoneRig = {
+  bone: THREE.Object3D;
+  bind: THREE.Quaternion;
+  bindY: number;
+  parentWorld: THREE.Quaternion;
+  parentWorldInv: THREE.Quaternion;
+};
 
 function getMediaMatch(query: string): boolean {
   return typeof window !== "undefined" && window.matchMedia(query).matches;
@@ -126,25 +119,21 @@ function usePageVisible(): boolean {
 
 function useViewportActivity<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
-  const [hasEntered, setHasEntered] = useState(false);
-  const [intersecting, setIntersecting] = useState(false);
+  // sem IntersectionObserver não há como adiar nada: já começa ativo
+  const noObserver = () => typeof IntersectionObserver === "undefined";
+  const [hasEntered, setHasEntered] = useState(noObserver);
+  const [intersecting, setIntersecting] = useState(noObserver);
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setHasEntered(true);
-      setIntersecting(true);
-      return;
-    }
+    if (!element || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIntersecting(entry.isIntersecting);
         if (entry.isIntersecting) setHasEntered(true);
       },
-      { rootMargin: "240px" },
+      { rootMargin: "260px" },
     );
 
     observer.observe(element);
@@ -160,19 +149,19 @@ function applyDeadZone(value: number, deadZone = POINTER_DEAD_ZONE): number {
   return Math.sign(value) * ((absolute - deadZone) / (1 - deadZone));
 }
 
-function StudioEnvironment({ intensity = 1.05 }: { intensity?: number }) {
+function StudioEnvironment({ intensity = 1 }: { intensity?: number }) {
   const { gl, scene } = useThree();
 
   useEffect(() => {
     const previousEnvironment = scene.environment;
-    const previousIntensity = (scene as THREE.Scene & { environmentIntensity?: number })
-      .environmentIntensity;
-
     const pmrem = new THREE.PMREMGenerator(gl);
     pmrem.compileCubemapShader();
     const room = new RoomEnvironment();
-    const renderTarget = pmrem.fromScene(room, 0.035);
+    const renderTarget = pmrem.fromScene(room, 0.04);
 
+    // Mutar a cena é a própria API do three.js — o objeto vem do renderer, não
+    // do estado do React. A regra de imutabilidade não se aplica aqui.
+    /* eslint-disable react-hooks/immutability */
     scene.environment = renderTarget.texture;
     if ("environmentIntensity" in scene) {
       (scene as THREE.Scene & { environmentIntensity: number }).environmentIntensity =
@@ -181,10 +170,7 @@ function StudioEnvironment({ intensity = 1.05 }: { intensity?: number }) {
 
     return () => {
       scene.environment = previousEnvironment;
-      if (previousIntensity !== undefined && "environmentIntensity" in scene) {
-        (scene as THREE.Scene & { environmentIntensity: number }).environmentIntensity =
-          previousIntensity;
-      }
+      /* eslint-enable react-hooks/immutability */
       renderTarget.dispose();
       room.dispose();
       pmrem.dispose();
@@ -196,7 +182,7 @@ function StudioEnvironment({ intensity = 1.05 }: { intensity?: number }) {
 
 function AdaptiveQuality({ mobile }: { mobile: boolean }) {
   const { setDpr } = useThree();
-  const highDpr = mobile ? 1.1 : 1.45;
+  const highDpr = mobile ? 1.1 : 1.5;
 
   return (
     <PerformanceMonitor
@@ -208,6 +194,20 @@ function AdaptiveQuality({ mobile }: { mobile: boolean }) {
   );
 }
 
+interface MascotSceneProps {
+  modelUrl: string;
+  pose: MascotPose;
+  animationTrigger: number;
+  followPointer: boolean;
+  mobileGyro: boolean;
+  pointerStrength: number;
+  breathing: boolean;
+  reducedMotion: boolean;
+  active: boolean;
+  onMascotClick?: () => void;
+  onLoaded?: () => void;
+}
+
 function MascotScene({
   modelUrl,
   pose,
@@ -215,132 +215,131 @@ function MascotScene({
   followPointer,
   mobileGyro,
   pointerStrength,
-  bodyParallax,
-  microIdle,
+  breathing,
   reducedMotion,
   active,
-  scale,
-  position,
   onMascotClick,
   onLoaded,
-  onAnimationFinished,
 }: MascotSceneProps) {
-  const gltf = useGLTF(modelUrl);
+  // draco desligado de propósito: o modelo usa meshopt (decoder empacotado
+  // localmente), então nada é buscado em CDN de terceiros.
+  const gltf = useGLTF(modelUrl, false, true);
   const model = useMemo(() => clone(gltf.scene) as THREE.Group, [gltf.scene]);
-  const { actions, mixer } = useAnimations(gltf.animations, model);
   const { gl, invalidate } = useThree();
 
-  const head = useMemo(
-    () => model.getObjectByName("HeadPivot") as THREE.Object3D | undefined,
-    [model],
-  );
-  const body = useMemo(
-    () => model.getObjectByName("BodyPivot") as THREE.Object3D | undefined,
-    [model],
-  );
+  const initializedRef = useRef<THREE.Group | null>(null);
+  const rigRef = useRef<Map<string, BoneRig>>(new Map());
+  const neckRef = useRef<BoneRig | null>(null);
+  const headRef = useRef<BoneRig | null>(null);
 
-  const initializedModelRef = useRef<THREE.Group | null>(null);
-  const previousCommandRef = useRef("");
-  const activePoseRef = useRef<MascotPose>(pose);
-  const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const pointerRef = useRef(new THREE.Vector2());
   const pointerInsideRef = useRef(false);
   const hoveredRef = useRef(false);
-  const idlePulseRef = useRef({ active: false, elapsed: 0, duration: 1.35 });
-  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const headBaseQuaternion = useMemo(
-    () => head?.quaternion.clone() ?? new THREE.Quaternion(),
-    [head],
+  // estado contínuo da animação (fora do React: nada disso deve re-renderizar)
+  const blendRef = useRef(pose === "celebrate" ? 1 : 0);
+  const blendVelRef = useRef(0);
+  const headYawRef = useRef(0);
+  const headPitchRef = useRef(0);
+  const clockRef = useRef(0);
+
+  const targetBlend = pose === "celebrate" ? 1 : 0;
+
+  // escratches reutilizados: alocar dentro do useFrame vira pico de GC
+  const scratch = useMemo(
+    () => ({
+      q: new THREE.Quaternion(),
+      qOut: new THREE.Quaternion(),
+      e: new THREE.Euler(0, 0, 0, "ZXY"),
+    }),
+    [],
   );
-  const bodyBaseQuaternion = useMemo(
-    () => body?.quaternion.clone() ?? new THREE.Quaternion(),
-    [body],
-  );
-  const targetHeadQuaternion = useMemo(() => new THREE.Quaternion(), []);
-  const targetBodyQuaternion = useMemo(() => new THREE.Quaternion(), []);
-  const offsetQuaternion = useMemo(() => new THREE.Quaternion(), []);
-  const offsetEuler = useMemo(() => new THREE.Euler(0, 0, 0, "YXZ"), []);
 
-  const applyFinalPose = useCallback(
-    (targetPose: MascotPose) => {
-      const definition = FINAL_POSES[targetPose];
+  const bindRig = useCallback(() => {
+    const rig = new Map<string, BoneRig>();
+    model.updateWorldMatrix(true, true);
 
-      for (const [nodeName, degrees] of Object.entries(definition)) {
-        const node = model.getObjectByName(nodeName);
-        if (!node) continue;
-        node.rotation.set(DEG(degrees[0]), DEG(degrees[1]), DEG(degrees[2]), "XYZ");
-      }
-      invalidate();
+    const register = (name: string) => {
+      const bone = model.getObjectByName(name);
+      if (!bone) return null;
+      const parentWorld = new THREE.Quaternion();
+      bone.parent?.getWorldQuaternion(parentWorld);
+      const entry: BoneRig = {
+        bone,
+        bind: bone.quaternion.clone(),
+        bindY: bone.position.y,
+        parentWorld,
+        parentWorldInv: parentWorld.clone().invert(),
+      };
+      rig.set(name, entry);
+      return entry;
+    };
+
+    for (const name of POSE_BONES) register(name);
+    neckRef.current = register("neck");
+    headRef.current = register("Head");
+    rigRef.current = rig;
+  }, [model]);
+
+  /**
+   * Aplica uma rotação expressa em EIXOS DE MUNDO a um bone.
+   * Orientação de mundo desejada: R * (P * bind)  →  local = P⁻¹ · R · P · bind
+   */
+  const applyWorldRotation = useCallback(
+    (rig: BoneRig, x: number, y: number, z: number) => {
+      const { q, qOut, e } = scratch;
+      e.set(DEG(x), DEG(y), DEG(z), "ZXY");
+      q.setFromEuler(e);
+      qOut
+        .copy(rig.parentWorldInv)
+        .multiply(q)
+        .multiply(rig.parentWorld)
+        .multiply(rig.bind);
+      rig.bone.quaternion.copy(qOut);
     },
-    [invalidate, model],
+    [scratch],
   );
 
-  const playClip = useCallback(
-    (targetPose: MascotPose) => {
-      activePoseRef.current = targetPose;
-      const clipName =
-        targetPose === "celebrate" ? "ArmsUp_Celebrate" : "ArmsDown_Relax";
-      const nextAction = actions[clipName];
-
-      if (!nextAction) {
-        applyFinalPose(targetPose);
-        onAnimationFinished?.(targetPose);
-        return;
+  const applyBlendedPose = useCallback(
+    (blend: number) => {
+      const rig = rigRef.current;
+      for (const name of POSE_BONES) {
+        const entry = rig.get(name);
+        if (!entry) continue;
+        const a = POSE_RELAXED[name];
+        const b = POSE_CELEBRATE[name];
+        applyWorldRotation(
+          entry,
+          THREE.MathUtils.lerp(a.x ?? 0, b.x ?? 0, blend),
+          THREE.MathUtils.lerp(a.y ?? 0, b.y ?? 0, blend),
+          THREE.MathUtils.lerp(a.z ?? 0, b.z ?? 0, blend),
+        );
       }
-
-      const previousAction = activeActionRef.current;
-      nextAction.reset();
-      nextAction.enabled = true;
-      nextAction.setEffectiveTimeScale(1);
-      nextAction.setEffectiveWeight(1);
-      nextAction.setLoop(THREE.LoopOnce, 1);
-      nextAction.clampWhenFinished = true;
-      nextAction.play();
-
-      if (previousAction && previousAction !== nextAction) {
-        nextAction.crossFadeFrom(previousAction, 0.22, true);
-      } else {
-        nextAction.fadeIn(0.16);
-      }
-
-      activeActionRef.current = nextAction;
-      invalidate();
     },
-    [actions, applyFinalPose, invalidate, onAnimationFinished],
+    [applyWorldRotation],
   );
 
-  useLayoutEffect(() => {
-    if (initializedModelRef.current === model) return;
-    initializedModelRef.current = model;
+  // preparo do modelo: materiais, anisotropia e pose inicial
+  useEffect(() => {
+    if (initializedRef.current === model) return;
+    initializedRef.current = model;
 
     const maxAnisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
 
     model.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
-
-      object.frustumCulled = true;
-      // O modelo visível não participa de raycasting. A interação usa uma caixa
-      // simples, evitando testes de ponteiro contra centenas de milhares de triângulos.
+      object.frustumCulled = false; // malha com skin: o bounding box do bind mente
+      // o ponteiro é testado contra uma caixa invisível, não contra a malha
       object.raycast = () => undefined;
 
       const materials = Array.isArray(object.material)
-        ? object.material.map((material) => material.clone())
+        ? object.material.map((m) => m.clone())
         : [object.material.clone()];
 
       for (const material of materials) {
-        if ("envMapIntensity" in material) {
-          (material as THREE.MeshStandardMaterial).envMapIntensity = 1.12;
-        }
-
-        const pbrMaterial = material as THREE.MeshStandardMaterial;
-        for (const texture of [
-          pbrMaterial.map,
-          pbrMaterial.normalMap,
-          pbrMaterial.roughnessMap,
-          pbrMaterial.metalnessMap,
-          pbrMaterial.aoMap,
-        ]) {
+        const pbr = material as THREE.MeshStandardMaterial;
+        if ("envMapIntensity" in pbr) pbr.envMapIntensity = 1.15;
+        for (const texture of [pbr.map, pbr.roughnessMap, pbr.normalMap]) {
           if (!texture) continue;
           texture.anisotropy = maxAnisotropy;
           texture.needsUpdate = true;
@@ -350,60 +349,18 @@ function MascotScene({
       object.material = Array.isArray(object.material) ? materials : materials[0];
     });
 
-    applyFinalPose("relaxed");
-    activePoseRef.current = pose;
-    previousCommandRef.current = `${pose}:${animationTrigger}`;
+    bindRig();
+    blendRef.current = pose === "celebrate" ? 1 : 0;
+    blendVelRef.current = 0;
+    applyBlendedPose(blendRef.current);
     onLoaded?.();
+    invalidate();
+  }, [applyBlendedPose, bindRig, gl, invalidate, model, onLoaded, pose]);
 
-    if (pose === "celebrate") {
-      if (reducedMotion) applyFinalPose("celebrate");
-      else playClip("celebrate");
-    }
-  }, [
-    animationTrigger,
-    applyFinalPose,
-    gl,
-    model,
-    onLoaded,
-    playClip,
-    pose,
-    reducedMotion,
-  ]);
-
+  // um novo trigger reacende o laço mesmo se a pose repetir
   useEffect(() => {
-    const command = `${pose}:${animationTrigger}`;
-    if (command === previousCommandRef.current) return;
-    previousCommandRef.current = command;
-
-    if (reducedMotion) {
-      for (const action of Object.values(actions)) action?.stop();
-      activeActionRef.current = null;
-      applyFinalPose(pose);
-      onAnimationFinished?.(pose);
-      return;
-    }
-
-    playClip(pose);
-  }, [
-    actions,
-    animationTrigger,
-    applyFinalPose,
-    onAnimationFinished,
-    playClip,
-    pose,
-    reducedMotion,
-  ]);
-
-  useEffect(() => {
-    const handleFinished = (event: { action: THREE.AnimationAction }) => {
-      if (event.action !== activeActionRef.current) return;
-      onAnimationFinished?.(activePoseRef.current);
-      invalidate();
-    };
-
-    mixer.addEventListener("finished", handleFinished);
-    return () => mixer.removeEventListener("finished", handleFinished);
-  }, [invalidate, mixer, onAnimationFinished]);
+    invalidate();
+  }, [animationTrigger, pose, invalidate]);
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -411,7 +368,6 @@ function MascotScene({
     const handlePointerMove = (event: PointerEvent) => {
       const bounds = canvas.getBoundingClientRect();
       if (bounds.width === 0 || bounds.height === 0) return;
-
       pointerRef.current.set(
         applyDeadZone(((event.clientX - bounds.left) / bounds.width) * 2 - 1),
         applyDeadZone(-(((event.clientY - bounds.top) / bounds.height) * 2 - 1)),
@@ -427,26 +383,48 @@ function MascotScene({
 
     canvas.addEventListener("pointermove", handlePointerMove, { passive: true });
     canvas.addEventListener("pointerleave", handlePointerLeave, { passive: true });
-
     return () => {
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("pointerleave", handlePointerLeave);
     };
   }, [gl, invalidate]);
 
-  // Mobile sem ponteiro: o giroscópio conduz a cabeça pela inclinação do
-  // aparelho. Só re-renderiza (invalidate) quando a inclinação muda o bastante,
-  // preservando o frameloop "demand". No iOS 13+ pede permissão num gesto.
+  // No desktop a cabeça segue o cursor sobre a página inteira, não só sobre o
+  // canvas: o mascote fica na lateral da CTA e precisa "acompanhar" quem lê o
+  // texto ao lado — é o que dá a sensação de presença.
+  useEffect(() => {
+    if (!followPointer || mobileGyro) return;
+    const canvas = gl.domElement;
+
+    const handleWindowMove = (event: PointerEvent) => {
+      const bounds = canvas.getBoundingClientRect();
+      if (bounds.width === 0) return;
+      const cx = bounds.left + bounds.width / 2;
+      const cy = bounds.top + bounds.height * 0.34; // altura aproximada da cabeça
+      const reach = Math.max(window.innerWidth * 0.42, 420);
+      pointerRef.current.set(
+        applyDeadZone(THREE.MathUtils.clamp((event.clientX - cx) / reach, -1, 1)),
+        applyDeadZone(THREE.MathUtils.clamp(-(event.clientY - cy) / (reach * 0.7), -1, 1)),
+      );
+      pointerInsideRef.current = true;
+      invalidate();
+    };
+
+    window.addEventListener("pointermove", handleWindowMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handleWindowMove);
+  }, [followPointer, gl, invalidate, mobileGyro]);
+
+  // Mobile não tem ponteiro: a cabeça segue a inclinação do aparelho. No iOS
+  // 13+ o acesso ao sensor exige um gesto do usuário.
   useEffect(() => {
     if (!mobileGyro || typeof window === "undefined") return;
 
     let lastGamma = 0;
     let lastBeta = 42;
     const onOrient = (event: DeviceOrientationEvent) => {
-      const gamma = event.gamma ?? 0; // esquerda/direita (-90..90)
-      const beta = event.beta ?? 42; // frente/trás
-      if (Math.abs(gamma - lastGamma) < 0.4 && Math.abs(beta - lastBeta) < 0.4)
-        return;
+      const gamma = event.gamma ?? 0;
+      const beta = event.beta ?? 42;
+      if (Math.abs(gamma - lastGamma) < 0.4 && Math.abs(beta - lastBeta) < 0.4) return;
       lastGamma = gamma;
       lastBeta = beta;
       pointerRef.current.set(
@@ -501,109 +479,117 @@ function MascotScene({
   }, [mobileGyro, invalidate]);
 
   useEffect(() => {
-    if (!microIdle || reducedMotion || !active) return;
-
-    const schedule = () => {
-      const delay = 4200 + Math.random() * 2800;
-      idleTimerRef.current = setTimeout(() => {
-        idlePulseRef.current.active = true;
-        idlePulseRef.current.elapsed = 0;
-        invalidate();
-        schedule();
-      }, delay);
-    };
-
-    schedule();
-    return () => {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = null;
-      idlePulseRef.current.active = false;
-    };
-  }, [active, invalidate, microIdle, reducedMotion]);
-
-  useEffect(() => {
     return () => {
       document.body.style.cursor = "";
-      for (const action of Object.values(actions)) action?.stop();
     };
-  }, [actions]);
+  }, []);
 
-  useFrame((_, delta) => {
-    if (!active || !head) return;
+  useFrame((_, rawDelta) => {
+    if (!active) return;
+    const delta = Math.min(rawDelta, 1 / 30); // aba que volta do background
+    clockRef.current += delta;
 
-    const pointerEnabled =
+    /* --- braços: mola. Subida levemente subamortecida (ζ≈0,62) para o gesto
+       ter vida; descida criticamente amortecida e mais curta, porque saída
+       sempre é mais discreta que entrada. --- */
+    let blend = blendRef.current;
+    if (reducedMotion) {
+      blend = targetBlend;
+      blendVelRef.current = 0;
+    } else {
+      const rising = targetBlend > blend;
+      const stiffness = rising ? 400 : 256;
+      const damping = rising ? 24.8 : 32;
+      // subpassos: mantém a mola estável mesmo com quadro longo
+      const steps = Math.max(1, Math.ceil(delta / (1 / 120)));
+      const h = delta / steps;
+      let velocity = blendVelRef.current;
+      for (let i = 0; i < steps; i++) {
+        velocity += (-stiffness * (blend - targetBlend) - damping * velocity) * h;
+        blend += velocity * h;
+      }
+      blendVelRef.current = velocity;
+    }
+    blendRef.current = blend;
+
+    applyBlendedPose(blend);
+
+    /* --- respiração: o peito sobe e desce de leve. É o que separa "modelo
+       parado" de "personagem esperando". --- */
+    if (breathing && !reducedMotion) {
+      const spine = rigRef.current.get("Spine01");
+      const hips = rigRef.current.get("Hips");
+      const wave = Math.sin(clockRef.current * 1.15);
+      if (spine) {
+        const base = THREE.MathUtils.lerp(
+          POSE_RELAXED.Spine01.x ?? 0,
+          POSE_CELEBRATE.Spine01.x ?? 0,
+          blend,
+        );
+        applyWorldRotation(spine, base + wave * 0.9, 0, 0);
+      }
+      // o esqueleto está em centímetros (a raiz reescala para metros)
+      if (hips) hips.bone.position.y = hips.bindY + wave * 0.5 + blend * 1.4;
+    }
+
+    /* --- cabeça: amortecimento exponencial, independente de framerate --- */
+    const pointerActive =
       followPointer && !reducedMotion && pointerInsideRef.current;
-    const hoverMultiplier = hoveredRef.current ? 1 : 0.86;
+    const gain = hoveredRef.current ? 1.12 : 1;
 
-    let idleYaw = 0;
-    let idlePitch = 0;
-    const idlePulse = idlePulseRef.current;
-
-    if (idlePulse.active && !pointerEnabled) {
-      idlePulse.elapsed += delta;
-      const progress = Math.min(idlePulse.elapsed / idlePulse.duration, 1);
-      const envelope = Math.sin(progress * Math.PI);
-      idleYaw = Math.sin(progress * Math.PI * 2) * DEG(1.25) * envelope;
-      idlePitch = -Math.sin(progress * Math.PI) * DEG(0.55);
-      if (progress >= 1) idlePulse.active = false;
-    }
-
-    const targetYaw = pointerEnabled
-      ? pointerRef.current.x * HEAD_MAX_YAW * pointerStrength * hoverMultiplier
-      : idleYaw;
-    const targetPitch = pointerEnabled
-      ? pointerRef.current.y * HEAD_MAX_PITCH * pointerStrength * hoverMultiplier
-      : idlePitch;
-    const targetRoll = pointerEnabled
-      ? -pointerRef.current.x * HEAD_MAX_ROLL * pointerStrength
+    const targetYaw = pointerActive
+      ? pointerRef.current.x * HEAD_MAX_YAW * pointerStrength * gain
       : 0;
+    const targetPitch =
+      (pointerActive
+        ? pointerRef.current.y * HEAD_MAX_PITCH * pointerStrength * gain
+        : 0) + blend * CELEBRATE_HEAD_PITCH;
 
-    offsetEuler.set(targetPitch, targetYaw, targetRoll, "YXZ");
-    offsetQuaternion.setFromEuler(offsetEuler);
-    targetHeadQuaternion.copy(headBaseQuaternion).multiply(offsetQuaternion);
+    const alpha = 1 - Math.exp(-8.5 * delta);
+    headYawRef.current += (targetYaw - headYawRef.current) * alpha;
+    headPitchRef.current += (targetPitch - headPitchRef.current) * alpha;
 
-    const headAlpha = 1 - Math.exp(-8.2 * delta);
-    head.quaternion.slerp(targetHeadQuaternion, headAlpha);
+    const yaw = headYawRef.current;
+    const pitch = headPitchRef.current;
+    const roll = (-yaw / HEAD_MAX_YAW) * HEAD_MAX_ROLL;
 
-    let bodyMoving = false;
-    if (body && bodyParallax) {
-      const bodyYaw = pointerEnabled
-        ? pointerRef.current.x * BODY_MAX_YAW * pointerStrength
-        : idleYaw * 0.22;
-      const bodyPitch = pointerEnabled
-        ? pointerRef.current.y * BODY_MAX_PITCH * pointerStrength
-        : 0;
-
-      offsetEuler.set(bodyPitch, bodyYaw, 0, "YXZ");
-      offsetQuaternion.setFromEuler(offsetEuler);
-      targetBodyQuaternion.copy(bodyBaseQuaternion).multiply(offsetQuaternion);
-
-      const bodyAlpha = 1 - Math.exp(-4.4 * delta);
-      body.quaternion.slerp(targetBodyQuaternion, bodyAlpha);
-      bodyMoving = 1 - Math.abs(body.quaternion.dot(targetBodyQuaternion)) > SETTLE_EPSILON;
+    const neck = neckRef.current;
+    const head = headRef.current;
+    if (neck) applyWorldRotation(neck, pitch * NECK_SHARE, yaw * NECK_SHARE, 0);
+    if (head) {
+      applyWorldRotation(
+        head,
+        pitch * (1 - NECK_SHARE),
+        yaw * (1 - NECK_SHARE),
+        roll,
+      );
     }
 
-    const headMoving =
-      1 - Math.abs(head.quaternion.dot(targetHeadQuaternion)) > SETTLE_EPSILON;
-    const animationRunning = Object.values(actions).some(
-      (action) => action?.isRunning() === true,
-    );
+    const settled =
+      Math.abs(blend - targetBlend) < 0.001 &&
+      Math.abs(blendVelRef.current) < 0.001 &&
+      Math.abs(targetYaw - yaw) < 0.02 &&
+      Math.abs(targetPitch - pitch) < 0.02;
 
-    if (headMoving || bodyMoving || animationRunning || idlePulse.active) {
-      invalidate();
-    }
+    // com respiração o laço segue vivo enquanto o mascote está à vista; sem
+    // ela, o frameloop "demand" volta a dormir assim que tudo assenta.
+    if (!settled || (breathing && !reducedMotion)) invalidate();
   });
 
   return (
-    <group position={position} scale={scale}>
+    // O personagem tem 1,59 unidade e fica deslocado para baixo no quadro: a
+    // cabeça precisa passar por baixo do título da CTA, e os punhos erguidos
+    // não podem estourar o topo do canvas.
+    <group position={[0, -1.34, 0]}>
       <primitive object={model} dispose={null} />
 
+      {/* alvo de ponteiro: uma caixa simples no lugar de 58k triângulos */}
       <mesh
-        position={[0, 0.83, 0]}
+        position={[0, 0.8, 0]}
         onPointerOver={(event) => {
           event.stopPropagation();
           hoveredRef.current = true;
-          document.body.style.cursor = onMascotClick ? "pointer" : "default";
+          document.body.style.cursor = onMascotClick ? "pointer" : "";
           invalidate();
         }}
         onPointerOut={(event) => {
@@ -615,16 +601,10 @@ function MascotScene({
         onClick={(event) => {
           event.stopPropagation();
           onMascotClick?.();
-          invalidate();
         }}
       >
-        <boxGeometry args={[1.34, 1.76, 0.72]} />
-        <meshBasicMaterial
-          transparent
-          opacity={0}
-          depthWrite={false}
-          colorWrite={false}
-        />
+        <boxGeometry args={[0.72, 1.66, 0.6]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
     </group>
   );
@@ -634,22 +614,17 @@ export function InteractiveMascot({
   className,
   pose = "relaxed",
   animationTrigger = 0,
-  desktopModelUrl = "/models/com-automation-robot-hq.glb",
-  mobileModelUrl = "/models/com-automation-robot-hq-mobile.glb",
-  posterUrl = "/images/com-automation-robot-poster.webp",
+  desktopModelUrl = "/models/com-automation-astronaut.glb",
+  mobileModelUrl = "/models/com-automation-astronaut-mobile.glb",
   quality = "auto",
   followPointer = true,
   gyro = true,
   pointerStrength = 1,
-  bodyParallax = true,
-  microIdle = true,
+  breathing = true,
   shadows = true,
-  scale = 1,
-  position = [0, 0, 0],
   onMascotClick,
   onLoaded,
-  onAnimationFinished,
-  ariaLabel = "Mascote robô interativo da Com Automação",
+  ariaLabel = "Mascote astronauta interativo da Com Automação",
 }: InteractiveMascotProps) {
   const mobileDevice = useMediaQuery("(max-width: 768px), (pointer: coarse)");
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -663,10 +638,10 @@ export function InteractiveMascot({
   const active = intersecting && pageVisible;
   const mobileGyro = mobileDevice && gyro && !reducedMotion;
 
-  useEffect(() => {
-    setLoaded(false);
-    useGLTF.preload(modelUrl);
-  }, [modelUrl]);
+  const handleLoaded = useCallback(() => {
+    requestAnimationFrame(() => setLoaded(true));
+    onLoaded?.();
+  }, [onLoaded]);
 
   return (
     <div
@@ -674,35 +649,13 @@ export function InteractiveMascot({
       className={className}
       role="img"
       aria-label={ariaLabel}
-      style={{ position: "relative", minHeight: 320, overflow: "hidden" }}
+      style={{ position: "relative", minHeight: 300 }}
     >
-      {posterUrl && (
-        <img
-          src={posterUrl}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          decoding="async"
-          fetchPriority="high"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            opacity: loaded ? 0 : 1,
-            transition: "opacity 320ms ease",
-            pointerEvents: "none",
-            userSelect: "none",
-          }}
-        />
-      )}
-
       {hasEntered && (
         <Canvas
           frameloop="demand"
           dpr={useMobileModel ? 1 : 1.25}
-          camera={{ position: [0, 0.84, 3.15], fov: 30, near: 0.1, far: 20 }}
+          camera={{ position: [0, 0, 5.2], fov: 30, near: 0.1, far: 20 }}
           gl={{
             alpha: true,
             antialias: !useMobileModel,
@@ -713,22 +666,22 @@ export function InteractiveMascot({
             position: "absolute",
             inset: 0,
             opacity: loaded ? 1 : 0,
-            transition: "opacity 320ms ease",
+            transition: "opacity 420ms var(--ease-out, ease-out)",
           }}
-          onCreated={({ gl: renderer }) => {
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.02;
-            renderer.setClearColor(0x000000, 0);
+          onCreated={({ gl }) => {
+            gl.outputColorSpace = THREE.SRGBColorSpace;
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.toneMappingExposure = 1.05;
+            gl.setClearColor(0x000000, 0);
           }}
         >
           <AdaptiveQuality mobile={useMobileModel} />
-          <StudioEnvironment intensity={1.05} />
+          <StudioEnvironment intensity={1} />
 
-          <ambientLight intensity={0.42} />
-          <directionalLight position={[-3.6, 5.2, 4.5]} intensity={2.45} />
-          <directionalLight position={[3.3, 2.4, 3.2]} intensity={0.72} />
-          <directionalLight position={[0.2, 3.4, -4]} intensity={1.0} />
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[-3.4, 5, 4.4]} intensity={2.3} />
+          <directionalLight position={[3.2, 2.2, 3]} intensity={0.7} />
+          <directionalLight position={[0, 3, -4.2]} intensity={1.1} />
 
           <Suspense fallback={null}>
             <MascotScene
@@ -739,35 +692,24 @@ export function InteractiveMascot({
               followPointer={followPointer && (!mobileDevice || mobileGyro)}
               mobileGyro={mobileGyro}
               pointerStrength={pointerStrength}
-              bodyParallax={bodyParallax}
-              microIdle={microIdle}
+              breathing={breathing}
               reducedMotion={reducedMotion}
               active={active}
-              scale={scale}
-              position={position}
               onMascotClick={onMascotClick}
-              onLoaded={() => {
-                requestAnimationFrame(() => {
-                  setLoaded(true);
-                  onLoaded?.();
-                });
-              }}
-              onAnimationFinished={onAnimationFinished}
+              onLoaded={handleLoaded}
             />
 
             {shadows && (
               <ContactShadows
-                position={[0, position[1] + 0.008, 0]}
-                opacity={0.26}
-                scale={2.2 * scale}
-                blur={3}
-                far={1.15}
+                position={[0, -1.34, 0]}
+                opacity={0.3}
+                scale={2.4}
+                blur={2.8}
+                far={1.2}
                 resolution={useMobileModel ? 256 : 512}
                 frames={1}
               />
             )}
-
-            <Preload all />
           </Suspense>
         </Canvas>
       )}
@@ -776,9 +718,7 @@ export function InteractiveMascot({
 }
 
 export function preloadInteractiveMascot(
-  desktopModelUrl = "/models/com-automation-robot-hq.glb",
-  mobileModelUrl = "/models/com-automation-robot-hq-mobile.glb",
+  url = "/models/com-automation-astronaut.glb",
 ) {
-  useGLTF.preload(desktopModelUrl);
-  useGLTF.preload(mobileModelUrl);
+  useGLTF.preload(url, false, true);
 }

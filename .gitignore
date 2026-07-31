@@ -32,7 +32,11 @@ yarn-error.log*
 next-env.d.ts
 
 .claude
-# pacote-fonte do mascote 3D (referência local; component e assets vivos ficam em components/public)
+# fontes do mascote 3D: o GLB cru do Meshy tem ~17MB e não deve entrar no repo.
+# Guarde-o fora do projeto; o GLB otimizado vive em public/models/ (ver README).
+/mascot-src/
+
+# pacotes-fonte de mascotes antigos (referência local)
 mascot3d-package/
 mascot3d-animated-package/
 

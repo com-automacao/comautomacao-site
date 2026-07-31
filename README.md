@@ -37,8 +37,11 @@ Demais scripts:
 
 ```bash
 npm run build        # gera o export estático em out/ (ver Deploy)
-npm run lint         # ESLint
+npm run lint         # ESLint (flat config em eslint.config.mjs)
 ```
+
+> `next lint` foi removido no Next 16 — o lint roda direto pelo binário do
+> ESLint, com `eslint-config-next` em flat config.
 
 ---
 
@@ -63,14 +66,17 @@ components/
   HeroPaths.tsx, AcquirersCarousel.tsx    # fundo background-paths do hero (produtos) + carrossel de maquininhas (PDV+)
   ProductGallery.tsx                      # galeria "por dentro" com lightbox
   ScrollVideo.tsx                         # vídeo em frames sincronizado ao scroll (canvas) — Pedra & Pixel
-  CtaMascot.tsx                           # wrapper do mascote na CTA: braços p/ cima (clip ArmsUp_Celebrate) enquanto o mouse está no botão "Vamos decolar"; clique/toque alterna
-  ui/interactive-mascot.tsx               # mascote robô 3D HQ (GLB texturizado + R3F, produção V2). Técnica: frameloop "demand", ambiente PMREM local, cabeça por quaternion c/ dead zone + micro-idle, raycast num box invisível (não na malha 288k), DPR adaptativo, crossfade poster↔canvas + entre poses. Desktop: cabeça segue o cursor. Mobile: cabeça segue o GIROSCÓPIO (gyro prop; permissão iOS por gesto). GLBs: com-automation-robot-hq.glb (~13,8MB desktop) e -hq-mobile.glb (~9,8MB, texturas reduzidas) — só um baixa por device. Pacote-fonte em components/com-automation-robot-production-v2/ (gitignored)
+  CtaMascot.tsx                           # wrapper do mascote na CTA; carrega o componente 3D por next/dynamic (ssr:false), mantendo three+R3F+drei (~250KB gzip) FORA do bundle inicial da página
+  ui/interactive-mascot.tsx               # mascote astronauta 3D (GLB riggado + R3F) — ver "Mascote 3D" abaixo
   ui/                                     # efeitos: flow-button, scramble, background-paths, data-grid-hero, glowing-effect, accordion (Radix), etc.
 
 lib/
   products.ts             # FONTE DA VERDADE dos produtos + FAQ (todo o conteúdo)
   site.ts                 # contato (WhatsApp, e-mail) + banner "Equipe 360"
   utils.ts                # helpers (cn / clsx+tailwind-merge)
+
+app/robots.ts             # gera out/robots.txt no build
+app/sitemap.ts            # gera out/sitemap.xml (home + 6 produtos)
 
 public/
   logos/                  # logos da Com Automação (marca + horizontal, b/w)
@@ -125,6 +131,45 @@ node scripts/extract-scroll-frames.mjs media/pedra-pixel-video-mobile.mp4 90 108
 total de frames — ajuste `frameCount` da `<ScrollVideo />` se mudar esse número.
 Requer `ffmpeg`/`ffprobe` no PATH.
 
+### Mascote 3D (astronauta na CTA do produto)
+
+O componente [`ui/interactive-mascot.tsx`](components/ui/interactive-mascot.tsx)
+renderiza um astronauta riggado com React Three Fiber. Duas interações:
+
+- **cabeça segue o ponteiro** — no desktop o cursor é lido na janela inteira (não
+  só sobre o canvas), então o mascote acompanha quem lê o texto ao lado;
+- **braços para cima** — enquanto o mouse está no botão "Vamos decolar"
+  (`[data-mascot-cheer]`). Clique/toque no mascote também alterna.
+
+No mobile não há ponteiro: a cabeça segue o **giroscópio** (no iOS 13+ a permissão
+é pedida no primeiro toque).
+
+**Como as poses funcionam.** O rig do Meshy vem em T-pose e com rotações de bind
+irregulares, então as poses **não** são clipes de animação: são ângulos escritos
+em *eixos de mundo* (`z` = levantar/baixar o braço, `x` = frente/trás) e
+convertidos para o espaço do pai em runtime. Por isso os números em
+`POSE_RELAXED` / `POSE_CELEBRATE` são legíveis — `z: -74` é literalmente "braço
+74° abaixo da horizontal". Para reajustar a pose, mexa só nesses dois objetos.
+
+Motion: a transição entre poses é uma **mola** (subida levemente subamortecida,
+~8% de overshoot; descida criticamente amortecida e mais curta), a cabeça usa
+amortecimento exponencial com dead zone, e há uma respiração sutil no repouso.
+Tudo respeita `prefers-reduced-motion`. O `frameloop` é `"demand"`: nada é
+renderizado com o mascote fora da viewport ou com a aba em segundo plano.
+
+**Gerando os GLBs.** O arquivo cru do Meshy tem ~17MB (288.776 triângulos +
+textura PNG de 5,69MB) e **não vai para o repo** (ver `.gitignore`). Guarde-o fora
+do projeto e gere as versões web com:
+
+```bash
+node scripts/build-mascot.mjs caminho/para/o-modelo-cru.glb
+```
+
+Isso escreve `public/models/com-automation-astronaut.glb` (~527KB, 58.624 tri,
+textura 1024) e `-mobile.glb` (~187KB, 14.438 tri, textura 512) — só um baixa por
+device. A compressão é **meshopt** (não Draco): o decoder é empacotado junto do
+three, sem depender de CDN de terceiros.
+
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável
 `NEXT_PUBLIC_WHATSAPP_NUMBER` (ver `.env.example`) ou do fallback no arquivo.
@@ -157,13 +202,25 @@ O site é 100% estático, então roda em hospedagem compartilhada sem Node.
 - **Open Graph + Twitter Card** configurados em [`app/layout.tsx`](app/layout.tsx)
   (site) e por produto em [`app/produtos/[slug]/page.tsx`](app/produtos/[slug]/page.tsx).
 - Imagem de preview: `app/opengraph-image.png` e `app/twitter-image.png` (1200×630).
+  ⚠️ Declarar `openGraph` em `generateMetadata` **anula** a convenção de arquivo
+  do `opengraph-image.png` — por isso as páginas de produto passam `images`
+  explicitamente. Sem isso o link compartilhado sai sem preview.
+- **robots.txt** e **sitemap.xml** saem de `app/robots.ts` e `app/sitemap.ts`.
+  Produto novo em `lib/products.ts` entra no sitemap automaticamente.
+- **FAQPage (JSON-LD)** por produto, gerado do próprio `faq` de `products.ts`;
+  dados da empresa (LocalBusiness) em [`components/JsonLd.tsx`](components/JsonLd.tsx).
 - A base das URLs vem de `NEXT_PUBLIC_SITE_URL` (default `https://comautomacao.com`) —
   lida no build. Se mudar o domínio, ajuste e rebuilde.
 
 ## Pendências (corrigir depois)
 
 - [ ] `favicon.ico` legado (hoje usamos `icon.png`, suficiente p/ navegadores modernos)
-- [ ] Hero da home usa vídeo remoto (Pexels) — avaliar self-host
+- [ ] Hero da home usa vídeo remoto (Pexels) + poster do Unsplash — avaliar self-host
+- [ ] `media/*.mp4` (35MB de vídeos-fonte) está versionado e responde por boa parte
+      dos ~200MB do `.git`. Tirar do índice não encolhe o histórico e arriscaria
+      perder a única cópia num clone limpo — se for mexer, migrar para Git LFS.
+- [ ] `npm audit`: postcss e sharp (dependências transitivas do Next, só de build)
+      com avisos altos — resolve num bump do Next.
 
 ---
 

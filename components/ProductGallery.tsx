@@ -13,9 +13,6 @@ type GalleryItem = {
 export default function ProductGallery({ items }: { items: GalleryItem[] }) {
   const [active, setActive] = useState<number | null>(null);
   const [shown, setShown] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   const openAt = useCallback((i: number) => {
     setActive(i);
@@ -69,8 +66,8 @@ export default function ProductGallery({ items }: { items: GalleryItem[] }) {
         ))}
       </div>
 
-      {mounted &&
-        item &&
+      {/* o portal só existe depois de um clique, então nunca roda no SSR */}
+      {item &&
         createPortal(
           <div
             className={`lightbox${shown ? " is-open" : ""}`}

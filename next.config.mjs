@@ -7,11 +7,8 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     // Sem servidor de otimização no export: as imagens são servidas como estão.
+    // (Com `unoptimized`, `remotePatterns` não teria efeito nenhum.)
     unoptimized: true,
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "videos.pexels.com" },
-    ],
   },
 };
 

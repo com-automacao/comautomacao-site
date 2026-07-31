@@ -59,8 +59,13 @@ export default function RootLayout({
         <JsonLd />
         <ScrollReveal />
         <NavScroll />
+        <a className="skip-link" href="#conteudo">
+          Pular para o conteúdo
+        </a>
         <Nav />
-        {children}
+        <main id="conteudo" tabIndex={-1}>
+          {children}
+        </main>
         <Footer />
         <WhatsAppFab />
       </body>

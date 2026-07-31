@@ -52,7 +52,7 @@ export default function Footer() {
       </div>
       <div className="watermark">DECOLE</div>
       <div className="foot-bottom">
-        <span>© 2026 Com Automação</span>
+        <span>© {new Date().getFullYear()} Com Automação</span>
         <span className="foot-credit">
           Criado com muito amor,{" "}
           <Link href="/produtos/pedra-e-pixel">
