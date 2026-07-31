@@ -561,7 +561,10 @@ function MascotScene({
     headPitchRef.current += (targetPitch - headPitchRef.current) * alpha;
 
     const yaw = headYawRef.current;
-    const pitch = headPitchRef.current;
+    // Girar positivo em torno do X de MUNDO inclina o rosto para BAIXO (regra
+    // da mão direita). Como `pitch` guarda a intenção ("cursor acima = olhar
+    // para cima"), o sinal é invertido aqui, na hora de virar rotação.
+    const pitch = -headPitchRef.current;
     const roll = (-yaw / HEAD_MAX_YAW) * HEAD_MAX_ROLL;
     // fração normalizada do giro, para o tronco acompanhar na mesma proporção
     const yawRatio = yaw / HEAD_MAX_YAW;
@@ -602,11 +605,13 @@ function MascotScene({
       );
     }
 
+    // comparado contra o ref (intenção), não contra `pitch`, que já está com o
+    // sinal invertido para virar rotação de mundo
     const settled =
       Math.abs(blend - targetBlend) < 0.001 &&
       Math.abs(blendVelRef.current) < 0.001 &&
       Math.abs(targetYaw - yaw) < 0.02 &&
-      Math.abs(targetPitch - pitch) < 0.02;
+      Math.abs(targetPitch - headPitchRef.current) < 0.02;
 
     // com respiração o laço segue vivo enquanto o mascote está à vista; sem
     // ela, o frameloop "demand" volta a dormir assim que tudo assenta.
@@ -784,10 +789,10 @@ export function InteractiveMascot({
             {shadows && (
               <ContactShadows
                 position={[0, -1.34, 0]}
-                opacity={0.3}
-                scale={2.4}
-                blur={2.8}
-                far={1.2}
+                opacity={0.55}
+                scale={2.2}
+                blur={2.4}
+                far={1.1}
                 resolution={useMobileModel ? 256 : 512}
                 frames={1}
               />

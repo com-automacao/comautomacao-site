@@ -1557,28 +1557,78 @@ h3 {
   height: 440px;
   z-index: 0;
 }
-/* "palco": halo radial sutil na cor do produto, dando profundidade ao mascote */
+/* "Palco" do mascote.
+   Sem isto ele lê como adesivo colado no preto: um recorte branco de alto
+   contraste, sem chão e sem nada entre ele e o fundo. São três camadas —
+   atmosfera atrás (ele emerge do fundo), poça de luz nos pés (ele pisa em
+   algo) e, no ::after, a linha de horizonte no vocabulário de hairline que o
+   resto do site já usa. */
 .mascot3d::before {
   content: "";
   position: absolute;
-  inset: -6% -10%;
+  inset: -14% -22% -10%;
   z-index: -1;
-  background: radial-gradient(
-    58% 46% at 50% 70%,
-    color-mix(in srgb, var(--accent) 15%, transparent),
-    transparent 70%
+  /* as porcentagens abaixo são do pseudo-elemento, que o `inset` negativo
+     estica para além da caixa: 90% cai na linha dos pés, não 100% */
+  background:
+    /* poça de luz no chão, bem achatada: é o que ancora os pés */
+    radial-gradient(
+      40% 9% at 50% 90%,
+      color-mix(in srgb, var(--accent) 26%, transparent),
+      transparent 76%
+    ),
+    /* atmosfera atrás do corpo */
+    radial-gradient(
+      50% 42% at 50% 55%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 74%
+    ),
+    /* clareado neutro bem amplo: tira o preto morto ao redor da silhueta */
+    radial-gradient(
+      72% 58% at 50% 60%,
+      rgba(255, 255, 255, 0.04),
+      transparent 76%
+    );
+  pointer-events: none;
+}
+/* linha de horizonte na altura dos pés — mesma linguagem dos .beam-h do site,
+   que é o que faz o mascote pertencer à página em vez de flutuar nela */
+.mascot3d::after {
+  content: "";
+  position: absolute;
+  /* assimétrico de propósito: o mascote fica colado na margem direita, então
+     a linha precisa terminar o fade ANTES da borda da seção (que tem
+     overflow: hidden) — senão ela é cortada no meio e parece inacabada */
+  left: -34%;
+  right: -6%;
+  bottom: 3.5%;
+  height: 1px;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 45%, transparent) 30%,
+    color-mix(in srgb, var(--accent) 75%, #fff) 52%,
+    color-mix(in srgb, var(--accent) 40%, transparent) 78%,
+    transparent
   );
+  opacity: 0.45;
   pointer-events: none;
 }
 .cta-mascot .wrap {
   position: relative;
   z-index: 1;
 }
-/* no desktop o texto fica por cima mas "transparente" ao ponteiro p/ o robô
+/* no desktop o texto fica por cima mas "transparente" ao ponteiro p/ o mascote
    (atrás) receber o mouse; só os botões voltam a capturar o clique */
 @media (min-width: 1200px) {
   .cta-mascot .wrap {
     pointer-events: none;
+    /* Abre espaço para o mascote em vez de centralizar o texto na página
+       inteira e deixar a figura sobrando na margem. Com isto a dobra vira
+       duas colunas de verdade — texto à esquerda, mascote à direita — que é o
+       que faz ele parecer parte da composição, e não encaixado depois. */
+    padding-right: calc(var(--gutter) + 300px);
   }
   .cta-mascot .wrap a {
     pointer-events: auto;
@@ -1594,11 +1644,22 @@ h3 {
     overflow: visible;
   }
   .mascot3d {
-    position: static;
+    /* `relative`, não `static`: o palco (::before/::after) é absoluto e
+       precisa se ancorar no mascote. Com `static` ele se ancorava na seção
+       inteira e o "chão" ia parar lá embaixo. */
+    position: relative;
+    right: auto;
+    top: auto;
     transform: none;
     width: min(300px, 74vw);
     height: min(330px, 82vw);
     margin: 0 auto 6px;
+  }
+  /* na coluna única o horizonte fica mais curto, senão vira uma régua
+     atravessando a tela */
+  .mascot3d::after {
+    left: -12%;
+    right: -12%;
   }
 }
 

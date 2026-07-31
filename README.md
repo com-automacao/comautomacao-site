@@ -174,12 +174,35 @@ fechariam para dentro.
 O tronco importa: só a cabeça virando quase não se lê à distância que o mascote
 ocupa na página.
 
+> Atenção ao sinal do pitch: girar **positivo** em torno do X de mundo inclina o
+> rosto para **baixo** (regra da mão direita). O código guarda a intenção
+> ("cursor acima = olhar para cima") e inverte na hora de virar rotação. Trocar
+> isso faz o mascote olhar para o lado oposto do cursor.
+
 **Luz.** Esquema de 4 pontos montado para um traje branco sobre fundo preto — o
 problema não é iluminar, é separar do fundo sem estourar o branco. Chave morna à
 frente-esquerda, preenchimento frio baixo, e duas luzes de **contorno** por trás
 desenhando a silhueta, uma delas na cor do produto (prop `accent`, que a página
 passa a partir de `product.accent`), amarrando o mascote ao halo da seção. A
 `ambientLight` fica quase zerada de propósito: subi-la achata tudo de novo.
+
+**Composição (o "palco").** Um personagem 3D solto num fundo preto lê como
+adesivo colado. O que o integra à página está no CSS, em `.mascot3d::before` e
+`::after`:
+
+- **poça de luz achatada nos pés** + `ContactShadows` por cima dela — sem um
+  chão para receber a sombra, ela é invisível no preto e ele parece flutuar;
+- **atmosfera** atrás do corpo, para ele emergir do fundo em vez de ser recortado;
+- **linha de horizonte** na altura dos pés, no mesmo vocabulário de hairline dos
+  `.beam-h` do site — é o que faz ele pertencer à página;
+- no desktop (≥1200px) a dobra vira **duas colunas**: `.cta-mascot .wrap` ganha
+  `padding-right`, então o texto ocupa a coluna da esquerda e o mascote a da
+  direita, em vez de texto centralizado com uma figura sobrando na margem.
+
+> As porcentagens dos gradientes são do pseudo-elemento, que o `inset` negativo
+> estica para além da caixa — por isso a poça fica em `90%`, não em `100%`.
+> E `.mascot3d` precisa ser `position: relative` também no mobile: com `static`
+> o palco se ancora na seção inteira e o chão vai parar no rodapé dela.
 
 Motion: a transição entre poses é uma **mola** (subida levemente subamortecida,
 ~8% de overshoot; descida criticamente amortecida e mais curta), a cabeça usa
