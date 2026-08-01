@@ -61,22 +61,36 @@ const POSE_RELAXED: PoseMap = {
   Hips: {},
 };
 
-// Braços erguidos em ÂNGULO RETO no cotovelo: úmero quase na horizontal e
-// antebraço para cima. Como os dois ângulos são medidos a partir do MESMO bind
-// (a T-pose), o cotovelo fica reto quando a diferença entre eles é exatamente
-// 90 — é isso que tira a "quebra" no meio do braço. Se mexer num, mexa no
-// outro para manter os 90.
-//
-// A torção vai no ANTEBRAÇO, não no úmero — é onde a pronação acontece de
-// verdade, e é o único ponto onde ela gira só a mão. Torcer o úmero levaria
-// junto o plano de dobra do cotovelo, e os braços fechariam para dentro.
+/*
+ * Braços RETOS, erguidos a partir do ombro — a silhueta em "V" de quem comemora
+ * de braços abertos.
+ *
+ * ATENÇÃO, é aqui que é fácil errar: as rotações ACUMULAM ao longo da cadeia.
+ * O antebraço é filho do úmero, que é filho do ombro, então ele já herda as
+ * rotações dos dois. O ângulo real de cada segmento é a SOMA:
+ *
+ *   úmero    = ombro + braço          = 10 + 38 = 48° acima da horizontal
+ *   antebraço = ombro + braço + antebraço
+ *
+ * Logo, braço reto NÃO é repetir o ângulo do úmero no antebraço (isso dobra o
+ * cotovelo pelo dobro do ângulo) — é deixar a rotação própria do antebraço em
+ * ZERO. Para mudar a altura do gesto, mexa só em CELEBRATE_ARM_Z.
+ *
+ * `t` é a exceção e pode ficar: é torção no eixo do próprio osso, que só gira a
+ * mão para a palma ficar de frente, sem tirar o braço da linha.
+ */
+const CELEBRATE_SHOULDER_Z = 10;
+const CELEBRATE_ARM_Z = 38;
+const CELEBRATE_ARM_X = 10;
+
 const POSE_CELEBRATE: PoseMap = {
-  LeftArm: { z: -30, x: 16 },
-  RightArm: { z: 30, x: 16 },
-  LeftForeArm: { z: 60, x: 6, t: -90 },
-  RightForeArm: { z: -60, x: 6, t: 90 },
-  LeftShoulder: { z: 8 },
-  RightShoulder: { z: -8 },
+  LeftShoulder: { z: CELEBRATE_SHOULDER_Z },
+  RightShoulder: { z: -CELEBRATE_SHOULDER_Z },
+  LeftArm: { z: CELEBRATE_ARM_Z, x: CELEBRATE_ARM_X },
+  RightArm: { z: -CELEBRATE_ARM_Z, x: CELEBRATE_ARM_X },
+  // rotação própria zero = alinhado ao úmero = braço reto
+  LeftForeArm: { t: -90 },
+  RightForeArm: { t: 90 },
   Spine01: { x: -5 },
   Hips: {},
 };
@@ -204,6 +218,100 @@ function StudioEnvironment({ intensity = 1 }: { intensity?: number }) {
   }, [gl, intensity, scene]);
 
   return null;
+}
+
+/** níveis de luz em repouso e comemorando (escopo de módulo: são constantes) */
+const LIGHT_BASE = { key: 3.4, rimAccent: 3.4, rimCool: 2.1, exposure: 1.12 };
+const LIGHT_LIT = { key: 4.1, rimAccent: 7.2, rimCool: 3.6, exposure: 1.22 };
+
+/**
+ * O "palco" acende quando o mascote comemora: as luzes de contorno sobem, a
+ * chave dá uma clareada e a exposição acompanha. É o mesmo gesto lido pela
+ * iluminação — sem isso a comemoração acontece no escuro, com a mesma luz de
+ * quando ele está parado.
+ *
+ * A rampa é própria (não a mola da pose) porque luz que dá overshoot pisca.
+ */
+function CelebrationLighting({
+  celebrating,
+  accent,
+  reducedMotion,
+}: {
+  celebrating: boolean;
+  accent: string;
+  reducedMotion: boolean;
+}) {
+  const { gl, invalidate } = useThree();
+  const keyRef = useRef<THREE.DirectionalLight>(null);
+  const rimAccentRef = useRef<THREE.DirectionalLight>(null);
+  const rimCoolRef = useRef<THREE.DirectionalLight>(null);
+  const levelRef = useRef(celebrating ? 1 : 0);
+
+  useEffect(() => {
+    invalidate();
+  }, [celebrating, invalidate]);
+
+  // As luzes e o renderer são objetos do three: mutá-los é a API da biblioteca,
+  // não estado de React. A regra de imutabilidade não se aplica ao laço abaixo.
+  /* eslint-disable react-hooks/immutability */
+  useFrame((_, rawDelta) => {
+    const target = celebrating ? 1 : 0;
+    const level = levelRef.current;
+    if (Math.abs(target - level) < 0.001) {
+      if (level !== target) levelRef.current = target;
+      return;
+    }
+
+    const delta = Math.min(rawDelta, 1 / 30);
+    // acende mais rápido do que apaga: o gesto entra, a luz baixa devagar
+    const speed = target > level ? 9 : 5.5;
+    levelRef.current = reducedMotion
+      ? target
+      : level + (target - level) * (1 - Math.exp(-speed * delta));
+
+    const t = levelRef.current;
+    const mix = (a: number, b: number) => a + (b - a) * t;
+
+    if (keyRef.current) keyRef.current.intensity = mix(LIGHT_BASE.key, LIGHT_LIT.key);
+    if (rimAccentRef.current)
+      rimAccentRef.current.intensity = mix(LIGHT_BASE.rimAccent, LIGHT_LIT.rimAccent);
+    if (rimCoolRef.current)
+      rimCoolRef.current.intensity = mix(LIGHT_BASE.rimCool, LIGHT_LIT.rimCool);
+    gl.toneMappingExposure = mix(LIGHT_BASE.exposure, LIGHT_LIT.exposure);
+
+    invalidate();
+  });
+  /* eslint-enable react-hooks/immutability */
+
+  return (
+    <>
+      {/* chave — morna, alta, à esquerda de quem olha */}
+      <directionalLight
+        ref={keyRef}
+        position={[-3.6, 4.4, 3.8]}
+        intensity={LIGHT_BASE.key}
+        color="#fff4e8"
+      />
+      {/* preenchimento — frio e discreto, abre a sombra do lado direito */}
+      <directionalLight position={[3.8, 1.4, 2.6]} intensity={0.75} color="#cfe0ff" />
+      {/* contorno na cor do produto — amarra o mascote ao halo da seção */}
+      <directionalLight
+        ref={rimAccentRef}
+        position={[-2.8, 2.6, -3.6]}
+        intensity={LIGHT_BASE.rimAccent}
+        color={accent}
+      />
+      {/* contorno frio do outro lado — dá o "brilho de estúdio" na borda */}
+      <directionalLight
+        ref={rimCoolRef}
+        position={[3.2, 2, -3.2]}
+        intensity={LIGHT_BASE.rimCool}
+        color="#bcd6ff"
+      />
+      {/* rebote de baixo, quase imperceptível: tira o preto morto dos pés */}
+      <directionalLight position={[0, -2.6, 1.8]} intensity={0.28} color="#4a5b7a" />
+    </>
+  );
 }
 
 function AdaptiveQuality({ mobile }: { mobile: boolean }) {
@@ -682,7 +790,11 @@ function MascotScene({
     // de costas, a cabeça não deve tentar procurar o cursor: o ganho cai com o
     // cosseno do giro e volta sozinho quando o corpo encara a frente de novo
     const facing = Math.max(0, Math.cos(spinRef.current));
-    const gain = (hoveredRef.current ? 1.12 : 1) * facing;
+    // Comemorando, o mascote encara a frente: o rastreamento some na mesma
+    // curva em que os braços sobem, então a cabeça centraliza junto com o
+    // gesto em vez de dar um solavanco.
+    const tracking = 1 - blend;
+    const gain = (hoveredRef.current ? 1.12 : 1) * facing * tracking;
 
     const targetYaw = pointerActive
       ? pointerRef.current.x * HEAD_MAX_YAW * pointerStrength * gain
@@ -864,6 +976,8 @@ export function InteractiveMascot({
       className={className}
       role="img"
       aria-label={ariaLabel}
+      /* o palco em CSS (.mascot3d::before) acende junto, via :has() */
+      data-cheering={pose === "celebrate" ? "" : undefined}
       style={{ position: "relative", minHeight: 300 }}
     >
       {hasEntered && (
@@ -908,35 +1022,10 @@ export function InteractiveMascot({
           */}
           <ambientLight intensity={0.2} />
 
-          {/* chave — morna, alta, à esquerda de quem olha */}
-          <directionalLight
-            position={[-3.6, 4.4, 3.8]}
-            intensity={3.4}
-            color="#fff4e8"
-          />
-          {/* preenchimento — frio e discreto, abre a sombra do lado direito */}
-          <directionalLight
-            position={[3.8, 1.4, 2.6]}
-            intensity={0.75}
-            color="#cfe0ff"
-          />
-          {/* contorno na cor do produto — amarra o mascote ao halo da seção */}
-          <directionalLight
-            position={[-2.8, 2.6, -3.6]}
-            intensity={3.4}
-            color={accent}
-          />
-          {/* contorno frio do outro lado — dá o "brilho de estúdio" na borda */}
-          <directionalLight
-            position={[3.2, 2, -3.2]}
-            intensity={2.1}
-            color="#bcd6ff"
-          />
-          {/* rebote de baixo, quase imperceptível: tira o preto morto dos pés */}
-          <directionalLight
-            position={[0, -2.6, 1.8]}
-            intensity={0.28}
-            color="#4a5b7a"
+          <CelebrationLighting
+            celebrating={pose === "celebrate"}
+            accent={accent}
+            reducedMotion={reducedMotion}
           />
 
           <Suspense fallback={null}>

@@ -142,7 +142,12 @@ renderiza um astronauta riggado com React Three Fiber. Duas interações:
 - **cabeça segue o cursor** — lido na janela inteira, não só sobre o canvas, para
   o mascote acompanhar quem lê o texto ao lado;
 - **braços para cima** — enquanto o mouse está no botão "Vamos decolar"
-  (`[data-mascot-cheer]`). Clicar no mascote também alterna;
+  (`[data-mascot-cheer]`). Clicar no mascote também alterna. Durante a
+  comemoração o **palco acende** (as luzes de contorno sobem, a exposição
+  acompanha, o halo em CSS clareia via `:has([data-cheering])`) e a **cabeça
+  para de seguir o cursor** para encarar a frente — o rastreamento some na mesma
+  curva em que os braços sobem, então ela centraliza junto com o gesto em vez de
+  dar um solavanco;
 - **arrastar gira o corpo** no próprio eixo, sem limite (dá voltas completas);
   2s depois de soltar ele volta sozinho para a frente. O alvo do retorno é a
   volta inteira mais próxima, não zero: quem deu três voltas não vê as três
@@ -181,13 +186,20 @@ torcer, o braço sobe com a palma para fora. E ela fica no **antebraço**, não 
 a mão. Torcer o úmero levaria junto o plano de dobra do cotovelo, e os braços
 fechariam para dentro.
 
-> **Cotovelo reto:** como `LeftArm.z` e `LeftForeArm.z` são medidos a partir do
-> MESMO bind (a T-pose), o cotovelo fica em ângulo reto quando a diferença entre
-> eles é exatamente **90**. Hoje é `-30` e `60`. Se mexer num, mexa no outro —
-> qualquer outro valor reaparece como uma "quebra" no meio do braço.
-> O úmero aponta para BAIXO de propósito: com ele na horizontal o cotovelo sobe
-> à altura da cabeça e os antebraços passam raspando no capacete, o que lê como
-> "mãos na cabeça" em vez de comemoração.
+> **As rotações ACUMULAM pela cadeia — é aqui que é fácil errar.** O antebraço é
+> filho do úmero, que é filho do ombro, então ele já herda as rotações dos dois.
+> O ângulo real de cada segmento é a **soma**:
+>
+> ```
+> úmero     = ombro + braço              = 10 + 38 = 48° acima da horizontal
+> antebraço = ombro + braço + antebraço
+> ```
+>
+> Logo, **braço reto não é repetir o ângulo do úmero no antebraço** (isso dobra
+> o cotovelo pelo dobro do ângulo) — é deixar a rotação própria do antebraço em
+> **zero**. Para mudar a altura do gesto, mexa só em `CELEBRATE_ARM_Z`.
+> `t` é a exceção que pode ficar no antebraço: é torção no eixo do próprio osso,
+> gira só a mão e não tira o braço da linha.
 
 **Cabeça.** O giro vai até 40° de yaw / 20° de pitch, repartido entre `neck`
 (35%) e `Head` (65%), e o tronco (`Spine01`) acompanha com uma fração disso.

@@ -1602,6 +1602,16 @@ h3 {
       transparent 76%
     );
   pointer-events: none;
+  /* filter em vez de trocar o gradiente: gradiente não interpola, brilho sim */
+  filter: brightness(1) saturate(1);
+  transition: filter 320ms var(--ease-out);
+}
+/* o palco acende junto com a comemoração (hover no "Vamos decolar") */
+.mascot3d:has([data-cheering])::before {
+  filter: brightness(1.5) saturate(1.15);
+}
+.mascot3d:has([data-cheering])::after {
+  opacity: 0.75;
 }
 /* linha de horizonte na altura dos pés — mesma linguagem dos .beam-h do site,
    que é o que faz o mascote pertencer à página em vez de flutuar nela */
@@ -1626,6 +1636,7 @@ h3 {
   );
   opacity: 0.45;
   pointer-events: none;
+  transition: opacity 320ms var(--ease-out);
 }
 .cta-mascot .wrap {
   position: relative;
