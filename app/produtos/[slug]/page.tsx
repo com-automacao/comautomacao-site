@@ -33,7 +33,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return {};
-  const ogTitle = `${product.name} — Com Automação`;
+  const ogTitle = `${product.name} | Com Automação`;
   const url = `/produtos/${slug}/`;
   // Declarar `openGraph` aqui anula a convenção de arquivo do
   // app/opengraph-image.png, então a imagem precisa vir explícita — sem ela o

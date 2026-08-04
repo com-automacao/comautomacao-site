@@ -97,16 +97,23 @@ const POSE_CELEBRATE: PoseMap = {
 const POSE_BONES = Object.keys(POSE_RELAXED);
 
 const HEAD_MAX_YAW = 40;
-const HEAD_MAX_PITCH = 20;
 const HEAD_MAX_ROLL = 6;
+/*
+ * Vertical é ASSIMÉTRICO de propósito. Olhar para cima é o gesto expressivo —
+ * abre o peito, o queixo sobe, a silhueta muda. Olhar para baixo esbarra no
+ * peito e não tem para onde ir, então passa de 20° só piora. Um valor único
+ * para os dois lados deixava a subida discreta demais.
+ */
+const HEAD_PITCH_UP = 34;
+const HEAD_PITCH_DOWN = 18;
 /** o pescoço puxa uma fração do giro; o resto vai para a cabeça */
 const NECK_SHARE = 0.35;
 /** o tronco acompanha de leve — é o que faz o movimento ser lido de longe */
 const BODY_MAX_YAW = 7;
-const BODY_MAX_PITCH = 2.5;
+const BODY_MAX_PITCH = 6;
 const POINTER_DEAD_ZONE = 0.04;
-/** comemorando, o astronauta também olha um pouco para cima */
-const CELEBRATE_HEAD_PITCH = 7;
+/** comemorando, o astronauta também olha para cima */
+const CELEBRATE_HEAD_PITCH = 14;
 
 /* ---- girar arrastando (só onde existe ponteiro) ---- */
 /** graus de giro por pixel arrastado: ~340° ao atravessar a caixa do mascote */
@@ -582,11 +589,19 @@ function MascotScene({
       const bounds = canvas.getBoundingClientRect();
       if (bounds.width === 0) return;
       const cx = bounds.left + bounds.width / 2;
-      const cy = bounds.top + bounds.height * 0.34; // altura aproximada da cabeça
-      const reach = Math.max(window.innerWidth * 0.42, 420);
+      const cy = bounds.top + bounds.height * 0.4; // altura aproximada da cabeça
+      /*
+       * Alcances separados por eixo, cada um na medida da tela que existe
+       * naquela direção. O vertical saía da LARGURA da janela e ficava grande
+       * demais: acima da cabeça do mascote sobram ~300px de página, então o
+       * cursor nunca chegava perto do limite e a subida do olhar parecia
+       * tímida. Amarrado à altura, o gesto usa a faixa inteira.
+       */
+      const reachX = Math.max(window.innerWidth * 0.42, 420);
+      const reachY = Math.max(window.innerHeight * 0.32, 220);
       pointerRef.current.set(
-        applyDeadZone(THREE.MathUtils.clamp((event.clientX - cx) / reach, -1, 1)),
-        applyDeadZone(THREE.MathUtils.clamp(-(event.clientY - cy) / (reach * 0.7), -1, 1)),
+        applyDeadZone(THREE.MathUtils.clamp((event.clientX - cx) / reachX, -1, 1)),
+        applyDeadZone(THREE.MathUtils.clamp(-(event.clientY - cy) / reachY, -1, 1)),
       );
       pointerInsideRef.current = true;
       invalidate();
@@ -710,9 +725,10 @@ function MascotScene({
     const targetYaw = pointerActive
       ? pointerRef.current.x * HEAD_MAX_YAW * pointerStrength * gain
       : 0;
+    const py = pointerRef.current.y;
     const targetPitch =
       (pointerActive
-        ? pointerRef.current.y * HEAD_MAX_PITCH * pointerStrength * gain
+        ? py * (py > 0 ? HEAD_PITCH_UP : HEAD_PITCH_DOWN) * pointerStrength * gain
         : 0) + blend * CELEBRATE_HEAD_PITCH;
 
     const alpha = 1 - Math.exp(-8.5 * delta);
@@ -727,7 +743,9 @@ function MascotScene({
     const roll = (-yaw / HEAD_MAX_YAW) * HEAD_MAX_ROLL;
     // fração normalizada do giro, para o tronco acompanhar na mesma proporção
     const yawRatio = yaw / HEAD_MAX_YAW;
-    const pitchRatio = pitch / HEAD_MAX_PITCH;
+    // normalizado pelo maior dos dois lados, para o tronco não estourar quando
+    // o olhar sobe (que é a faixa maior)
+    const pitchRatio = pitch / HEAD_PITCH_UP;
 
     /* --- tronco: respiração + um giro sutil atrás da cabeça. Só a cabeça
        virando quase não se percebe de longe; o ombro acompanhando é o que

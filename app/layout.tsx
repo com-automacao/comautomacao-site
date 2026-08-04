@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Com Automação | Sistemas de gestão para sua empresa",
-    template: "%s — Com Automação",
+    template: "%s | Com Automação",
   },
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },

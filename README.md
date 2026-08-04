@@ -208,10 +208,19 @@ fechariam para dentro.
 > `t` é a exceção que pode ficar no antebraço: é torção no eixo do próprio osso,
 > gira só a mão e não tira o braço da linha.
 
-**Cabeça.** O giro vai até 40° de yaw / 20° de pitch, repartido entre `neck`
-(35%) e `Head` (65%), e o tronco (`Spine01`) acompanha com uma fração disso.
-O tronco importa: só a cabeça virando quase não se lê à distância que o mascote
-ocupa na página.
+**Cabeça.** O giro vai até 40° de yaw, repartido entre `neck` (35%) e `Head`
+(65%), e o tronco (`Spine01`) acompanha com uma fração disso. O tronco importa:
+só a cabeça virando quase não se lê à distância que o mascote ocupa na página.
+
+O vertical é **assimétrico** — 34° para cima e 18° para baixo. Olhar para cima é
+o gesto expressivo (abre o peito, o queixo sobe, a silhueta muda); para baixo o
+queixo esbarra no peito e passar de ~20° só piora. Com um valor único para os
+dois lados a subida ficava discreta demais.
+
+E os alcances do ponteiro são **separados por eixo**: o vertical sai da ALTURA
+da janela, não da largura. Saindo da largura ele ficava grande demais — acima da
+cabeça do mascote sobram ~300px de página, então o cursor nunca chegava perto do
+limite e o olhar para cima parecia tímido mesmo com o ângulo alto.
 
 > Atenção ao sinal do pitch: girar **positivo** em torno do X de mundo inclina o
 > rosto para **baixo** (regra da mão direita). O código guarda a intenção
