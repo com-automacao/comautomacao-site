@@ -22,7 +22,16 @@
  *   com-automation-astronaut-mobile.glb  mobile   · 17.326 tri · textura 1024
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve, join } from "node:path";
 import sharp from "sharp";
 
@@ -267,25 +276,31 @@ writeFileSync(gltfPath, JSON.stringify(doc));
 
 console.log("5/5 otimizando e empacotando…\n");
 
+const MODELS_DIR = resolve("public/models");
+
 const targets = [
   {
-    out: "public/models/com-automation-astronaut.glb",
+    base: "com-automation-astronaut",
     label: "desktop",
+    export: "DESKTOP_MODEL_URL",
     textureSize: 2048,
     ratio: "0.15",
     error: "0.0002",
   },
   {
-    out: "public/models/com-automation-astronaut-mobile.glb",
+    base: "com-automation-astronaut-mobile",
     label: "mobile",
+    export: "MOBILE_MODEL_URL",
     textureSize: 1024,
     ratio: "0.06",
     error: "0.0012",
   },
 ];
 
+const built = [];
+
 for (const t of targets) {
-  const out = resolve(t.out);
+  const out = join(WORK, `${t.base}.glb`);
   const encoded = join(WORK, `webp-${t.label}.gltf`);
   await writeAlbedo(t.textureSize);
 
@@ -323,12 +338,56 @@ for (const t of targets) {
     "--flatten", "false",
   );
 
-  console.log(`${t.label.padEnd(8)} ${t.out} (${mb(out)})`);
+  built.push({ ...t, tmp: out });
 }
+
+/* ------------------------------------------------------------------ *
+ * NOME COM HASH DO CONTEÚDO
+ *
+ * Arquivos em public/ mantêm o nome para sempre — só o JS/CSS do Next é
+ * versionado. Com o nome fixo, quem já tinha o mascote em cache continuava
+ * vendo o modelo ANTIGO depois de cada atualização, sem jeito de forçar.
+ *
+ * Com o hash no nome, o arquivo novo é uma URL nova: atualiza na hora para
+ * todo mundo, e o antigo pode ser cacheado para sempre com segurança.
+ * O componente lê os caminhos do manifesto gerado abaixo.
+ * ------------------------------------------------------------------ */
+mkdirSync(MODELS_DIR, { recursive: true });
+
+// limpa versões anteriores para public/ não acumular modelos órfãos
+for (const file of readdirSync(MODELS_DIR)) {
+  if (/^com-automation-astronaut(-mobile)?\.[a-f0-9]{8}\.glb$/.test(file) ||
+      /^com-automation-astronaut(-mobile)?\.glb$/.test(file)) {
+    rmSync(join(MODELS_DIR, file));
+  }
+}
+
+const manifest = [];
+for (const t of built) {
+  const bytes = readFileSync(t.tmp);
+  const hash = createHash("sha256").update(bytes).digest("hex").slice(0, 8);
+  const name = `${t.base}.${hash}.glb`;
+  writeFileSync(join(MODELS_DIR, name), bytes);
+  manifest.push({ ...t, name });
+  console.log(`${t.label.padEnd(8)} public/models/${name} (${mb(join(MODELS_DIR, name))})`);
+}
+
+writeFileSync(
+  resolve("lib/mascot-model.ts"),
+  `// GERADO por scripts/build-mascot.mjs — não edite à mão.\n` +
+    `//\n` +
+    `// O hash no nome é o que faz uma troca de modelo valer na hora: sem ele o\n` +
+    `// arquivo em public/ mantém a mesma URL para sempre e quem já tinha o\n` +
+    `// mascote em cache continuava vendo a versão antiga.\n` +
+    manifest
+      .map((m) => `export const ${m.export} = "/models/${m.name}";\n`)
+      .join(""),
+);
 
 rmSync(WORK, { recursive: true, force: true });
 
 console.log(
-  "\npronto. Para mexer no tom do azul, ajuste BLUE no topo deste arquivo;\n" +
+  "\nlib/mascot-model.ts atualizado com os novos caminhos.\n" +
+    "Para mexer no tom do azul, ajuste BLUE no topo deste arquivo;\n" +
     "para o brilho de cada parte, ajuste ROUGHNESS.",
 );

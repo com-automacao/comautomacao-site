@@ -6,6 +6,8 @@ import { ContactShadows, PerformanceMonitor, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+// caminhos com hash de conteúdo, gerados por scripts/build-mascot.mjs
+import { DESKTOP_MODEL_URL, MOBILE_MODEL_URL } from "@/lib/mascot-model";
 
 export type MascotPose = "relaxed" | "celebrate";
 export type MascotQuality = "auto" | "desktop" | "mobile";
@@ -867,8 +869,8 @@ export function InteractiveMascot({
   className,
   pose = "relaxed",
   animationTrigger = 0,
-  desktopModelUrl = "/models/com-automation-astronaut.glb",
-  mobileModelUrl = "/models/com-automation-astronaut-mobile.glb",
+  desktopModelUrl = DESKTOP_MODEL_URL,
+  mobileModelUrl = MOBILE_MODEL_URL,
   quality = "auto",
   followPointer = true,
   dragToSpin = true,
@@ -995,7 +997,7 @@ export function InteractiveMascot({
 }
 
 export function preloadInteractiveMascot(
-  url = "/models/com-automation-astronaut.glb",
+  url = DESKTOP_MODEL_URL,
 ) {
   useGLTF.preload(url, false, true);
 }

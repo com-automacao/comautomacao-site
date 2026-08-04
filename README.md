@@ -316,6 +316,18 @@ O script faz mais do que encolher o arquivo:
 
 > Requer `sharp` (devDependency) para o processamento das texturas.
 
+**Cache — por que o nome tem hash.** Os arquivos saem como
+`com-automation-astronaut.<hash>.glb`, e o script gera
+[`lib/mascot-model.ts`](lib/mascot-model.ts) com os caminhos (arquivo gerado,
+não edite à mão). O Next versiona o próprio JS/CSS, mas **arquivos em `public/`
+mantêm o nome para sempre**: com um nome fixo, quem já tinha o mascote em cache
+continuava vendo o modelo antigo depois de cada atualização, sem jeito de
+forçar — e o sintoma aparecia só em alguns aparelhos, conforme o estado do
+cache de cada um. Com o hash, modelo novo é URL nova: atualiza na hora para
+todo mundo e o antigo pode ser cacheado por um ano com segurança (regra no
+`public/.htaccess`, junto de um `AddType` porque nem todo Apache conhece
+`.glb`).
+
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável
 `NEXT_PUBLIC_WHATSAPP_NUMBER` (ver `.env.example`) ou do fallback no arquivo.
