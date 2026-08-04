@@ -1659,6 +1659,11 @@ h3 {
 }
 .mascot3d canvas {
   display: block;
+  /* Faz arrastar-para-girar conviver com a rolagem no celular: o navegador
+     continua dono do gesto VERTICAL (a página rola) e entrega o HORIZONTAL
+     para o canvas. Precisa estar no <canvas>, não no wrapper do R3F — o
+     touch-action que vale é o do elemento onde o toque começa. */
+  touch-action: pan-y;
 }
 /* mobile/tablet: o mascote vira um bloco centralizado ACIMA do texto (o head
    segue o giroscópio; toque no robô alterna a comemoração) */

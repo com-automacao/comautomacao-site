@@ -32,14 +32,14 @@ function useHoverless(): boolean {
 /**
  * Mascote da CTA do produto.
  *
- * Desktop: a cabeça segue o cursor e os braços sobem em comemoração enquanto o
- * mouse está no botão "Vamos decolar" (`[data-mascot-cheer]`); clique no mascote
- * também alterna.
+ * Desktop: a cabeça segue o cursor, arrastar gira o corpo, e os braços sobem em
+ * comemoração enquanto o mouse está no botão "Vamos decolar"
+ * (`[data-mascot-cheer]`).
  *
- * Toque (celular/tablet): não existe hover, então a comemoração simplesmente
- * não tem gatilho e fica fora — nada de simular com tap, que roubaria o toque
- * de quem só quer rolar a página. A única interação é a cabeça seguindo o
- * GIROSCÓPIO do aparelho.
+ * Toque (celular/tablet): arrastar gira e TOCAR comemora. Não há gatilho de
+ * hover, então o toque no mascote é o que dispara a pose; um segundo toque
+ * relaxa. A cabeça não segue nada (sem ponteiro, e o giroscópio foi removido —
+ * não funcionava de forma confiável nos aparelhos reais).
  */
 export default function CtaMascot({
   name,
@@ -57,6 +57,7 @@ export default function CtaMascot({
     setTrigger((t) => t + 1);
   };
 
+  // só no desktop: em aparelho de toque não existe hover para escutar
   useEffect(() => {
     if (hoverless) return;
 
@@ -75,12 +76,10 @@ export default function CtaMascot({
   return (
     <InteractiveMascot
       className="h-full w-full"
-      pose={hoverless ? "relaxed" : pose}
+      pose={pose}
       animationTrigger={trigger}
       accent={accent}
-      onMascotClick={
-        hoverless ? undefined : () => play(pose === "relaxed" ? "celebrate" : "relaxed")
-      }
+      onMascotClick={() => play(pose === "relaxed" ? "celebrate" : "relaxed")}
       ariaLabel={`Mascote 3D interativo — ${name}`}
     />
   );

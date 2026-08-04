@@ -154,23 +154,30 @@ renderiza um astronauta riggado com React Three Fiber. Duas interações:
   desenrolarem, só a atual se completar. De costas, a cabeça para de procurar o
   cursor (o ganho cai com o cosseno do giro) e volta a segui-lo sozinha.
   Os listeners do arrasto ficam na **janela**, não no canvas: quem arrasta sai
-  da caixa do mascote no meio do gesto e o giro travaria ali.
+  da caixa do mascote no meio do gesto e o giro travaria ali. Um arrasto não
+  conta como clique (limiar de 4px), senão girar também comemorava.
 
 **No toque (celular/tablet):**
 
-- **cabeça segue o giroscópio** — no iOS 13+ a permissão é pedida no primeiro
-  toque. A leitura é **relativa**: a primeira amostra vira o neutro. Uma linha de
-  base fixa não funciona, porque `beta` depende de como cada pessoa segura o
-  aparelho — quem segura mais em pé já começava com a inclinação saturada e a
-  cabeça travada para um lado;
-- **a comemoração não existe.** Sem hover não há gatilho, e simular com tap
-  roubaria o toque de quem só quer rolar a página. O mascote fica sempre relaxado;
-- **o arrasto para girar também não.** Ele competiria com a rolagem da página.
+- **arrastar gira o corpo**, igual ao desktop, com o mesmo retorno automático;
+- **tocar no mascote comemora** — sem hover não há como usar o botão como
+  gatilho, então o toque no próprio personagem dispara a pose; um segundo toque
+  relaxa;
+- **a cabeça não segue nada.** Não há ponteiro para acompanhar.
 
-A distinção é feita por `(hover: none), (pointer: coarse)` — capacidade de
-interação, não largura de tela. São perguntas diferentes: a largura decide só
-**qual GLB baixar**. Se fossem a mesma query, uma janela de desktop estreita
-perderia o rastreamento da cabeça sem ganhar giroscópio em troca.
+> O **giroscópio foi removido** (existia até 2026-07-31). A leitura de
+> `deviceorientation` não se mostrou confiável nos aparelhos reais, mesmo com
+> calibração relativa. Não reintroduza sem testar em hardware.
+
+O que faz arrastar-para-girar conviver com a rolagem é **`touch-action: pan-y`
+no `<canvas>`**: o navegador continua dono do gesto vertical (a página rola) e
+entrega o horizontal para o mascote. Precisa estar no `<canvas>` e não no
+wrapper — o `touch-action` que vale é o do elemento onde o toque começa, e o
+`style` do `<Canvas>` do R3F vai para o wrapper, não para o canvas.
+
+A distinção desktop/toque é feita por `(hover: none), (pointer: coarse)` —
+capacidade de interação, não largura de tela. São perguntas diferentes: a
+largura decide só **qual GLB baixar**.
 
 **Como as poses funcionam.** O rig do Meshy vem em T-pose e com rotações de bind
 irregulares, então as poses **não** são clipes de animação: são ângulos escritos
@@ -212,17 +219,21 @@ ocupa na página.
 > isso faz o mascote olhar para o lado oposto do cursor.
 
 **Material — leia antes de mexer na luz.** O que o Meshy exporta precisa de três
-correções, aplicadas em `interactive-mascot.tsx` ao carregar o modelo. Sem elas
-nenhum ajuste de iluminação funciona:
+correções. Elas são aplicadas **no asset**, pelo `scripts/build-mascot.mjs`; o
+componente só as repete como rede de segurança para um GLB não processado. Sem
+elas nenhum ajuste de iluminação funciona:
 
 1. `emissiveFactor: [1,1,1]` com a própria textura como mapa emissivo — o modelo
-   **se auto-ilumina em cheio**, o que anula sombra, volume e contorno. É zerado
-   (sobra 0.05 para os vincos não virarem preto puro).
+   **se auto-ilumina em cheio**, o que anula sombra, volume e contorno.
 2. `metallicFactor` e `roughnessFactor` **ausentes**. No glTF isso não é zero: o
    default é **1.0 nos dois**, ou seja, o traje inteiro era metal totalmente
-   fosco, sem albedo difuso — daí o aspecto de giz. Um traje é dielétrico:
-   metal 0, rugosidade ~0.5.
+   fosco, sem albedo difuso — daí o aspecto de giz.
 3. `doubleSided: true` numa malha fechada só dobra o trabalho de fragmento.
+
+> ⚠️ Com o modelo processado, **não** mexa em `roughness`/`metalness` no
+> componente: em three.js esses escalares **multiplicam** o mapa de acabamento,
+> então um `roughness = 0.5` deixaria tudo brilhante demais em vez de respeitar
+> visor, traje e anéis. Por isso o override só roda quando não há `roughnessMap`.
 
 **Luz.** Esquema de 4 pontos montado para um traje branco sobre fundo preto — o
 problema não é iluminar, é separar do fundo sem estourar o branco. Chave morna à
@@ -271,10 +282,30 @@ do projeto e gere as versões web com:
 node scripts/build-mascot.mjs caminho/para/o-modelo-cru.glb
 ```
 
-Isso escreve `public/models/com-automation-astronaut.glb` (~740KB, 58.624 tri,
-textura 2048) e `-mobile.glb` (~230KB, 17.326 tri, textura 1024) — só um baixa
+Isso escreve `public/models/com-automation-astronaut.glb` (~920KB, 58.624 tri,
+textura 2048) e `-mobile.glb` (~290KB, 17.326 tri, textura 1024) — só um baixa
 por device. A compressão é **meshopt** (não Draco): o decoder é empacotado junto
 do three, sem depender de CDN de terceiros.
+
+O script faz mais do que encolher o arquivo:
+
+- **cor dos detalhes** — o azul não é material, é pintura na textura. Só dá para
+  mudar ali, em `BLUE`, no topo do script. A transformação é um **ganho linear
+  por canal**, não uma conversão para HSL: a primeira versão fazia RGB→HSL→RGB e
+  o arredondamento de volta para 8 bits espalhava ruído de quantização, dobrando
+  o WebP (0,27MB → 0,54MB) sem diferença visual nenhuma;
+- **mapa de acabamento** — o modelo tem um material só, então visor, traje e
+  anéis brilhavam igual. O script classifica o albedo e gera um
+  metallic-roughness (`ROUGHNESS` no topo do script). Ele sai em 512² e
+  desfocado de propósito: são três valores chapados em áreas grandes, e na
+  resolução do albedo custava 0,44MB só de bordas duras;
+- **ordem dos passos** — textura primeiro, malha depois. Rodando o `webp` num
+  arquivo já otimizado, ele descomprime a geometria meshopt para reescrever e
+  não a recomprime (a malha saltava de 0,45MB para 1,16MB). O meshopt é sempre o
+  último passo, e a qualidade do WebP é fixada explicitamente porque o padrão do
+  encoder muda conforme o formato de entrada.
+
+> Requer `sharp` (devDependency) para o processamento das texturas.
 
 ### Contato (WhatsApp / e-mail)
 Em [`lib/site.ts`](lib/site.ts). O número de WhatsApp pode vir da variável

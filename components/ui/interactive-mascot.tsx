@@ -19,7 +19,6 @@ export interface InteractiveMascotProps {
   mobileModelUrl?: string;
   quality?: MascotQuality;
   followPointer?: boolean;
-  gyro?: boolean;
   /** arrastar sobre o mascote gira o corpo; volta à frente sozinho após 2s */
   dragToSpin?: boolean;
   pointerStrength?: number;
@@ -337,7 +336,6 @@ interface MascotSceneProps {
   pose: MascotPose;
   animationTrigger: number;
   followPointer: boolean;
-  useGyro: boolean;
   /** arrastar para girar — só onde existe ponteiro */
   spinnable: boolean;
   pointerStrength: number;
@@ -353,7 +351,6 @@ function MascotScene({
   pose,
   animationTrigger,
   followPointer,
-  useGyro,
   spinnable,
   pointerStrength,
   breathing,
@@ -500,27 +497,27 @@ function MascotScene({
       for (const material of materials) {
         const pbr = material as THREE.MeshStandardMaterial;
 
-        /*
-         * Correções sobre o que o Meshy exporta — são o que faz o modelo
-         * deixar de parecer chapado:
-         *
-         * 1. `emissiveFactor: [1,1,1]` com a própria textura como mapa
-         *    emissivo. O modelo se auto-ilumina em cheio, o que anula
-         *    qualquer trabalho de luz: não há sombra, nem volume, nem
-         *    contorno. Zerado aqui, com uma fração mínima só para os vincos
-         *    mais fundos não virarem preto puro.
-         * 2. `metallicFactor`/`roughnessFactor` ausentes. No glTF isso NÃO é
-         *    zero: o default é 1.0 nos dois, ou seja, o traje inteiro era
-         *    metal totalmente fosco — sem albedo difuso, daí o aspecto de giz.
-         *    Um traje é dielétrico: metal 0, rugosidade média-alta.
-         * 3. `doubleSided: true` numa malha fechada só dobra o trabalho de
-         *    fragmento e bagunça o sombreamento nas silhuetas.
-         */
-        if ("emissiveIntensity" in pbr) pbr.emissiveIntensity = 0.05;
-        if ("metalness" in pbr) pbr.metalness = 0;
-        if ("roughness" in pbr) pbr.roughness = 0.52;
         if ("envMapIntensity" in pbr) pbr.envMapIntensity = 1.05;
         pbr.side = THREE.FrontSide;
+
+        /*
+         * Rede de segurança para um GLB que não tenha passado pelo
+         * scripts/build-mascot.mjs. O que sai do Meshy cru vem com
+         * `emissiveFactor: [1,1,1]` usando a própria textura como mapa
+         * emissivo (o modelo se auto-ilumina e nenhuma luz tem efeito) e sem
+         * metallic/roughness — que no glTF NÃO é zero: o default é 1.0 nos
+         * dois, ou seja, metal totalmente fosco, sem albedo difuso.
+         *
+         * Com o modelo processado nada disto roda: o mapa de acabamento já
+         * existe, e mexer nos escalares aqui ATRAPALHARIA — em three.js eles
+         * multiplicam o mapa, então `roughness = 0.52` deixaria tudo brilhante
+         * demais em vez de respeitar visor, traje e anéis.
+         */
+        if (!pbr.roughnessMap) {
+          pbr.metalness = 0;
+          pbr.roughness = 0.55;
+          pbr.emissiveIntensity = 0.05;
+        }
 
         for (const texture of [pbr.map, pbr.emissiveMap, pbr.roughnessMap, pbr.normalMap]) {
           if (!texture) continue;
@@ -578,7 +575,7 @@ function MascotScene({
   // canvas: o mascote fica na lateral da CTA e precisa "acompanhar" quem lê o
   // texto ao lado — é o que dá a sensação de presença.
   useEffect(() => {
-    if (!followPointer || useGyro) return;
+    if (!followPointer) return;
     const canvas = gl.domElement;
 
     const handleWindowMove = (event: PointerEvent) => {
@@ -597,93 +594,7 @@ function MascotScene({
 
     window.addEventListener("pointermove", handleWindowMove, { passive: true });
     return () => window.removeEventListener("pointermove", handleWindowMove);
-  }, [followPointer, gl, invalidate, useGyro]);
-
-  // Mobile não tem ponteiro: a cabeça segue a inclinação do aparelho. No iOS
-  // 13+ o acesso ao sensor exige um gesto do usuário.
-  useEffect(() => {
-    if (!useGyro || typeof window === "undefined") return;
-
-    /*
-     * A leitura é RELATIVA a como a pessoa está segurando o aparelho, não
-     * absoluta. A versão anterior assumia beta = 42° como "neutro"; quem
-     * segura o celular mais em pé (beta ~75°) já começava com a inclinação
-     * saturada e a cabeça travada olhando para um lado — que é o efeito de
-     * "não funciona direito" no celular.
-     *
-     * Agora a primeira leitura vira o zero. `beta` só é calibrado quando o
-     * aparelho está numa posição plausível de leitura, para o caso de o
-     * primeiro evento chegar com o celular deitado na mesa.
-     */
-    let baseGamma: number | null = null;
-    let baseBeta: number | null = null;
-    let lastGamma = 0;
-    let lastBeta = 0;
-
-    const onOrient = (event: DeviceOrientationEvent) => {
-      const gamma = event.gamma ?? 0;
-      const beta = event.beta ?? 0;
-
-      if (baseGamma === null) {
-        baseGamma = gamma;
-        baseBeta = THREE.MathUtils.clamp(beta, 20, 80);
-      }
-
-      if (Math.abs(gamma - lastGamma) < 0.3 && Math.abs(beta - lastBeta) < 0.3) return;
-      lastGamma = gamma;
-      lastBeta = beta;
-
-      // ±26° a partir do neutro cobre o quanto se gira o pulso sem esforço
-      pointerRef.current.set(
-        applyDeadZone(THREE.MathUtils.clamp((gamma - baseGamma) / 26, -1, 1)),
-        applyDeadZone(THREE.MathUtils.clamp((beta - (baseBeta ?? beta)) / 24, -1, 1)),
-      );
-      pointerInsideRef.current = true;
-      invalidate();
-    };
-
-    let attached = false;
-    const attach = () => {
-      if (attached) return;
-      attached = true;
-      window.addEventListener("deviceorientation", onOrient);
-    };
-
-    const DOE = (
-      typeof DeviceOrientationEvent !== "undefined" ? DeviceOrientationEvent : null
-    ) as
-      | (typeof DeviceOrientationEvent & {
-          requestPermission?: () => Promise<"granted" | "denied">;
-        })
-      | null;
-
-    let grant: (() => void) | null = null;
-    if (DOE && typeof DOE.requestPermission === "function") {
-      grant = () => {
-        DOE.requestPermission?.()
-          .then((state) => {
-            if (state === "granted") attach();
-          })
-          .catch(() => {});
-        if (grant) {
-          window.removeEventListener("touchend", grant);
-          window.removeEventListener("click", grant);
-        }
-      };
-      window.addEventListener("touchend", grant, { once: true });
-      window.addEventListener("click", grant, { once: true });
-    } else {
-      attach();
-    }
-
-    return () => {
-      window.removeEventListener("deviceorientation", onOrient);
-      if (grant) {
-        window.removeEventListener("touchend", grant);
-        window.removeEventListener("click", grant);
-      }
-    };
-  }, [useGyro, invalidate]);
+  }, [followPointer, gl, invalidate]);
 
   /* Arrastar sobre o mascote gira o corpo no próprio eixo, sem limite (dá a
      volta inteira). Os listeners ficam na janela, não no canvas: quem arrasta
@@ -887,11 +798,14 @@ function MascotScene({
           onPointerOver={(event) => {
             event.stopPropagation();
             hoveredRef.current = true;
-            document.body.style.cursor = spinnable
-              ? "grab"
-              : onMascotClick
-                ? "pointer"
-                : "";
+            // cursor só faz sentido onde existe ponteiro
+            if (event.pointerType === "mouse") {
+              document.body.style.cursor = spinnable
+                ? "grab"
+                : onMascotClick
+                  ? "pointer"
+                  : "";
+            }
             invalidate();
           }}
           onPointerOut={(event) => {
@@ -910,7 +824,9 @@ function MascotScene({
               pointerId: event.pointerId,
             };
             idleAfterDragRef.current = 0;
-            document.body.style.cursor = "grabbing";
+            if (event.pointerType === "mouse") {
+              document.body.style.cursor = "grabbing";
+            }
             invalidate();
           }}
           onClick={(event) => {
@@ -937,7 +853,6 @@ export function InteractiveMascot({
   mobileModelUrl = "/models/com-automation-astronaut-mobile.glb",
   quality = "auto",
   followPointer = true,
-  gyro = true,
   dragToSpin = true,
   pointerStrength = 1,
   breathing = true,
@@ -963,7 +878,6 @@ export function InteractiveMascot({
     quality === "mobile" || (quality === "auto" && smallScreen);
   const modelUrl = useMobileModel ? mobileModelUrl : desktopModelUrl;
   const active = intersecting && pageVisible;
-  const useGyro = hoverless && gyro && !reducedMotion;
 
   const handleLoaded = useCallback(() => {
     requestAnimationFrame(() => setLoaded(true));
@@ -1034,11 +948,8 @@ export function InteractiveMascot({
               modelUrl={modelUrl}
               pose={pose}
               animationTrigger={animationTrigger}
-              followPointer={followPointer && (!hoverless || useGyro)}
-              useGyro={useGyro}
-              /* arrastar para girar é gesto de ponteiro: no toque ele
-                 competiria com a rolagem da página */
-              spinnable={dragToSpin && !hoverless}
+              followPointer={followPointer && !hoverless}
+              spinnable={dragToSpin}
               pointerStrength={pointerStrength}
               breathing={breathing}
               reducedMotion={reducedMotion}
