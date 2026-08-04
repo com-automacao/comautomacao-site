@@ -91,6 +91,10 @@ if (list.status === 0) {
 const mb = (statSync(ZIP).size / 1048576).toFixed(1);
 console.log(
   `\npacote de deploy: comautomacao-site-export.zip (${mb} MB)\n\n` +
-    "cPanel → Gerenciador de Arquivos → public_html: limpe o conteúdo antigo,\n" +
-    "faça Upload do zip, Extract ali mesmo e apague o zip depois.",
+    "cPanel → Gerenciador de Arquivos → public_html:\n" +
+    "  Upload do zip → Extract ali mesmo (sobrescrevendo) → apagar o zip.\n\n" +
+    "NÃO limpe o public_html antes de extrair: entre apagar e terminar de\n" +
+    "extrair o site fica quebrado para quem acessa (HTML pela metade vira\n" +
+    "ERR_CONTENT_DECODING_FAILED, e arquivos ainda não extraídos viram 404).\n" +
+    "Extrair por cima é seguro — JS, CSS e modelos têm hash no nome.",
 );

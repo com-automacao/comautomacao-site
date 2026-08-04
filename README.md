@@ -349,8 +349,24 @@ O site é 100% estático, então roda em hospedagem compartilhada sem Node.
 npm run deploy       # build + empacota out/ em comautomacao-site-export.zip
 ```
 
-Depois, no **cPanel → Gerenciador de Arquivos → `public_html`**: limpe o conteúdo
-antigo, faça **Upload** do zip e **Extract** ali mesmo. Apague o zip depois.
+Depois, no **cPanel → Gerenciador de Arquivos → `public_html`**: faça **Upload**
+do zip, **Extract** ali mesmo (confirmando a sobrescrita) e apague o zip.
+
+> ⚠️ **Não limpe o `public_html` antes de extrair.** Entre apagar e terminar de
+> extrair existe uma janela de segundos em que o site fica quebrado para quem
+> acessa — e os sintomas confundem, porque parecem bug de código:
+>
+> - `ERR_CONTENT_DECODING_FAILED` nas páginas: o Apache comprime um HTML ainda
+>   incompleto e o navegador recebe um gzip truncado;
+> - `404` em `__next.produtos/$d$slug.txt` e afins: são os arquivos de prefetch
+>   do Next, que ainda não tinham sido extraídos.
+>
+> Extrair por cima resolve: os arquivos são substituídos um a um e nenhum
+> chega a faltar. Isso é seguro porque JS, CSS e modelos têm hash no nome —
+> versões novas nunca colidem com as antigas.
+>
+> De vez em quando vale apagar os órfãos (chunks e modelos de builds
+> anteriores), mas isso é limpeza, não parte do deploy.
 
 O empacotamento é o [`scripts/pack-deploy.mjs`](scripts/pack-deploy.mjs). Ele põe
 os arquivos na **raiz** do zip (é o que o Extract do cPanel espera), garante que
